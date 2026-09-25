@@ -175,6 +175,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
                 VALUES ('Ramesh K.', 78, '204', 'Hypertension, Mild cognitive impairment', ?)
             """, (ts,))
             await db.commit()
+
+        # Seed 30-day baseline history if empty so trend charts and risk score work immediately
+        res_vitals = await db.execute("SELECT COUNT(*) FROM vitals_daily_summary")
+        vitals_count = (await res_vitals.fetchone())[0]
+        if vitals_count == 0:
+            from seed import seed_data
+            await seed_data()
             
     broadcaster.start()
     yield
