@@ -74,7 +74,7 @@ export function useVitalStream(defaultWsUrl?: string) {
         return;
       }
       const device = await nav.bluetooth.requestDevice({
-        filters: [{ name: 'VitalGuard-Band' }],
+        filters: [{ name: 'VitalGuard-Band' }, { namePrefix: 'VitalGuard' }],
         optionalServices: [SERVICE_UUID],
       });
       bleDeviceRef.current = device;
@@ -101,8 +101,13 @@ export function useVitalStream(defaultWsUrl?: string) {
         }
       });
       device.addEventListener('gattserverdisconnected', () => setMode('DISCONNECTED'));
-    } catch (error) {
-      console.error('BLE Connection Failed', error);
+    } catch (error: any) {
+      console.warn('BLE Connection notice:', error);
+      if (error?.name === 'NotFoundError') {
+        alert("No 'VitalGuard-Band' found nearby.\n\nNote: If you don't have the hardware yet, you don't need Bluetooth! The dashboard is already streaming live telemetry via Cloud WebSocket.");
+      } else if (error?.name === 'SecurityError') {
+        alert("Bluetooth permission denied. Please allow Bluetooth access in your browser settings.");
+      }
     }
   };
 
@@ -116,10 +121,10 @@ export function useVitalStream(defaultWsUrl?: string) {
       accel_magnitude: 9.81,
       svm: 1.0,
     }));
-    if (typeof window !== 'undefined') {
-      const host = window.location.hostname || 'localhost';
-      fetch(`http://${host}:8000/api/reset-fall`, { method: 'POST' }).catch(() => {});
-    }
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL 
+      ? process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '') 
+      : (typeof window !== 'undefined' ? `http://${window.location.hostname}:8000` : 'http://localhost:8000');
+    fetch(`${apiUrl}/api/reset-fall`, { method: 'POST' }).catch(() => {});
   };
 
   useEffect(() => {
