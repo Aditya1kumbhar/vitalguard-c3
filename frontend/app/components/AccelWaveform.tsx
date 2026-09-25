@@ -80,7 +80,7 @@ export default function AccelWaveform({ latest }: AccelWaveformProps) {
       </div>
 
       {/* Clean, Expressive Waveform Canvas */}
-      <div className="w-full h-36 sm:h-40 pt-1 rounded-2xl border border-slate-200 telemetry-grid-light relative overflow-hidden">
+      <div className="w-full h-36 sm:h-44 md:h-52 lg:h-60 pt-1 rounded-2xl border border-slate-200 telemetry-grid-light relative overflow-hidden transition-all duration-300">
         {data.length === 0 ? (
           <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs font-medium">
             Monitoring...

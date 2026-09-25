@@ -134,7 +134,7 @@ export default function VitalGuardDashboard() {
 
   return (
     <main className="min-h-[100dvh] overflow-x-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col justify-between">
-      <div className="flex-1 w-full max-w-xl mx-auto p-4 sm:p-6 flex flex-col gap-4 sm:gap-5">
+      <div className="flex-1 w-full max-w-xl sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto p-3.5 sm:p-5 md:p-6 lg:p-8 responsive-adaptive flex flex-col gap-4 sm:gap-6">
         
         {/* Dynamic Island Capsule Header */}
         <header className="dynamic-island rounded-3xl p-3.5 sm:p-4 flex items-center justify-between">
@@ -241,7 +241,7 @@ export default function VitalGuardDashboard() {
         </nav>
 
         {activeTab === 'LIVE' ? (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 sm:gap-6">
             
             {/* Live Status Bar */}
             <div className="royal-card rounded-2xl px-4 py-3 flex items-center justify-between gap-4">
@@ -267,14 +267,14 @@ export default function VitalGuardDashboard() {
               </div>
             </div>
 
-            {/* 2x2 Big Visual Metrics Matrix */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full">
+            {/* Visual Metrics Matrix: 2x2 on Mobile, 4 across on iPad / Laptop */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 w-full transition-all duration-300">
               
               {/* Card 1: Heart Rate */}
               <div
                 onClick={() => playHaptic('soft')}
                 style={{ '--pulse-speed': pulseSpeed } as React.CSSProperties}
-                className={`royal-card royal-card-interactive p-4 sm:p-5 rounded-3xl flex flex-col justify-between min-h-[145px] relative overflow-hidden ${
+                className={`royal-card royal-card-interactive p-4 sm:p-5 rounded-3xl flex flex-col justify-between min-h-[140px] sm:min-h-[150px] relative overflow-hidden ${
                   isConnected && hr > 0 ? 'animate-living-heart' : ''
                 }`}
               >
@@ -293,7 +293,7 @@ export default function VitalGuardDashboard() {
                 </div>
 
                 <div className="mt-2 flex items-baseline gap-1.5 z-10">
-                  <span className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 font-mono">
+                  <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 font-mono">
                     {data.heart_rate || '--'}
                   </span>
                   <span className="text-xs sm:text-sm font-bold text-slate-400">BPM</span>
@@ -308,7 +308,7 @@ export default function VitalGuardDashboard() {
               {/* Card 2: Blood Oxygen */}
               <div
                 onClick={() => playHaptic('soft')}
-                className="royal-card royal-card-interactive p-4 sm:p-5 rounded-3xl flex flex-col justify-between min-h-[145px]"
+                className="royal-card royal-card-interactive p-4 sm:p-5 rounded-3xl flex flex-col justify-between min-h-[140px] sm:min-h-[150px]"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -323,7 +323,7 @@ export default function VitalGuardDashboard() {
                 </div>
 
                 <div className="mt-2 flex items-baseline gap-1.5">
-                  <span className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 font-mono">
+                  <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 font-mono">
                     {data.spo2 || '--'}
                   </span>
                   <span className="text-xs sm:text-sm font-bold text-slate-400">%</span>
@@ -338,7 +338,7 @@ export default function VitalGuardDashboard() {
               {/* Card 3: Activity / Movement */}
               <div
                 onClick={() => playHaptic('soft')}
-                className="royal-card royal-card-interactive p-4 sm:p-5 rounded-3xl flex flex-col justify-between min-h-[145px]"
+                className="royal-card royal-card-interactive p-4 sm:p-5 rounded-3xl flex flex-col justify-between min-h-[140px] sm:min-h-[150px]"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -379,7 +379,7 @@ export default function VitalGuardDashboard() {
               {/* Card 4: Overall Health & Safety */}
               <div
                 onClick={() => playHaptic('soft')}
-                className="royal-card royal-card-interactive p-4 sm:p-5 rounded-3xl flex flex-col justify-between min-h-[145px]"
+                className="royal-card royal-card-interactive p-4 sm:p-5 rounded-3xl flex flex-col justify-between min-h-[140px] sm:min-h-[150px]"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -415,84 +415,96 @@ export default function VitalGuardDashboard() {
 
             </div>
 
-            {/* Live Movement Waveform */}
-            <AccelWaveform latest={telemetryPacket} />
+            {/* Split Command Layout: Responsive across Laptop, iPad Landscape, and Phones */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start transition-all duration-300">
+              
+              {/* Left Column: Live Waveform & Test Alarm Controls */}
+              <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-4 sm:gap-6">
+                {/* Live Movement Waveform */}
+                <AccelWaveform latest={telemetryPacket} />
 
-            {/* Test Fall Alarm Buttons */}
-            <div className="royal-card rounded-2xl p-4 flex items-center justify-between">
-              <div>
-                <span className="text-sm font-bold text-slate-900 block">Test Alarm</span>
-                <span className="text-xs text-slate-400">Trigger test fall warning</span>
+                {/* Test Fall Alarm Buttons */}
+                <div className="royal-card rounded-2xl p-4 sm:p-5 flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-bold text-slate-900 block">Test Alarm</span>
+                    <span className="text-xs text-slate-400">Trigger test fall warning sequence</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={triggerMockFall}
+                      disabled={simulating}
+                      className="spring-btn flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold active:scale-95 transition-all shadow-md"
+                    >
+                      <Zap className={`w-3.5 h-3.5 ${simulating ? 'animate-spin' : ''}`} />
+                      <span>{simulating ? 'Testing...' : 'Test Fall'}</span>
+                    </button>
+                    <button
+                      onClick={resetMockFall}
+                      className="spring-btn p-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl border border-slate-200 active:scale-95 transition-all"
+                      title="Reset Alarm"
+                    >
+                      <RotateCcw className="w-4 h-4 text-slate-600" />
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={triggerMockFall}
-                  disabled={simulating}
-                  className="spring-btn flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold active:scale-95 transition-all shadow-md"
-                >
-                  <Zap className={`w-3.5 h-3.5 ${simulating ? 'animate-spin' : ''}`} />
-                  <span>{simulating ? 'Testing...' : 'Test Fall'}</span>
-                </button>
-                <button
-                  onClick={resetMockFall}
-                  className="spring-btn p-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl border border-slate-200 active:scale-95 transition-all"
-                  title="Reset Alarm"
-                >
-                  <RotateCcw className="w-4 h-4 text-slate-600" />
-                </button>
+
+              {/* Right Column: Alert History & Event Feed */}
+              <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-4 sm:gap-6">
+                <AlertHistory />
               </div>
+
             </div>
-
-            {/* Alert History */}
-            <AlertHistory />
 
           </div>
         ) : (
-          /* Past Records View */
-          <div className="flex flex-col gap-4">
+          /* Past Records View: Responsive Split Layout */
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start transition-all duration-300">
             
-            {/* Safety Score Card */}
-            <RiskScoreCard />
+            {/* Left Column: Safety Score & Clinical Baseline */}
+            <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-4 sm:gap-6">
+              <RiskScoreCard />
+              <ClinicalSummaryCard />
+            </div>
 
-            {/* 30-Day Health Summary */}
-            <ClinicalSummaryCard />
+            {/* Right Column: 30-Day Trends & Daily Log */}
+            <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-4 sm:gap-6">
+              <HistoricalTrends />
 
-            {/* 30-Day History Chart */}
-            <HistoricalTrends />
+              {/* Daily History List */}
+              <div className="royal-card rounded-2xl p-4 sm:p-5 flex flex-col gap-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <h2 className="text-base font-black text-slate-900 tracking-tight">
+                    Past 30 Days Log
+                  </h2>
+                  <span className="text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200">
+                    {records.length} Days
+                  </span>
+                </div>
 
-            {/* Daily History List */}
-            <div className="royal-card rounded-2xl p-4 sm:p-5 flex flex-col gap-3">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h2 className="text-base font-black text-slate-900 tracking-tight">
-                  Past 30 Days Log
-                </h2>
-                <span className="text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200">
-                  {records.length} Days
-                </span>
-              </div>
-
-              <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-1">
-                {records.map((r, i) => (
-                  <div key={i} className="p-3 bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/80 rounded-xl flex items-center justify-between text-xs transition-all">
-                    <div>
-                      <span className="font-bold text-slate-900 block">{r.day}</span>
-                      <span className="text-slate-500 text-xs">
-                        Heart: <strong className="text-slate-700">{r.avg_heart_rate}</strong> • Oxygen: <strong className="text-slate-700">{r.avg_spo2}%</strong>
-                      </span>
-                    </div>
-                    <div>
-                      {r.fall_incidents > 0 ? (
-                        <span className="px-2.5 py-1 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg font-bold text-xs">
-                          {r.fall_incidents} Fall
+                <div className="space-y-2 max-h-[40vh] lg:max-h-[380px] overflow-y-auto pr-1">
+                  {records.map((r, i) => (
+                    <div key={i} className="p-3 bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/80 rounded-xl flex items-center justify-between text-xs transition-all">
+                      <div>
+                        <span className="font-bold text-slate-900 block">{r.day}</span>
+                        <span className="text-slate-500 text-xs">
+                          Heart: <strong className="text-slate-700">{r.avg_heart_rate}</strong> • Oxygen: <strong className="text-slate-700">{r.avg_spo2}%</strong>
                         </span>
-                      ) : (
-                        <span className="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg font-bold text-xs">
-                          Safe
-                        </span>
-                      )}
+                      </div>
+                      <div>
+                        {r.fall_incidents > 0 ? (
+                          <span className="px-2.5 py-1 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg font-bold text-xs">
+                            {r.fall_incidents} Fall
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg font-bold text-xs">
+                            Safe
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -511,36 +523,38 @@ export default function VitalGuardDashboard() {
         <div 
           role="alertdialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 bg-rose-950/95 backdrop-blur-md flex flex-col justify-between p-6 animate-emergency-light"
+          className="fixed inset-0 z-50 bg-rose-950/95 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-6 animate-emergency-light"
         >
-          <div className="pt-12 flex flex-col items-center text-center">
-            <div className="w-24 h-24 rounded-full bg-rose-600/30 border-2 border-rose-500 flex items-center justify-center mb-5 animate-bounce shadow-xl">
-              <AlertTriangle className="w-14 h-14 text-rose-400" />
+          <div className="max-w-md w-full my-auto flex flex-col justify-between py-6">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-24 h-24 rounded-full bg-rose-600/30 border-2 border-rose-500 flex items-center justify-center mb-5 animate-bounce shadow-xl">
+                <AlertTriangle className="w-14 h-14 text-rose-400" />
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-black text-white tracking-wide uppercase drop-shadow-md">
+                FALL DETECTED!
+              </h2>
+              <p className="text-rose-200 text-base mt-2 max-w-sm">
+                Alarm is ringing. Caregiver has been alerted.
+              </p>
+              <div className="mt-3 px-3 py-1 rounded-full bg-rose-900/80 border border-rose-700 text-xs font-bold text-rose-300">
+                Device .1 • Room 204
+              </div>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-wide uppercase drop-shadow-md">
-              FALL DETECTED!
-            </h2>
-            <p className="text-rose-200 text-base mt-2 max-w-sm">
-              Alarm is ringing. Caregiver has been alerted.
-            </p>
-            <div className="mt-3 px-3 py-1 rounded-full bg-rose-900/80 border border-rose-700 text-xs font-bold text-rose-300">
-              Device .1 • Room 204
-            </div>
-          </div>
 
-          <div className="space-y-3 pb-6 max-w-md w-full mx-auto">
-            <button
-              onClick={resetMockFall}
-              className="spring-btn w-full py-4 bg-white hover:bg-slate-100 text-rose-950 rounded-2xl font-black text-lg active:scale-95 shadow-2xl transition-all"
-            >
-              I AM OKAY (CANCEL ALARM)
-            </button>
-            <button
-              onClick={resetMockFall}
-              className="spring-btn w-full py-3 bg-rose-900/80 hover:bg-rose-900 border border-rose-700 text-rose-200 rounded-2xl font-bold text-sm active:scale-95 transition-all"
-            >
-              Silence Alarm
-            </button>
+            <div className="space-y-3 pt-8 w-full">
+              <button
+                onClick={resetMockFall}
+                className="spring-btn w-full py-4 bg-white hover:bg-slate-100 text-rose-950 rounded-2xl font-black text-lg active:scale-95 shadow-2xl transition-all"
+              >
+                I AM OKAY (CANCEL ALARM)
+              </button>
+              <button
+                onClick={resetMockFall}
+                className="spring-btn w-full py-3 bg-rose-900/80 hover:bg-rose-900 border border-rose-700 text-rose-200 rounded-2xl font-bold text-sm active:scale-95 transition-all"
+              >
+                Silence Alarm
+              </button>
+            </div>
           </div>
         </div>
       )}

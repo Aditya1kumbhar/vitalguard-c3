@@ -166,3 +166,19 @@ body {
 .animate-emergency-light {
   animation: emergency-glow 1.2s infinite ease-in-out;
 }
+
+/* Fluid Responsive Container & Transitions */
+.responsive-adaptive {
+  transition: max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              gap 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: max-width, padding;
+}
+
+/* Landscape Phone & Tablet Optimization */
+@media (orientation: landscape) and (max-height: 540px) {
+  .min-h-landscape-auto {
+    min-height: auto !important;
+  }
+}
+
