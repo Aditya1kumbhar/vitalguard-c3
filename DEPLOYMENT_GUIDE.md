@@ -42,8 +42,13 @@ git push -u origin main
    - **Build Command:** `pip install -r requirements.txt`
    - **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
    - **Instance Type:** `Free` ($0/mo)
-5. Click **Create Web Service**.
-6. Once deployed, Render will give you your public backend URL (e.g., `https://vitalguard-c3-backend.onrender.com`).
+5. **Important (Environment Variables):**
+   Click **Advanced** or **Environment Variables** and add:
+   - **Key:** `PYTHON_VERSION`
+   - **Value:** `3.11.9`
+   *(This ensures Render uses stable Python 3.11 with pre-built binary wheels, avoiding Python 3.14 compilation errors).*
+6. Click **Create Web Service**.
+7. Once deployed, Render will give you your public backend URL (e.g., `https://vitalguard-c3-backend.onrender.com`).
 
 > **WebSocket Note:** Render free tier supports secure WebSockets out of the box! Your live telemetry endpoint will be:
 > `wss://vitalguard-c3-backend.onrender.com/ws/telemetry`
