@@ -1,5 +1,5 @@
 """
-VitalGuard C3 — Mock Telemetry Server
+VitalGuard C3 - Mock Telemetry Server
 DISCLOSED SIMULATION: Generates simulated sensor data.
 Features Phase 2 upgrade: 3-axis accelerometer simulation, SVM computation,
 and data persistence for longitudinal analytics.

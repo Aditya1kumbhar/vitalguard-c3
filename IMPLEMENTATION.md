@@ -1,10 +1,10 @@
 # IMPLEMENTATION.md
-## VitalGuard C3 — Software-Layer Demo with Alert History
+## VitalGuard C3  -  Software-Layer Demo with Alert History
 
 > **Engineering honesty policy, non-negotiable:**
 > Everything below is a **disclosed software simulation**. Simulated sensor data inside an openly-labelled mock = standard engineering practice (every hardware team does this). Pretending the board + firmware are already working = academic dishonesty. We don't cross that line.
 >
-> The script to say out loud: *"Hardware's still being assembled, so this is the software side running on simulated data — same logic, same thresholds, same dashboard that'll connect to the real chip once soldered."*
+> The script to say out loud: *"Hardware's still being assembled, so this is the software side running on simulated data  -  same logic, same thresholds, same dashboard that'll connect to the real chip once soldered."*
 
 ---
 
@@ -14,7 +14,7 @@
 |---|---|---|
 | Fall alert history / "Recent Alerts" panel | ❌ No persistence at all | ✅ In-memory list + SQLite file fallback |
 | Urgency cues | ✅ Red pulse modal + beep | ✅ Same, plus severity badge + alert log on dashboard |
-| Database | ❌ Explicitly avoided | ✅ Lightweight SQLite — no Supabase, no Prisma, no cloud |
+| Database | ❌ Explicitly avoided | ✅ Lightweight SQLite  -  no Supabase, no Prisma, no cloud |
 | Honest labelling | ✅ "Mock Dashboard" title | ✅ Simulation banner baked into UI, not hidden |
 | Body temperature | ❌ Not included | ✅ Added as 4th vital (MLX90614 IR temp, simulated 36.1–37.2°C) |
 
@@ -40,7 +40,7 @@ Vital-C3/
     └── app/
         ├── layout.tsx
         ├── globals.css
-        ├── page.tsx           # Main dashboard — vitals + alert history panel
+        ├── page.tsx           # Main dashboard  -  vitals + alert history panel
         ├── hooks/
         │   └── useTelemetrySocket.ts
         └── components/
@@ -62,7 +62,7 @@ websockets==13.1
 aiosqlite==0.20.0
 ```
 
-> `aiosqlite` — async SQLite wrapper. Zero external DB server, zero config, one `.db` file. Perfect for "show me a history log" without Supabase overhead.
+> `aiosqlite`  -  async SQLite wrapper. Zero external DB server, zero config, one `.db` file. Perfect for "show me a history log" without Supabase overhead.
 
 ### frontend/package.json
 ```json
@@ -95,7 +95,7 @@ aiosqlite==0.20.0
 
 ---
 
-## 3. Backend — SQLite Alert History
+## 3. Backend  -  SQLite Alert History
 
 ### backend/db.py
 ```python
@@ -165,11 +165,11 @@ async def acknowledge_alert(alert_id: int) -> bool:
 ### backend/main.py
 ```python
 """
-VitalGuard C3 — Mock Telemetry Server
+VitalGuard C3  -  Mock Telemetry Server
 
 DISCLOSED SIMULATION: This generates fake sensor data on a 1-second loop.
 Same fall-detection logic and thresholds as the real firmware design.
-Transport is WebSocket over WiFi (real system uses BLE — see Section 8).
+Transport is WebSocket over WiFi (real system uses BLE  -  see Section 8).
 """
 
 import asyncio
@@ -213,7 +213,7 @@ class TelemetryPacket(BaseModel):
     timestamp: str
 
 
-# Single shared queue — acceptable for single-viewer classroom demo.
+# Single shared queue  -  acceptable for single-viewer classroom demo.
 fall_queue: "asyncio.Queue[TelemetryPacket]" = asyncio.Queue()
 
 
@@ -304,15 +304,15 @@ async def health() -> dict:
 
 ---
 
-## 4. Fall Detection Logic — Same Numbers, Everywhere
+## 4. Fall Detection Logic  -  Same Numbers, Everywhere
 
 | Stage | Condition | Physical Meaning |
 |---|---|---|
 | 1. Free-fall dip | accel drops below **0.4g** | Sensor reads near-weightless during the fall |
 | 2. Impact spike | accel exceeds **2.5g** after stage 1 | Body hitting the ground |
-| 3. Post-fall stillness | accel settles near **1.0g** for several seconds | No recovery movement — strongest fall indicator |
+| 3. Post-fall stillness | accel settles near **1.0g** for several seconds | No recovery movement  -  strongest fall indicator |
 
-All three **in sequence** to fire an alert. Single-threshold ("accel > X") would false-alarm on jumping or sitting down hard. These are the same thresholds used in the project's actual firmware design — the mock reproduces them, doesn't invent new ones.
+All three **in sequence** to fire an alert. Single-threshold ("accel > X") would false-alarm on jumping or sitting down hard. These are the same thresholds used in the project's actual firmware design  -  the mock reproduces them, doesn't invent new ones.
 
 ---
 
@@ -365,7 +365,7 @@ export function useTelemetrySocket() {
         const packet: TelemetryPacket = JSON.parse(event.data);
         setLatest(packet);
       } catch {
-        // Malformed packet — ignore, don't crash the dashboard.
+        // Malformed packet  -  ignore, don't crash the dashboard.
       }
     };
 
@@ -495,7 +495,7 @@ export default function FallAlertModal({
 }
 ```
 
-### frontend/app/components/AlertHistory.tsx — NEW
+### frontend/app/components/AlertHistory.tsx  -  NEW
 ```typescript
 "use client";
 
@@ -521,7 +521,7 @@ export default function AlertHistory() {
         setAlerts(data);
       }
     } catch {
-      // Backend might be down — don't crash the dashboard.
+      // Backend might be down  -  don't crash the dashboard.
     }
   }, []);
 
@@ -539,7 +539,7 @@ export default function AlertHistory() {
       });
       fetchAlerts(); // Refresh list
     } catch {
-      // Ignore — best-effort acknowledge
+      // Ignore  -  best-effort acknowledge
     }
   };
 
@@ -654,9 +654,9 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">VitalGuard C3 — Dashboard</h1>
+          <h1 className="text-2xl font-bold">VitalGuard C3  -  Dashboard</h1>
           <p className="text-xs text-slate-500 mt-1">
-            ⚠ Software simulation — hardware pending assembly
+            ⚠ Software simulation  -  hardware pending assembly
           </p>
         </div>
         <div className="flex items-center gap-2 text-sm text-slate-400">
@@ -665,7 +665,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Vital gauges — 4 metrics */}
+      {/* Vital gauges  -  4 metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <VitalGauge
           label="Heart Rate"
@@ -710,7 +710,7 @@ export default function DashboardPage() {
         Simulate Fall
       </button>
 
-      {/* Alert History panel — the new addition */}
+      {/* Alert History panel  -  the new addition */}
       <AlertHistory />
 
       {/* Fall alert modal */}
@@ -731,7 +731,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "VitalGuard C3 Dashboard",
   description:
-    "Elderly fall detection and vital signs monitoring — software simulation",
+    "Elderly fall detection and vital signs monitoring  -  software simulation",
 };
 
 export default function RootLayout({
@@ -807,13 +807,13 @@ export default nextConfig;
 
 ---
 
-## 6. Changes Summary — What's Different From the Original Plan
+## 6. Changes Summary  -  What's Different From the Original Plan
 
 ### New files
 | File | Purpose |
 |---|---|
-| `backend/db.py` | SQLite async wrapper — `fall_alerts` table with timestamp, peak_accel, severity, acknowledged |
-| `frontend/app/components/AlertHistory.tsx` | "Recent Alerts" panel — polls `/alerts` every 3s, shows unacknowledged count, per-alert Ack button |
+| `backend/db.py` | SQLite async wrapper  -  `fall_alerts` table with timestamp, peak_accel, severity, acknowledged |
+| `frontend/app/components/AlertHistory.tsx` | "Recent Alerts" panel  -  polls `/alerts` every 3s, shows unacknowledged count, per-alert Ack button |
 
 ### Modified files
 | File | Change |
@@ -821,19 +821,19 @@ export default nextConfig;
 | `backend/main.py` | Added `body_temp` field to packets, `lifespan` for DB init, `record_alert()` call in `/trigger-fall`, new `/alerts` and `/alerts/{id}/acknowledge` endpoints |
 | `backend/requirements.txt` | Added `aiosqlite==0.20.0` |
 | `frontend/app/hooks/useTelemetrySocket.ts` | Added `body_temp: number` to `TelemetryPacket` interface |
-| `frontend/app/page.tsx` | 4-column gauge grid (added Body Temp), `<AlertHistory />` component, honest subtitle "Software simulation — hardware pending assembly" |
+| `frontend/app/page.tsx` | 4-column gauge grid (added Body Temp), `<AlertHistory />` component, honest subtitle "Software simulation  -  hardware pending assembly" |
 | `frontend/app/layout.tsx` | Added meta description |
 
 ### Unchanged files
 | File | Why unchanged |
 |---|---|
-| `VitalGauge.tsx` | Already generic — handles any label/value/unit/range |
-| `FallAlertModal.tsx` | Already does urgency (red pulse + 880Hz beep). No changes needed — urgency IS built |
+| `VitalGauge.tsx` | Already generic  -  handles any label/value/unit/range |
+| `FallAlertModal.tsx` | Already does urgency (red pulse + 880Hz beep). No changes needed  -  urgency IS built |
 | Config files (`tailwind`, `postcss`, `next.config`, `tsconfig`) | No structural changes needed |
 
 ---
 
-## 7. Architecture — What's Real vs. What's Mock
+## 7. Architecture  -  What's Real vs. What's Mock
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -862,15 +862,15 @@ export default nextConfig;
 
 ---
 
-## 8. Teacher Presentation Script — Honest Version
+## 8. Teacher Presentation Script  -  Honest Version
 
 Say this, or close to it:
 
-> "The physical band isn't assembled yet, so what you're seeing is a **software simulation** — same data shape, same fall-detection thresholds, running on my laptop instead of the chip. The actual ESP32-C3 firmware talks over **Bluetooth Low Energy directly to the browser**, no backend server needed, no internet needed for the safety alert. This mock proves the fall-detection **logic** is correct and the **dashboard** works, before the hardware is soldered. When the board is assembled, this frontend swaps WebSocket for Bluetooth — the gauges, the alert modal, and the history log stay exactly the same."
+> "The physical band isn't assembled yet, so what you're seeing is a **software simulation**  -  same data shape, same fall-detection thresholds, running on my laptop instead of the chip. The actual ESP32-C3 firmware talks over **Bluetooth Low Energy directly to the browser**, no backend server needed, no internet needed for the safety alert. This mock proves the fall-detection **logic** is correct and the **dashboard** works, before the hardware is soldered. When the board is assembled, this frontend swaps WebSocket for Bluetooth  -  the gauges, the alert modal, and the history log stay exactly the same."
 
 If teacher asks "can you show me the board working?":
 
-> "Not yet — the board is being assembled. What I can show you is that the software layer is complete: the detection logic, the urgency alerts, and the alert history are all functional. Once the ESP32 is soldered and flashed, it plugs into this exact dashboard."
+> "Not yet  -  the board is being assembled. What I can show you is that the software layer is complete: the detection logic, the urgency alerts, and the alert history are all functional. Once the ESP32 is soldered and flashed, it plugs into this exact dashboard."
 
 This is **stronger** than pretending, because it shows you understand mock-vs-real like a working engineer.
 
@@ -879,7 +879,7 @@ This is **stronger** than pretending, because it shows you understand mock-vs-re
 ## 9. Run Instructions
 
 ```bash
-# Terminal 1 — Backend
+# Terminal 1  -  Backend
 cd Vital-C3/backend
 python -m venv venv
 venv\Scripts\activate              # Windows
@@ -892,7 +892,7 @@ curl http://localhost:8000/health
 ```
 
 ```bash
-# Terminal 2 — Frontend
+# Terminal 2  -  Frontend
 cd Vital-C3/frontend
 npm install
 npm run dev
@@ -921,9 +921,9 @@ npm run dev
 | Limitation | Why it's fine |
 |---|---|
 | Single-viewer fall queue | Demo is one laptop, one browser tab. Not a multi-user system. |
-| SQLite single-writer | Async writes from one server process — no contention for a demo. |
+| SQLite single-writer | Async writes from one server process  -  no contention for a demo. |
 | Alert polling (3s interval) | Could be WebSocket push, but polling is simpler and reliable for demo. |
-| No real sensors | **This is the whole point** — it's a disclosed mock. Data is random within realistic ranges. |
+| No real sensors | **This is the whole point**  -  it's a disclosed mock. Data is random within realistic ranges. |
 | WiFi transport instead of BLE | Real system uses Web Bluetooth API. WebSocket is easier to demo on a laptop. Transport swaps, logic stays. |
 
 ---
@@ -931,7 +931,7 @@ npm run dev
 ## 11. 30-Day Zero-Cloud Local Storage Architecture (Edge Rollups & Dual Persistence)
 
 ### 11.1 The Memory Dilemma & Clinical Solution
-Raw motion and pulse data sampled at 150 data points per second (100 Hz PPG + 50 Hz IMU) yields **>1 GB of uncompressed data per month**—far exceeding the memory limits of wearable microcontrollers.
+Raw motion and pulse data sampled at 150 data points per second (100 Hz PPG + 50 Hz IMU) yields **>1 GB of uncompressed data per month** - far exceeding the memory limits of wearable microcontrollers.
 
 The clinical solution implemented in VitalGuard C3 is **Edge Rollups (Data Aggregation)**:
 ```

@@ -1,4 +1,4 @@
-# VitalGuard C3 — 100% Free Cloud Deployment Guide
+# VitalGuard C3  -  100% Free Cloud Deployment Guide
 
 This guide walks you through deploying the **entire stack (Frontend + Backend + Database)** to production for **$0 / completely free**, with **no credit card required**.
 

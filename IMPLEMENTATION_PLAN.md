@@ -1,7 +1,7 @@
 # IMPLEMENTATION_PLAN.md
-## VitalGuard C3 — Mock Telemetry Demo (No Hardware Required)
+## VitalGuard C3  -  Mock Telemetry Demo (No Hardware Required)
 
-> **Honesty note, read before building:** this is a SOFTWARE MOCK for tomorrow's classroom evaluation, standing in for hardware that isn't assembled yet. It uses WiFi + a Python WebSocket server because that's the fastest thing to fake in 30 minutes on a laptop — it is **not** the real system's architecture. The real VitalGuard C3 uses **Bluetooth Low Energy direct from the ESP32-C3 to the browser (Web Bluetooth API)**, with no backend server in between at all. Do not tell the teacher the firmware "drops directly into this." It doesn't — see Section 6 for the honest way to say this.
+> **Honesty note, read before building:** this is a SOFTWARE MOCK for tomorrow's classroom evaluation, standing in for hardware that isn't assembled yet. It uses WiFi + a Python WebSocket server because that's the fastest thing to fake in 30 minutes on a laptop  -  it is **not** the real system's architecture. The real VitalGuard C3 uses **Bluetooth Low Energy direct from the ESP32-C3 to the browser (Web Bluetooth API)**, with no backend server in between at all. Do not tell the teacher the firmware "drops directly into this." It doesn't  -  see Section 6 for the honest way to say this.
 
 ---
 
@@ -29,7 +29,7 @@ vitalguard-mock/
             └── FallAlertModal.tsx
 ```
 
-No database. No Supabase. No Prisma. A classroom mock does not need persisted rows — it needs to not crash on stage. Add a DB later, once real hardware exists and you actually have data worth keeping.
+No database. No Supabase. No Prisma. A classroom mock does not need persisted rows  -  it needs to not crash on stage. Add a DB later, once real hardware exists and you actually have data worth keeping.
 
 ---
 
@@ -169,15 +169,15 @@ async def health() -> dict:
 
 ---
 
-## 4. Fall Detection Logic — Explained, Same Numbers Used Everywhere Else in This Project
+## 4. Fall Detection Logic  -  Explained, Same Numbers Used Everywhere Else in This Project
 
 | Stage | Condition | What It Represents |
 |---|---|---|
 | 1. Free-fall dip | total acceleration drops below **0.4g** | Sensor briefly reads near-weightless during the fall itself |
 | 2. Impact spike | total acceleration exceeds **2.5g**, shortly after stage 1 | The body hitting the ground |
-| 3. Post-fall stillness | acceleration settles and stays near 1g for several seconds | No recovery movement after impact — the strongest fall signal |
+| 3. Post-fall stillness | acceleration settles and stays near 1g for several seconds | No recovery movement after impact  -  the strongest fall signal |
 
-All three must occur **in sequence** to fire an alert — not any single threshold alone. This is deliberate: a single-threshold check (just "acceleration > X") would false-alarm on jumping or sitting down hard. This is the same logic used in the project's actual firmware design and the earlier corrected code page — the mock reproduces it faithfully rather than inventing new numbers for the demo.
+All three must occur **in sequence** to fire an alert  -  not any single threshold alone. This is deliberate: a single-threshold check (just "acceleration > X") would false-alarm on jumping or sitting down hard. This is the same logic used in the project's actual firmware design and the earlier corrected code page  -  the mock reproduces it faithfully rather than inventing new numbers for the demo.
 
 ---
 
@@ -392,7 +392,7 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-white p-6 flex flex-col gap-6">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">VitalGuard C3 — Mock Dashboard</h1>
+        <h1 className="text-2xl font-bold">VitalGuard C3  -  Mock Dashboard</h1>
         <div className="flex items-center gap-2 text-sm text-slate-400">
           <span className={`w-2.5 h-2.5 rounded-full ${statusColor}`} />
           {connectionState}
@@ -525,20 +525,20 @@ export default nextConfig;
 
 ---
 
-## 6. Teacher Presentation Script — Honest Version
+## 6. Teacher Presentation Script  -  Honest Version
 
 Say this, close to word for word:
 
-> "The physical band isn't assembled yet, so what you're seeing right now is a **software simulation** standing in for it — same data shape, same fall-detection logic, running on my laptop instead of the chip. What's real and already designed: the actual ESP32-C3 firmware won't use this WiFi/WebSocket setup at all — it talks over **Bluetooth Low Energy directly to the browser**, no backend server in the loop, and no internet needed for the safety alert. This mock exists to prove the fall-detection *logic and thresholds* are correct and the *dashboard* works, before the hardware side is soldered. When the board is assembled, this frontend gets a small update to speak Bluetooth instead of WebSocket — the gauges, the modal, and the alert logic stay the same."
+> "The physical band isn't assembled yet, so what you're seeing right now is a **software simulation** standing in for it  -  same data shape, same fall-detection logic, running on my laptop instead of the chip. What's real and already designed: the actual ESP32-C3 firmware won't use this WiFi/WebSocket setup at all  -  it talks over **Bluetooth Low Energy directly to the browser**, no backend server in the loop, and no internet needed for the safety alert. This mock exists to prove the fall-detection *logic and thresholds* are correct and the *dashboard* works, before the hardware side is soldered. When the board is assembled, this frontend gets a small update to speak Bluetooth instead of WebSocket  -  the gauges, the modal, and the alert logic stay the same."
 
-This is the honest claim: **the fall-detection logic and dashboard UI carry over. The transport layer does not, and does not need to.** Do not say "the firmware drops directly into this" — it's not true, and a teacher who asks a follow-up question will catch it immediately if you do.
+This is the honest claim: **the fall-detection logic and dashboard UI carry over. The transport layer does not, and does not need to.** Do not say "the firmware drops directly into this"  -  it's not true, and a teacher who asks a follow-up question will catch it immediately if you do.
 
 ---
 
 ## 7. Verification Checklist
 
 ```bash
-# Terminal 1 — backend
+# Terminal 1  -  backend
 cd vitalguard-mock/backend
 python3 -m venv venv
 source venv/bin/activate          # Windows: venv\Scripts\activate
@@ -551,7 +551,7 @@ curl http://localhost:8000/health
 ```
 
 ```bash
-# Terminal 2 — frontend
+# Terminal 2  -  frontend
 cd vitalguard-mock/frontend
 npm install
 npm run dev
@@ -574,4 +574,4 @@ curl -X POST http://localhost:8000/trigger-fall
 # Restart backend -> dot should turn green again within ~2 seconds, no page refresh needed
 ```
 
-**One honest limitation, disclosed, not hidden:** the fall queue is shared across all connected dashboard tabs. If you open two browser tabs during the demo, only one will receive each queued fall stage. Keep one tab open for the live demo — this is a known, accepted simplification for a single-viewer classroom mock, not a bug to chase tonight.
+**One honest limitation, disclosed, not hidden:** the fall queue is shared across all connected dashboard tabs. If you open two browser tabs during the demo, only one will receive each queued fall stage. Keep one tab open for the live demo  -  this is a known, accepted simplification for a single-viewer classroom mock, not a bug to chase tonight.
