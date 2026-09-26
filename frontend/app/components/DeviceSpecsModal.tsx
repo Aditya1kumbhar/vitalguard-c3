@@ -38,12 +38,12 @@ export default function DeviceSpecsModal({ open, onClose }: DeviceSpecsModalProp
                 <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
                   VitalGuard-C3
                 </h2>
-                <span className="text-[10px] font-black uppercase tracking-wider bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-black uppercase tracking-wider bg-sky-100 text-sky-800 px-2 py-0.5 rounded-md">
                   Team A2S1
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-semibold">
-                The Sovereign Sentinel • Device .1
+                The Sovereign Sentinel | Device 01
               </p>
             </div>
           </div>
@@ -77,9 +77,11 @@ export default function DeviceSpecsModal({ open, onClose }: DeviceSpecsModalProp
             Project Authors (Team A2S1)
           </span>
           <div className="text-xs font-bold text-slate-800 flex flex-wrap gap-x-3 gap-y-1">
-            <span>• Aditya S. Kumbhar</span>
-            <span>• Ankita S. Birajdar</span>
-            <span>• Safiya N. Shaikh</span>
+            <span>Aditya S. Kumbhar</span>
+            <span className="text-slate-300">|</span>
+            <span>Ankita S. Birajdar</span>
+            <span className="text-slate-300">|</span>
+            <span>Safiya N. Shaikh</span>
           </div>
         </div>
 
@@ -148,13 +150,13 @@ export default function DeviceSpecsModal({ open, onClose }: DeviceSpecsModalProp
             {/* Total BOM */}
             <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-100 border border-slate-300 font-bold">
               <span className="text-slate-800">Total Unit Estimated Cost</span>
-              <span className="text-emerald-700 font-black">₹1,500 – ₹2,500 ($18 – $27 USD)</span>
+              <span className="text-emerald-700 font-black">₹1,500 - ₹2,500 ($18 - $27 USD)</span>
             </div>
 
           </div>
         </div>
 
-        {/* Edge AI Triage Engine */}
+        {/* Edge Triage Engine Pipeline */}
         <div className="space-y-2">
           <span className="text-[11px] font-black uppercase tracking-wider text-slate-700 block">
             Edge Triage Engine Pipeline
@@ -220,8 +222,8 @@ export default function DeviceSpecsModal({ open, onClose }: DeviceSpecsModalProp
 
             <div className="flex items-center justify-between p-2 rounded-xl bg-emerald-100/70 text-[11px] font-semibold text-emerald-900">
               <span>BLE GATT Split</span>
-              <span className="text-[10px] font-bold bg-white px-2 py-0.5 rounded-full text-emerald-800">
-                Live: Notify (10Hz) • History: Read Burst (&lt;1s)
+              <span className="text-[10px] font-bold bg-white px-2 py-0.5 rounded-md text-emerald-800">
+                Live: Notify (10Hz) | History: Read Burst (&lt;1s)
               </span>
             </div>
           </div>

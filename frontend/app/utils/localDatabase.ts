@@ -1,5 +1,5 @@
 /**
- * VitalGuard C3 — Local Offline Storage Engine
+ * VitalGuard C3 - Local Offline Storage Engine
  *
  * Implements a 30-Day Rolling FIFO Window using browser IndexedDB.
  * Zero cloud dependency. Data lives directly on the mobile device.

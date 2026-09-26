@@ -29,9 +29,20 @@ export default function RecordsPage() {
 
         </div>
 
-        {/* Minimal Clean Footer */}
-        <footer className="text-center py-5 border-t border-slate-200 text-xs text-slate-400 font-medium">
-          VitalGuard C3 • Device .1 • Room 204
+        {/* Minimal Clinical Footer */}
+        <footer className="text-center py-6 border-t border-slate-200/80 text-xs text-slate-500 font-medium flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-700">VitalGuard C3</span>
+            <span className="text-slate-300">|</span>
+            <span>Device 01</span>
+            <span className="text-slate-300">|</span>
+            <span>Room 204</span>
+          </div>
+          <div className="flex items-center gap-4 text-xs font-semibold text-slate-600">
+            <a href="/privacy" className="hover:text-sky-600 transition-colors">Privacy Policy</a>
+            <span className="text-slate-300">|</span>
+            <a href="/terms" className="hover:text-sky-600 transition-colors">Terms of Use</a>
+          </div>
         </footer>
 
       </div>

@@ -24,27 +24,27 @@ export default function VitalsGrid({ latest }: VitalsGridProps) {
   const StatusPill = ({ status }: { status: string }) => {
     if (status === "offline") {
       return (
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 uppercase">
+        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 uppercase">
           Offline
         </span>
       );
     }
     if (status === "normal") {
       return (
-        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
           Normal
         </span>
       );
     }
     if (status === "warning") {
       return (
-        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 uppercase">
+        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 uppercase">
           Check
         </span>
       );
     }
     return (
-      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 uppercase animate-pulse">
+      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 uppercase animate-pulse">
         Alert
       </span>
     );

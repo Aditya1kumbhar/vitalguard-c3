@@ -133,7 +133,7 @@ export default function HistoricalTrends() {
           <div>
             <h2 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
               <span>30-Day History</span>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <Database className="w-2.5 h-2.5" />
                 {storageSource}
               </span>
@@ -201,11 +201,11 @@ export default function HistoricalTrends() {
           onClick={() => setActiveTab("anomalies")}
           className={`flex items-center justify-center gap-1.5 p-2 rounded-xl text-xs font-bold transition-all ${
             activeTab === "anomalies"
-              ? "bg-purple-50 text-purple-700 border border-purple-200 shadow-sm"
+              ? "bg-rose-50 text-rose-700 border border-rose-200 shadow-sm"
               : "bg-slate-50 text-slate-600 hover:bg-slate-100"
           }`}
         >
-          <AlertTriangle className="w-3.5 h-3.5 text-purple-500" />
+          <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
           <span>Alerts</span>
         </button>
       </div>
@@ -284,7 +284,7 @@ export default function HistoricalTrends() {
                   contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: "8px", fontSize: "11px", color: "#0f172a" }}
                   formatter={(val: number) => [`${val} alerts`, "Alerts"]}
                 />
-                <Bar dataKey="anomaly_count" name="Alerts" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="anomaly_count" name="Alerts" fill="#e11d48" radius={[4, 4, 0, 0]} />
               </BarChart>
             )}
           </ResponsiveContainer>

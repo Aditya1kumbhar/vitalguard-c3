@@ -67,7 +67,7 @@ export default function VitalGuardDashboard() {
           return;
         }
       } catch {
-        // Edge/Bridge offline — proceed to IndexedDB fallback
+        // Edge/Bridge offline - proceed to IndexedDB fallback
       }
 
       // Offline-first fallback: Load directly from phone's local IndexedDB
@@ -152,7 +152,7 @@ export default function VitalGuardDashboard() {
                 VitalGuard <span className="text-sky-600 font-extrabold">C3</span>
               </h1>
               <p className="text-xs text-slate-500 font-bold mt-0.5">
-                Device .1 • Room 204
+                Device 01 | Room 204
               </p>
             </div>
           </div>
@@ -285,7 +285,7 @@ export default function VitalGuardDashboard() {
                     </div>
                     <span className="font-extrabold text-xs sm:text-sm text-slate-800">Heart Rate</span>
                   </div>
-                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase border ${
+                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase border ${
                     hr < 50 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                   }`}>
                     {hr < 50 ? 'Low' : 'Normal'}
@@ -317,7 +317,7 @@ export default function VitalGuardDashboard() {
                     </div>
                     <span className="font-extrabold text-xs sm:text-sm text-slate-800">Oxygen</span>
                   </div>
-                  <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+                  <span className="text-[10px] font-black px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
                     Good
                   </span>
                 </div>
@@ -349,7 +349,7 @@ export default function VitalGuardDashboard() {
                     </div>
                     <span className="font-extrabold text-xs sm:text-sm text-slate-800">Movement</span>
                   </div>
-                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase border ${
+                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase border ${
                     isFall 
                       ? 'bg-rose-100 text-rose-700 border-rose-300 animate-pulse'
                       : isMoving
@@ -390,7 +390,7 @@ export default function VitalGuardDashboard() {
                     </div>
                     <span className="font-extrabold text-xs sm:text-sm text-slate-800">Status</span>
                   </div>
-                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase border ${
+                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase border ${
                     isFall
                       ? 'bg-rose-100 text-rose-700 border-rose-300 animate-pulse'
                       : 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -477,7 +477,7 @@ export default function VitalGuardDashboard() {
                   <h2 className="text-base font-black text-slate-900 tracking-tight">
                     Past 30 Days Log
                   </h2>
-                  <span className="text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200">
+                  <span className="text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-md border border-sky-200">
                     {records.length} Days
                   </span>
                 </div>
@@ -488,7 +488,7 @@ export default function VitalGuardDashboard() {
                       <div>
                         <span className="font-bold text-slate-900 block">{r.day}</span>
                         <span className="text-slate-500 text-xs">
-                          Heart: <strong className="text-slate-700">{r.avg_heart_rate}</strong> • Oxygen: <strong className="text-slate-700">{r.avg_spo2}%</strong>
+                          Heart: <strong className="text-slate-700">{r.avg_heart_rate}</strong> | Oxygen: <strong className="text-slate-700">{r.avg_spo2}%</strong>
                         </span>
                       </div>
                       <div>
@@ -511,9 +511,20 @@ export default function VitalGuardDashboard() {
           </div>
         )}
 
-        {/* Minimal Clean Footer */}
-        <footer className="text-center py-5 border-t border-slate-200 text-xs text-slate-400 font-medium">
-          VitalGuard C3 • Device .1 • Room 204
+        {/* Minimal Clinical Footer */}
+        <footer className="text-center py-6 border-t border-slate-200/80 text-xs text-slate-500 font-medium flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-700">VitalGuard C3</span>
+            <span className="text-slate-300">|</span>
+            <span>Device 01</span>
+            <span className="text-slate-300">|</span>
+            <span>Room 204</span>
+          </div>
+          <div className="flex items-center gap-4 text-xs font-semibold text-slate-600">
+            <a href="/privacy" className="hover:text-sky-600 transition-colors">Privacy Policy</a>
+            <span className="text-slate-300">|</span>
+            <a href="/terms" className="hover:text-sky-600 transition-colors">Terms of Use</a>
+          </div>
         </footer>
 
       </div>
@@ -527,7 +538,7 @@ export default function VitalGuardDashboard() {
         >
           <div className="max-w-md w-full my-auto flex flex-col justify-between py-6">
             <div className="flex flex-col items-center text-center">
-              <div className="w-24 h-24 rounded-full bg-rose-600/30 border-2 border-rose-500 flex items-center justify-center mb-5 animate-bounce shadow-xl">
+              <div className="w-24 h-24 rounded-2xl bg-rose-600/30 border-2 border-rose-500 flex items-center justify-center mb-5 animate-bounce shadow-xl">
                 <AlertTriangle className="w-14 h-14 text-rose-400" />
               </div>
               <h2 className="text-3xl sm:text-4xl font-black text-white tracking-wide uppercase drop-shadow-md">
@@ -536,8 +547,8 @@ export default function VitalGuardDashboard() {
               <p className="text-rose-200 text-base mt-2 max-w-sm">
                 Alarm is ringing. Caregiver has been alerted.
               </p>
-              <div className="mt-3 px-3 py-1 rounded-full bg-rose-900/80 border border-rose-700 text-xs font-bold text-rose-300">
-                Device .1 • Room 204
+              <div className="mt-3 px-3 py-1 rounded-md bg-rose-900/80 border border-rose-700 text-xs font-bold text-rose-300">
+                Device 01 | Room 204
               </div>
             </div>
 

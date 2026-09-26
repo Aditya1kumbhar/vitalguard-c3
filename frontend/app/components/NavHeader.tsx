@@ -39,7 +39,7 @@ export default function NavHeader() {
           <span className="text-sm sm:text-base font-black text-slate-900 tracking-tight">
             Device .1
           </span>
-          <span className="text-xs font-bold text-sky-800 bg-sky-50/90 border border-sky-200 px-2.5 py-0.5 rounded-full shadow-sm">
+          <span className="text-xs font-bold text-sky-800 bg-sky-50/90 border border-sky-200 px-2.5 py-0.5 rounded-md shadow-sm">
             Room 204
           </span>
           <button
@@ -47,7 +47,7 @@ export default function NavHeader() {
               playHaptic("pop");
               setShowSpecs(true);
             }}
-            className="spring-btn flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-white/95 hover:bg-white border border-slate-200 px-2 py-0.5 rounded-full shadow-xs"
+            className="spring-btn flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-white/95 hover:bg-white border border-slate-200 px-2 py-0.5 rounded-md shadow-xs"
             title="System Specifications & Architecture"
             aria-label="View System Specs"
           >

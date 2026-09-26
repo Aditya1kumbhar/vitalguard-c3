@@ -41,7 +41,7 @@ export default function FallModal({ open, onDismiss }: FallModalProps) {
             Fall Detected!
           </h2>
           <p className="text-sm font-bold text-rose-600">
-            Device .1 • Room 204
+            Device 01 | Room 204
           </p>
         </div>
 

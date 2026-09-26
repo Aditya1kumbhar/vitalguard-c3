@@ -46,7 +46,7 @@ export function useTelemetrySocket() {
         const packet: TelemetryPacket = JSON.parse(event.data);
         setLatest(packet);
       } catch {
-        // Malformed packet — ignore, don't crash the dashboard.
+        // Malformed packet - ignore, don't crash the dashboard.
       }
     };
 

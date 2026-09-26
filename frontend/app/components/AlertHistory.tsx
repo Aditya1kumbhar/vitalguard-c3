@@ -86,7 +86,7 @@ export default function AlertHistory() {
         {alerts.length > 0 && (
           <div className="flex items-center gap-2">
             {unackCount > 0 && (
-              <span className="bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold px-2 py-0.5 rounded-md">
                 {unackCount} Unchecked
               </span>
             )}
@@ -104,7 +104,7 @@ export default function AlertHistory() {
       {alerts.length === 0 ? (
         <div className="flex items-center justify-center gap-2 text-emerald-600 text-xs py-3 font-semibold">
           <CheckCircle className="w-4 h-4 text-emerald-500" />
-          <span>No Falls Recorded • All Clear</span>
+          <span>No Falls Recorded - All Clear</span>
         </div>
       ) : (
         <ul className="space-y-2 max-h-56 overflow-y-auto pr-1">
@@ -125,7 +125,7 @@ export default function AlertHistory() {
                 )}
                 <div>
                   <span className="font-bold text-slate-900">Fall Detected</span>
-                  <span className="mx-1.5 text-slate-400">•</span>
+                  <span className="mx-1.5 text-slate-400">|</span>
                   <span className="font-mono text-slate-600">{formatTime(alert.timestamp)}</span>
                 </div>
               </div>

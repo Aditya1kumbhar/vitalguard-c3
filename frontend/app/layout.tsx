@@ -9,8 +9,15 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "VitalGuard C3 | Device Monitor",
-  description: "Health and fall monitoring dashboard.",
+  title: "VitalGuard C3 | Clinical Device Monitor",
+  description: "Autonomous real-time wearable telemetry and fall monitoring system.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: "/icon.svg",
+  },
 };
 
 export const viewport: Viewport = {

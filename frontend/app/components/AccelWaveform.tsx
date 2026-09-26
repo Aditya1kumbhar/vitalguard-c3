@@ -68,7 +68,7 @@ export default function AccelWaveform({ latest }: AccelWaveformProps) {
           </h2>
         </div>
 
-        <span className={`text-xs font-black px-3 py-1 rounded-full uppercase tracking-wide border shadow-xs ${
+        <span className={`text-xs font-black px-3 py-1 rounded-md uppercase tracking-wide border shadow-xs ${
           isFall
             ? "bg-rose-50 text-rose-700 border-rose-300 animate-pulse"
             : isMoving

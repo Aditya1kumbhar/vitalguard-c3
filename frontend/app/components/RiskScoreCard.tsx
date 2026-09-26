@@ -77,7 +77,7 @@ export default function RiskScoreCard() {
         </div>
 
         <div className="flex flex-col items-end gap-1">
-          <span className={`px-3.5 py-1.5 rounded-full font-black text-xs sm:text-sm tracking-wide shadow-xs ${
+          <span className={`px-3.5 py-1.5 rounded-md font-black text-xs sm:text-sm tracking-wide shadow-xs ${
             isSafe ? "bg-emerald-600 text-white" : isWatch ? "bg-amber-500 text-white" : "bg-rose-600 text-white"
           }`}>
             {isSafe ? "GOOD & SAFE" : isWatch ? "ATTENTION" : "HIGH RISK"}
@@ -93,7 +93,7 @@ export default function RiskScoreCard() {
         <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/90 text-center flex flex-col items-center gap-1">
           <Heart className="w-4 h-4 text-rose-500" />
           <span className="text-xs font-bold text-slate-800">Heart</span>
-          <span className="text-[10px] font-black text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full">
+          <span className="text-[10px] font-black text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md">
             Normal
           </span>
         </div>
@@ -101,7 +101,7 @@ export default function RiskScoreCard() {
         <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/90 text-center flex flex-col items-center gap-1">
           <Activity className="w-4 h-4 text-sky-500" />
           <span className="text-xs font-bold text-slate-800">Oxygen</span>
-          <span className="text-[10px] font-black text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full">
+          <span className="text-[10px] font-black text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md">
             Good
           </span>
         </div>
@@ -109,7 +109,7 @@ export default function RiskScoreCard() {
         <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/90 text-center flex flex-col items-center gap-1">
           <AlertCircle className="w-4 h-4 text-amber-500" />
           <span className="text-xs font-bold text-slate-800">Falls</span>
-          <span className="text-[10px] font-black text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full">
+          <span className="text-[10px] font-black text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md">
             0 Today
           </span>
         </div>

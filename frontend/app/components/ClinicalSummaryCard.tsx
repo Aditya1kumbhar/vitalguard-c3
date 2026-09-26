@@ -56,7 +56,7 @@ export default function ClinicalSummaryCard() {
           <span className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
             {patient?.baseline_hr ?? 72}
           </span>
-          <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+          <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
             Normal
           </span>
         </div>
@@ -70,7 +70,7 @@ export default function ClinicalSummaryCard() {
           <span className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
             {patient?.baseline_spo2 ?? 97}%
           </span>
-          <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+          <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
             Good
           </span>
         </div>
@@ -84,7 +84,7 @@ export default function ClinicalSummaryCard() {
           <span className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
             {patient?.baseline_temp ?? 36.6}°
           </span>
-          <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+          <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
             Normal
           </span>
         </div>
