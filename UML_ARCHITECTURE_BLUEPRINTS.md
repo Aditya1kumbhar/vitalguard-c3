@@ -1,117 +1,56 @@
-# VitalGuard C3 - Engineering UML & System Architecture Blueprints
+# VitalGuard-C3: Edge-AI Wearable for Elderly Fall Detection & Vitals Monitoring
 
-## College Final Year Project Technical Documentation
-**Project Title:** VitalGuard C3 - Sovereign Edge-AI Wearable Sentinel for Geriatric Telemetry & Autonomous Fall Detection  
+## Technical System Architecture & Engineering Blueprints
+**Project Title:** VitalGuard-C3: Autonomous Fall Detection & Telemetry Band  
 **Team Designation:** Team A2S1 (Aditya S. Kumbhar, Ankita S. Birajdar, Safiya N. Shaikh)  
-**Target Hardware:** Seeed Studio XIAO ESP32-C3 (160MHz RISC-V), MAX30102 PPG, MPU6050 6-Axis IMU, Piezo Actuator  
-**Software Stack:** C++ / Embedded Arduino, Python 3.11 / FastAPI / SQLite (WAL), Next.js 14 / TypeScript / IndexedDB  
+**Target Hardware:** Seeed Studio XIAO ESP32-C3 (160MHz RISC-V), MAX30102 Optical Sensor, MPU6050 6-Axis IMU, Piezo Buzzer & Indicator LED  
+**Software Stack:** C++ / Embedded Arduino, Next.js / TypeScript / IndexedDB (Client Cache), Python 3.11 / FastAPI (Optional LAN Bridge)  
 
 ---
 
-## 1. Entity-Relationship (ER) Diagram
+## 1. Entity-Relationship (ER) Architecture (Chen Notation)
 
-The data persistence layer follows a dual-tier architecture:
-1. **Server-Side Clinical Data Store (`alerts.db`):** SQLite database operating in Write-Ahead Logging (WAL) mode for concurrency, managing patient profiles, high-frequency raw telemetry, 30-day daily summary rollups, and audit-logged fall alerts.
-2. **Client-Side Edge Cache (`VitalGuardDB`):** Browser-level IndexedDB managing a local 30-day FIFO ring buffer for offline-first zero-cloud continuity.
+The database persistence layer enforces zero-cloud data sovereignty. Telemetry triage executes entirely on-chip; 30-day historical aggregates are stored in local flash memory and mirrored to browser-level IndexedDB under an automated 30-day First-In, First-Out (FIFO) retention rule.
 
-```mermaid
-erDiagram
-    PATIENTS ||--o{ VITALS_RAW : "generates"
-    PATIENTS ||--o{ VITALS_DAILY_SUMMARY : "aggregates"
-    PATIENTS ||--o{ FALL_INCIDENTS : "triggers"
-    PATIENTS ||--o{ FALL_ALERTS_LEGACY : "logs"
-    VITALS_DAILY_SUMMARY ||..o{ LOCAL_INDEXEDDB_CACHE : "mirrors (client-side)"
+### 1.1 Structural Chen Element Mapping
+The ER model conforms strictly to academic Chen notation standards using all eight foundational symbols:
 
-    PATIENTS {
-        INTEGER id PK "Auto Increment"
-        TEXT name "Full Patient Name"
-        INTEGER age "Patient Age"
-        TEXT room_number "Assigned Ward / Room"
-        TEXT medical_history "Clinical Comorbidities"
-        REAL baseline_hr "Baseline Resting HR (bpm)"
-        REAL baseline_spo2 "Baseline Resting SpO2 (%)"
-        REAL baseline_temp "Baseline Temperature (deg C)"
-        TEXT admitted_at "ISO-8601 Admission Date"
-        INTEGER active "Status Flag (1=Active, 0=Discharged)"
-    }
+| Chen Symbol | Architectural Element | Diagram Implementation |
+| :--- | :--- | :--- |
+| **Rectangle (Single)** | Strong Entity | `WEARER`, `DEVICE`, `GUARDIAN`, `FALL_INCIDENT` |
+| **Rectangle (Double)** | Weak Entity | `VITALS_LOG` (Existence-dependent on `DEVICE`) |
+| **Diamond (Single)** | Strong Relationship | `MONITORS` (Device-Wearer), `NOTIFIES` (Incident-Guardian) |
+| **Diamond (Double)** | Identifying Relationship | `LOGS` (Associates weak entity `VITALS_LOG` to `DEVICE`) |
+| **Ellipse (Solid)** | Standard Attribute | `full_name`, `contact_phone`, `baseline_hr`, `battery_level` |
+| **Ellipse (Underlined)** | Primary Key Attribute | `<u>wearer_id</u>`, `<u>device_mac</u>`, `<u>guardian_id</u>`, `<u>incident_id</u>` |
+| **Ellipse (Double)** | Multi-Valued Attribute | `emergency_contacts` (Wearer can have secondary contact numbers) |
+| **Ellipse (Dashed)** | Derived Attribute | `- - svm_magnitude - -` (Computed on-chip: $\sqrt{a_x^2 + a_y^2 + a_z^2}$) |
 
-    VITALS_RAW {
-        INTEGER id PK "Auto Increment"
-        INTEGER patient_id FK "References PATIENTS(id)"
-        TEXT timestamp "ISO-8601 UTC Timestamp"
-        INTEGER heart_rate "Photoplethysmography BPM"
-        INTEGER spo2 "Blood Oxygen Saturation (%)"
-        REAL body_temp "Skin Temperature (deg C)"
-        REAL accel_x "X-Axis Acceleration (g)"
-        REAL accel_y "Y-Axis Acceleration (g)"
-        REAL accel_z "Z-Axis Acceleration (g)"
-        REAL svm "Signal Magnitude Vector (g)"
-        TEXT activity "Classified State (resting/moving)"
-    }
+### 1.2 ER Model Reference
+The complete graphical Chen diagram is compiled in `VitalGuard_ER_Diagram.png`.
 
-    VITALS_DAILY_SUMMARY {
-        INTEGER id PK "Auto Increment"
-        INTEGER patient_id FK "References PATIENTS(id)"
-        TEXT date "Unique Day Identifier (YYYY-MM-DD)"
-        INTEGER hr_min "Minimum Recorded HR"
-        INTEGER hr_max "Maximum Recorded HR"
-        REAL hr_avg "24-Hour Average HR"
-        INTEGER spo2_min "Minimum Recorded SpO2"
-        INTEGER spo2_max "Maximum Recorded SpO2"
-        REAL spo2_avg "24-Hour Average SpO2"
-        REAL temp_min "Minimum Skin Temperature"
-        REAL temp_max "Maximum Skin Temperature"
-        REAL temp_avg "24-Hour Average Skin Temp"
-        REAL svm_max "Peak Movement Vector (g)"
-        INTEGER anomaly_count "Total Brady/Hypoxemia Flags"
-        INTEGER sample_count "Total 10Hz Packets Received"
-    }
-
-    FALL_INCIDENTS {
-        INTEGER id PK "Auto Increment"
-        INTEGER patient_id FK "References PATIENTS(id)"
-        TEXT timestamp "ISO-8601 Incident Timestamp"
-        REAL peak_g_force "Impact Vector Peak (g)"
-        REAL pre_impact_svm "Pre-Fall Free-Fall Dip (g)"
-        REAL post_impact_stillness_sec "Duration of Stillness (s)"
-        TEXT severity "Triage Level (low/high/critical)"
-        TEXT status "Ack Status (unacknowledged/checked)"
-        TEXT doctor_notes "Clinical Review Documentation"
-        TEXT acknowledged_at "Timestamp of Nurse Dismissal"
-        TEXT acknowledged_by "Nurse / Caregiver ID"
-    }
-
-    FALL_ALERTS_LEGACY {
-        INTEGER id PK "Auto Increment (Phase 1 Table)"
-        TEXT timestamp "Incident Timestamp"
-        REAL peak_accel "Peak Acceleration (g)"
-        TEXT severity "Alert Severity"
-        INTEGER acknowledged "Boolean Flag (0=No, 1=Yes)"
-    }
-
-    LOCAL_INDEXEDDB_CACHE {
-        TEXT dateKey PK "ISO Date String (YYYY-MM-DD)"
-        REAL avg_hr "Offline Average HR"
-        REAL avg_spo2 "Offline Average SpO2"
-        REAL avg_temp "Offline Average Temp"
-        REAL svm_max "Peak Acceleration Recorded"
-        INTEGER fall_count "Confirmed Incidents in Window"
-        INTEGER timestamp "Unix Epoch Milliseconds"
-    }
+```text
+       [ GUARDIAN ] <========== (1:N) ========== { NOTIFIES }
+            │                                           │
+            │ (1:N)                                     │ (M:N)
+            ▼                                           ▼
+       [  WEARER  ] <========== (1:1) ========== { MONITORS }
+                                                        ▲
+                                                        │ (1:1)
+                                                        ▼
+       [[ VITALS_LOG ]] <==== (N:1) ===== {{ LOGS }} == [ DEVICE ]
+                                                        │
+                                                        │ (1:N)
+                                                        ▼
+                                                 [ FALL_INCIDENT ]
 ```
 
 ---
 
 ## 2. UML Class Diagram
 
-The class architecture decomposes the system across three structural boundaries:
-- **Firmware Tier:** Embedded C++ drivers, hardware I2C bus controllers, Signal Magnitude Vector (SVM) mathematical computation, and BLE GATT server.
-- **Backend Service Tier:** Python/FastAPI async services, WebSocket telemetry connection pool, SQLite data access object (DAO), and clinical heuristics calculator.
-- **Frontend Presentation Tier:** Next.js client controllers, stateful React hooks, Web Audio frequency synthesizer, and Web Bluetooth API adapter.
-
 ```mermaid
 classDiagram
-    %% Firmware Layer
     class SensorI2CBus {
         +begin() void
         +scanDevices() uint8_t
@@ -121,10 +60,8 @@ classDiagram
         -uint8_t i2cAddress
         -long rawIR
         -long rawRed
-        +begin(Wire, speed) bool
-        +setup() void
-        +getIR() long
-        +getRed() long
+        +begin() bool
+        +readRawPPG() void
         +computeSpO2() int
         +computeHeartRate() int
     }
@@ -133,23 +70,19 @@ classDiagram
         -float accelX
         -float accelY
         -float accelZ
-        -float gyroX
-        -float gyroY
-        -float gyroZ
         +begin() bool
-        +getEvent(accel, gyro, temp) void
+        +readAcceleration() void
         +calculateSVM() float
     }
 
     class FallDetectionEngine {
         -float freeFallThreshold
         -float impactThreshold
-        -float stillnessThreshold
-        -int currentStage
-        -unsigned long stageTimer
-        +evaluateMotion(svm) int
-        +resetState() void
-        +isFallConfirmed() bool
+        -float stillnessTolerance
+        -int stateStep
+        +evaluateTriage(svm) int
+        +resetStateMachine() void
+        +isFallTriggered() bool
     }
 
     class ActuatorController {
@@ -162,495 +95,343 @@ classDiagram
 
     class BLETelemetryServer {
         -string serviceUUID
-        -string charUUID
-        -bool isConnected
+        -string characteristicUUID
+        -bool clientConnected
         +init(deviceName) void
         +startAdvertising() void
-        +broadcastTelemetry(jsonPacket) void
+        +notifyTelemetry(packetJson) void
     }
 
-    %% Backend Layer
-    class FastAPIApplication {
-        +app: FastAPI
-        +startupEvent() void
-        +shutdownEvent() void
-    }
-
-    class TelemetryWebSocketManager {
-        -List activeConnections
-        +connect(websocket) void
-        +disconnect(websocket) void
-        +broadcast(jsonPayload) void
-    }
-
-    class DatabaseManager {
-        -string dbPath
-        +initDB() void
-        +getConnection() aiosqliteConnection
-        +insertVitalsRaw(packet) int
-        +getDailyRollups(days) List
-        +recordFallAlert(peakAccel, severity) int
-        +acknowledgeAlert(alertId) bool
-    }
-
-    class ClinicalAnalyticsEngine {
-        +calculateRiskScore(recentVitals, fallCount) RiskAssessment
-        -evaluateBradycardia(vitals) int
-        -evaluateHypoxemia(vitals) int
-        -evaluateAgitation(vitals) int
-    }
-
-    class TelemetryPacketModel {
-        +int heart_rate
-        +int spo2
-        +float body_temp
-        +float accel_x
-        +float accel_y
-        +float accel_z
-        +float svm
-        +bool fall_detected
-        +string stage
-        +string timestamp
-    }
-
-    %% Frontend Layer
     class UseVitalStreamHook {
-        +data: TelemetryData
-        +mode: ConnectionMode
-        +isAlertActive: bool
-        +connectBLE() void
-        +connectWebSocket() void
-        +dismissAlert() void
+        +telemetry: TelemetryData
+        +connectionMode: string
+        +alarmActive: bool
+        +connectDirectBLE() void
+        +connectLocalWS() void
+        +dismissAlarm() void
     }
 
-    class LocalDatabaseEngine {
+    class LocalIndexedDBEngine {
         -string dbName
-        -int dbVersion
-        +openDB() IDBDatabase
-        +saveDailyRecordAndPrune(record) void
-        +getDailyRecords(limit) List
-        +purgeExpiredRecords() void
+        -int retentionLimitDays
+        +openDatabase() IDBDatabase
+        +saveDailyRollup(record) void
+        +purgeDay31Records() void
+        +fetchPastRecords() List
     }
 
-    class HapticAudioEngine {
-        -AudioContext audioCtx
-        +playTone(frequency, duration) void
-        +triggerVibrationPattern(type) void
-    }
-
-    %% Relationships
-    SensorI2CBus <|-- MAX30102Driver : "communicates over"
-    SensorI2CBus <|-- MPU6050Driver : "communicates over"
-    MPU6050Driver --> FallDetectionEngine : "provides raw accel"
-    FallDetectionEngine --> ActuatorController : "fires GPIO"
-    FallDetectionEngine --> BLETelemetryServer : "dispatches fall status"
-    MAX30102Driver --> BLETelemetryServer : "dispatches BPM/SpO2"
-
-    FastAPIApplication --> TelemetryWebSocketManager : "hosts"
-    FastAPIApplication --> DatabaseManager : "queries/persists"
-    FastAPIApplication --> ClinicalAnalyticsEngine : "invokes"
-    TelemetryWebSocketManager ..> TelemetryPacketModel : "serializes"
-
-    UseVitalStreamHook --> LocalDatabaseEngine : "syncs 30d rollups"
-    UseVitalStreamHook --> HapticAudioEngine : "triggers alert sounds"
-    UseVitalStreamHook ..> TelemetryPacketModel : "receives"
+    SensorI2CBus <|-- MAX30102Driver
+    SensorI2CBus <|-- MPU6050Driver
+    MPU6050Driver --> FallDetectionEngine : provides acceleration vectors
+    FallDetectionEngine --> ActuatorController : drives GPIO buzzer directly
+    FallDetectionEngine --> BLETelemetryServer : updates fall status
+    MAX30102Driver --> BLETelemetryServer : dispatches biometrics
+    UseVitalStreamHook --> LocalIndexedDBEngine : caches daily records
 ```
 
 ---
 
-## 3. UML Object Diagram
-
-This diagram captures a concrete snapshot of system runtime instances during an active monitoring session where a resident has sustained an impact event.
+## 3. UML Object Diagram (Runtime Impact Snapshot)
 
 ```mermaid
 classDiagram
-    %% Object Instances
-    class resident_Ramesh {
-        id = 101
-        name = "Ramesh K."
-        age = 78
-        room_number = "Room 204"
-        baseline_hr = 72.0
-        baseline_spo2 = 97.0
-        active = 1
+    class active_Wearer {
+        wearer_id = 101
+        full_name = "Assigned Resident"
+        baseline_hr = 72
+        baseline_spo2 = 98
     }
 
-    class wristband_Device01 {
-        deviceId = "VG-C3-01"
+    class active_Device {
+        device_mac = "C3:7A:92:4B:11:02"
         board = "Seeed Studio XIAO ESP32-C3"
-        clockFrequency = "160 MHz"
-        sramAvailable = "400 KB"
-        batteryMillivolts = 3850
-        bleAdvertising = true
+        sram_usage = "In-Memory Buffer"
+        power_source = "3.7V LiPo via Onboard Charge Pads"
+        ble_state = "ADVERTISING"
     }
 
-    class imu_Instance {
-        i2cAddress = 0x68
-        accel_x = 0.42
-        accel_y = 2.85
-        accel_z = 0.65
-        calculated_svm = 2.95
-        samplingRate = "50 Hz"
+    class imu_Sample {
+        accel_x = 0.48
+        accel_y = 2.82
+        accel_z = 0.74
+        computed_svm = 2.95
     }
 
-    class ppg_Instance {
-        i2cAddress = 0x57
-        raw_ir = 145020
-        raw_red = 112040
-        heart_rate = 54
-        spo2 = 91
-        samplingRate = "100 Hz"
+    class triage_State {
+        free_fall_detected = true
+        impact_confirmed = true
+        stillness_confirmed = true
+        fall_flag = true
     }
 
-    class triage_StateMachine {
-        currentState = "IMPACT_CONFIRMED"
-        freeFallDip = 0.32
-        impactPeak = 2.95
-        stillnessSeconds = 3.2
-        alertTriggered = true
+    class wrist_Actuator {
+        gpio_pin = 2
+        buzzer_active = true
     }
 
-    class buzzer_Hardware {
-        gpioPin = 2
-        pinState = "HIGH"
-        piezoFrequency = "2700 Hz"
-    }
-
-    class active_TelemetryPacket {
-        heart_rate = 54
-        spo2 = 91
-        accel_x = 0.42
-        accel_y = 2.85
-        accel_z = 0.65
-        svm = 2.95
+    class live_TelemetryPacket {
+        heart_rate = 74
+        spo2 = 97
+        svm_magnitude = 2.95
         fall_detected = true
-        stage = "CRITICAL_FALL"
-        timestamp = "2026-09-27T14:45:10.024Z"
+        status = "CRITICAL_FALL"
     }
 
-    class nurseDashboard_Client {
-        browser = "Chrome 128 / Android Tablet"
-        transportMode = "BLE_GATT"
-        alarmModalOpen = true
-        audioBeepActive = true
-    }
-
-    class localIndexedDB_Store {
-        database = "VitalGuardDB"
-        retentionDays = 30
-        cachedRecordsCount = 28
-    }
-
-    %% Instance Links
-    resident_Ramesh -- wristband_Device01 : "wears on wrist"
-    wristband_Device01 *-- imu_Instance : "hosts"
-    wristband_Device01 *-- ppg_Instance : "hosts"
-    imu_Instance --> triage_StateMachine : "feeds accel stream"
-    triage_StateMachine --> buzzer_Hardware : "drives direct"
-    triage_StateMachine --> active_TelemetryPacket : "populates"
-    ppg_Instance --> active_TelemetryPacket : "populates"
-    wristband_Device01 --> nurseDashboard_Client : "notifies via BLE GATT"
-    nurseDashboard_Client --> localIndexedDB_Store : "persists daily rollup"
+    active_Wearer -- active_Device : wears on wrist
+    active_Device *-- imu_Sample
+    imu_Sample --> triage_State : evaluates
+    triage_State --> wrist_Actuator : triggers hardware pin
+    triage_State --> live_TelemetryPacket : serializes
 ```
 
 ---
 
 ## 4. Sequence Diagrams
 
-### Sequence Diagram A: Autonomous Edge Sensing, 3-Stage Fall Triage & Direct Code Blue Alert
-Demonstrates the primary safety path. The decision to alert occurs 100% on the microcontroller; downstream BLE and dashboard alerts execute asynchronously without blocking the hardware buzzer.
+### Sequence Diagram A: Autonomous Edge Triage & Code Blue Alert
+The safety-critical alert path executes 100% on the microcontroller. The physical alarm buzzer never waits for network or Bluetooth connectivity.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Resident as Wearer / Resident
-    participant MPU as MPU6050 (IMU)
-    participant MAX as MAX30102 (PPG)
-    participant ESP as ESP32-C3 Firmware Core
+    actor Wearer as Resident / Subject
+    participant MPU as MPU6050 (Motion)
+    participant ESP as ESP32-C3 Core Engine
     participant BUZZ as Piezo Buzzer & LED (GPIO 2)
     participant BLE as BLE GATT Characteristic
-    participant Web as Caregiver Dashboard (Web Bluetooth)
+    participant WebApp as Web Dashboard (Web BLE)
 
-    Note over Resident,MPU: Resident experiences slip, free-fall, and floor impact
-    loop Every 20ms (50 Hz IMU Cycle)
-        ESP->>MPU: Read Accelerometer Registers (Ax, Ay, Az)
-        MPU-->>ESP: Return 16-bit Raw Motion Vectors
+    Note over Wearer,MPU: Resident experiences slip, free-fall, and impact
+    loop Periodic Sensor Sampling Cycle
+        ESP->>MPU: Read Acceleration Registers (Ax, Ay, Az)
+        MPU-->>ESP: Return Motion Vectors
         ESP->>ESP: Compute SVM = sqrt(Ax^2 + Ay^2 + Az^2)
     end
 
-    alt Stage 1: Free Fall Dip
-        ESP->>ESP: Detect SVM < 0.4g for >= 100ms
-        ESP->>ESP: Transition to STAGE_FREE_FALL
-    else Stage 2: Ground Impact Spike
-        ESP->>ESP: Detect SVM > 2.5g within 400ms of Free Fall
-        ESP->>ESP: Transition to STAGE_IMPACT
+    alt Stage 1: Free-Fall Drop
+        ESP->>ESP: Detect SVM < 0.4g
+    else Stage 2: Ground Impact
+        ESP->>ESP: Detect SVM > 2.5g (Within timing window)
     else Stage 3: Post-Impact Stillness
-        loop Next 3000ms
-            ESP->>ESP: Verify |SVM - 1.0g| < 0.3g (No recovery movement)
-        end
-        ESP->>ESP: Transition to CRITICAL_FALL_CONFIRMED
+        ESP->>ESP: Verify lack of recovery movement (|SVM - 1.0g| < 0.3g)
     end
 
     critical Autonomous On-Wrist Actuation (Zero Network Dependency)
         ESP->>BUZZ: digitalWrite(BUZZER_PIN, HIGH)
-        BUZZ-->>Resident: 85dB High-Pitch Alarm & Emergency Strobe
+        BUZZ-->>Wearer: High-Pitch Audible Tone & Visual Warning
     end
 
-    opt Wireless Downstream Telemetry (Best-Effort Broadcast)
-        ESP->>MAX: Read Heart Rate & SpO2
-        MAX-->>ESP: Return PPG Buffer Values (HR=52, SpO2=91%)
-        ESP->>ESP: Assemble JSON Telemetry Packet (fall_detected=true)
-        ESP->>BLE: setValue(buffer) & notify()
-        BLE-->>Web: Dispatch Web Bluetooth GATT Event
-        Web->>Web: AudioContext synthesize 880Hz Emergency Tone
-        Web->>Web: Render Full-Screen FallAlertModal
+    opt Best-Effort Local Display Notification
+        ESP->>BLE: setValue(telemetryJSON) & notify()
+        BLE-->>WebApp: Dispatch Web Bluetooth Event
+        WebApp->>WebApp: Render Emergency Alert Modal
     end
 
-    Note over Web,ESP: Caregiver attends resident and presses Acknowledge
-    Web->>ESP: Write BLE Characteristic / HTTP Reset
+    Note over WebApp,ESP: Caregiver checks resident and clears alarm
+    WebApp->>ESP: Send Alarm Dismissal Command
     ESP->>BUZZ: digitalWrite(BUZZER_PIN, LOW)
 ```
 
 ---
 
-### Sequence Diagram B: Longitudinal Telemetry Synchronization & 30-Day Rolling FIFO Eviction
-Demonstrates historical reporting and offline data minimization compliance under zero-cloud constraints.
+### Sequence Diagram B: 30-Day Rolling Storage & Day 31 Eviction
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant ESP as ESP32-C3 LittleFS
+    participant ESP as ESP32-C3 (LittleFS)
     participant UI as Next.js Dashboard Client
-    participant IDB as Client Browser IndexedDB
-    participant API as Backend REST Service (Optional Bridge)
-    participant DB as SQLite (alerts.db)
+    participant IDB as Browser IndexedDB
 
-    Note over UI: Caregiver opens "Past Records" tab (/records)
-    UI->>API: GET /api/records (Check LAN bridge)
-    alt LAN Server Online
-        API->>DB: SELECT * FROM vitals_daily_summary ORDER BY date DESC LIMIT 30
-        DB-->>API: Return 30-Day Summary Rows
-        API-->>UI: 200 OK [JSON Rollups]
-        UI->>IDB: saveBulkDailyRecordsAndPrune(records)
-    else LAN Server Offline (Sovereign Mode)
-        UI->>IDB: getDailyRecords(30)
-        IDB-->>UI: Return Cached Daily Summaries
+    Note over UI: Caregiver navigates to 30-Day Records Tab
+    UI->>IDB: getDailyRecords(limit = 30)
+    IDB-->>UI: Return Cached Daily Summaries
+
+    opt Hardware In Range
+        UI->>ESP: Read 30-Day Summary Characteristic
+        ESP-->>UI: Return Compact Daily Summaries
+        UI->>IDB: saveDailyRecordAndPrune(newRecords)
     end
 
-    Note over IDB: Automated FIFO Rolling Purge Routine
-    UI->>IDB: executePurgeOldRecords(currentTimestamp - 30 Days)
-    IDB->>IDB: Delete all object records where timestamp < cutoff
-    IDB-->>UI: Purge Complete (Day 31+ discarded)
+    Note over IDB: FIFO Eviction Logic Executes
+    UI->>IDB: Scan records where timestamp < (CurrentTime - 30 Days)
+    IDB->>IDB: Delete matching expired records (Day 31+ purged)
+    IDB-->>UI: Storage limited to active 30-day window
 
-    UI->>UI: Re-render SVG AreaChart (HR, SpO2, Body Temp)
-    UI->>UI: Calculate Clinical Health Safety Score (/analytics/risk-score)
+    UI->>UI: Render 30-Day Trend Charts (Avg HR, SpO2, Fall Counts)
 ```
 
 ---
 
 ## 5. UML Activity Diagram
 
-Models the dual-rate sampling loop, deterministic multi-threshold triage decision flow, and automatic reset branches.
-
 ```mermaid
 flowchart TD
-    Start(["System Power On / ESP32-C3 Boot"]) --> InitHardware["Initialize Hardware Pins, I2C Bus & LittleFS"]
-    InitHardware --> SensorCalib["Calibrate MPU6050 Offsets & MAX30102 PPG Thresholds"]
-    SensorCalib --> StartBLE["Start BLE GATT Advertising ('VitalGuard-Band')"]
-    StartBLE --> SensorLoop{"Periodic Timer Triggered?"}
+    Start(["System Boot / ESP32-C3 Initialized"]) --> InitHW["Initialize Pins, I2C Bus & Storage Engine"]
+    InitHW --> StartBLE["Start BLE GATT Advertising ('VitalGuard-Band')"]
+    StartBLE --> SampleLoop["Periodic Sensor Acquisition"]
 
-    SensorLoop -- "Every 10ms (100Hz)" --> ReadPPG["Read MAX30102 Photodiode (IR & Red)"]
-    SensorLoop -- "Every 20ms (50Hz)" --> ReadIMU["Read MPU6050 Accelerometer (Ax, Ay, Az)"]
+    SampleLoop --> ReadPPG["Sample MAX30102 Optical Registers"]
+    SampleLoop --> ReadIMU["Sample MPU6050 Motion Registers"]
 
-    ReadPPG --> CalcVitals["Calculate Heart Rate (BPM) & Blood Oxygen (SpO2)"]
-    CalcVitals --> VitalCheck{"Vital Rule Check"}
+    ReadPPG --> CalcVitals["Calculate Heart Rate & Blood Oxygen (SpO2)"]
+    ReadIMU --> CalcSVM["Compute SVM = sqrt(Ax^2 + Ay^2 + Az^2)"]
 
-    VitalCheck -- "HR < 50 bpm" --> FlagBrady["Flag: Bradycardia Anomaly"]
-    VitalCheck -- "SpO2 < 92%" --> FlagHypo["Flag: Hypoxemia Anomaly"]
-    VitalCheck -- "Normal" --> VitalsNormal["Status: Physiological Steady"]
+    CalcSVM --> CheckStage1{"SVM < 0.4g? (Free-Fall)"}
+    CheckStage1 -- Yes --> CheckStage2{"SVM > 2.5g shortly after? (Impact)"}
+    CheckStage1 -- No --> NormalState["State: Physiological Normal"]
 
-    ReadIMU --> CalcSVM["Compute Vector Magnitude: SVM = sqrt(Ax^2 + Ay^2 + Az^2)"]
-    CalcSVM --> Stage1Check{"SVM < 0.4g? (Free-Fall Dip)"}
+    CheckStage2 -- Yes --> CheckStage3{"Post-Impact Stillness Verified?"}
+    CheckStage2 -- No --> ResetTriage["Reset Fall State Machine"]
 
-    Stage1Check -- Yes --> StartFreeFallTimer["Start Free-Fall Window Timer (t0)"]
-    Stage1Check -- No --> CheckMotionType{"SVM > 1.4g?"}
+    CheckStage3 -- Yes --> ConfirmedFall["CRITICAL_FALL_CONFIRMED"]
+    CheckStage3 -- No --> StumbleRecovery["Event Classified as Trip / Self-Recovery"]
+    StumbleRecovery --> ResetTriage
 
-    CheckMotionType -- Yes --> SetWalking["Classify Activity: Walking / Active Body"]
-    CheckMotionType -- No --> SetResting["Classify Activity: Resting / Sedentary"]
+    ConfirmedFall --> HardwareAlarm["Actuate GPIO 2 HIGH (Piezo Buzzer Active)"]
+    HardwareAlarm --> FormPacket["Assemble Telemetry JSON Packet"]
+    NormalState --> FormPacket
 
-    StartFreeFallTimer --> Stage2Check{"SVM > 2.5g within 400ms? (Impact Spike)"}
-    Stage2Check -- No (Timeout) --> ResetTriage["Reset Triage State Machine"]
-    Stage2Check -- Yes --> StartStillnessTimer["Start Post-Fall Stillness Monitor (3.0s)"]
+    FormPacket --> CheckBLE{"BLE Client Paired?"}
+    CheckBLE -- Yes --> SendNotification["Dispatch BLE GATT Notification"]
+    CheckBLE -- No --> BufferData["Update Daily Summary Buffer"]
 
-    StartStillnessTimer --> Stage3Check{"|SVM - 1.0g| < 0.3g for >= 3.0s?"}
-    Stage3Check -- No (Movement Detected) --> StumbleHandled["Event Evaluated as Recovery / Intentional Sit-down"]
-    StumbleHandled --> ResetTriage
-
-    Stage3Check -- Yes (No Movement) --> FallConfirmed["CRITICAL_FALL_CONFIRMED"]
-
-    FallConfirmed --> HardwareAlarm["Hardware Actuation: GPIO 2 HIGH (Piezo Buzzer + LED)"]
-    HardwareAlarm --> AssemblePacket["Assemble Telemetry Packet (fall_detected=true)"]
-    FlagBrady --> AssemblePacket
-    FlagHypo --> AssemblePacket
-    VitalsNormal --> AssemblePacket
-    SetWalking --> AssemblePacket
-    SetResting --> AssemblePacket
-
-    AssemblePacket --> BLECheck{"BLE Client Connected?"}
-    BLECheck -- Yes --> DispatchBLE["Transmit BLE GATT Notification (10Hz)"]
-    BLECheck -- No --> LocalFlashStore["Append 32-Byte Summary to LittleFS Ring Buffer"]
-
-    DispatchBLE --> AwaitAck{"Nurse Ack / Button Pressed?"}
-    LocalFlashStore --> SensorLoop
-
-    AwaitAck -- Yes --> DeactivateAlarm["Hardware Actuation: GPIO 2 LOW (Silence Buzzer)"]
-    AwaitAck -- No --> HardwareAlarm
-    DeactivateAlarm --> ResetTriage
-    ResetTriage --> SensorLoop
+    SendNotification --> CheckAck{"Alarm Dismissal Received?"}
+    CheckAck -- Yes --> StopAlarm["Actuate GPIO 2 LOW (Silence Buzzer)"]
+    CheckAck -- No --> HardwareAlarm
+    StopAlarm --> ResetTriage
+    BufferData --> SampleLoop
+    ResetTriage --> SampleLoop
 ```
 
 ---
 
 ## 6. System Component Diagram
 
-Illustrates the decoupled subsystems, clean interfaces, and the strict rule that no cloud dependency is placed in the safety critical path.
-
 ```mermaid
 componentDiagram
-    package "Wrist-Worn Embedded Hardware Node" {
-        [MAX30102 PPG Optical Sensor] as PPG
-        [MPU6050 6-Axis MEMS IMU] as IMU
-        [Piezo Buzzer & Visual Strobe] as Actuators
-        
-        package "ESP32-C3 Microcontroller Firmware" {
-            [I2C Master Driver] as I2CDriver
-            [SVM Feature Extraction Engine] as SVMEngine
-            [3-Stage Fall Finite State Machine] as FallFSM
-            [LittleFS Circular Ring Buffer (30 Days)] as LittleFSStore
-            [BLE GATT Server (Notify 10Hz)] as BLEServer
+    package "VitalGuard-C3 Hardware Sentinel" {
+        [MAX30102 Optical Sensor] as PPG
+        [MPU6050 Motion Sensor] as IMU
+        [Piezo Buzzer & LED] as Actuator
+
+        package "ESP32-C3 Firmware Core" {
+            [I2C Hardware Controller] as I2CDriver
+            [SVM Math Engine] as SVMEngine
+            [3-Stage Fall State Machine] as FallFSM
+            [LittleFS Storage Engine] as StorageEngine
+            [BLE GATT Server] as BLECore
         }
     }
 
-    package "Caregiver Presentation Layer (Client Browser)" {
-        [Web Bluetooth API Adapter] as WebBLE
-        [WebSocket Client Connector] as WSClient
-        [Next.js Dynamic HUD Controller] as HUD
-        [IndexedDB 30-Day Storage Engine] as LocalDB
-        [Web Audio 880Hz Sound Synthesizer] as SoundEngine
+    package "Client Presentation Layer (Mobile WebApp)" {
+        [Web Bluetooth Adapter] as WebBLE
+        [Real-Time HUD Dashboard] as LiveHUD
+        [IndexedDB 30-Day Storage] as BrowserCache
+        [Web Audio Synthesizer] as SoundAlert
     }
 
-    package "Optional Facility Local Area Server (FastAPI)" {
-        [FastAPI WebSocket Telemetry Hub] as WSServer
-        [Clinical Analytics / Risk Engine] as RiskEngine
-        [aiosqlite WAL Database Store] as ServerDB
+    package "Optional LAN Bridge (Development/Demo)" {
+        [FastAPI Telemetry Hub] as MockServer
+        [Local SQLite Event Log] as LocalDB
     }
 
-    %% Hardware Interconnects
     PPG --> I2CDriver : I2C Bus (SDA/SCL)
     IMU --> I2CDriver : I2C Bus (SDA/SCL)
-    I2CDriver --> SVMEngine : Raw Accel (Ax, Ay, Az)
-    SVMEngine --> FallFSM : SVM Stream
-    FallFSM --> Actuators : Direct GPIO 2 High (Zero-Latency)
-    FallFSM --> LittleFSStore : Daily Event Rollup
-    FallFSM --> BLEServer : Fall State
-    I2CDriver --> BLEServer : HR & SpO2
+    I2CDriver --> SVMEngine : Acceleration Vectors
+    SVMEngine --> FallFSM : Scalar SVM Stream
+    FallFSM --> Actuator : Direct GPIO High Signal
+    FallFSM --> StorageEngine : Daily Summary Write
+    FallFSM --> BLECore : Fall Alert Flag
+    I2CDriver --> BLECore : Filtered Biometrics
 
-    %% Wireless & Presentation Interconnects
-    BLEServer ..> WebBLE : BLE Wireless (2.4 GHz Direct)
-    WebBLE --> HUD : Live Telemetry Stream
-    HUD --> LocalDB : Daily 32B Struct Storage
-    HUD --> SoundEngine : Trigger Audible Alert
+    BLECore ..> WebBLE : Direct BLE Radio Stream
+    WebBLE --> LiveHUD : Live Telemetry Hook
+    LiveHUD --> BrowserCache : Daily Rollup Records
+    LiveHUD --> SoundAlert : Audible Warning
 
-    %% Optional Network Hub Interconnects
-    BLEServer ..> WSServer : Local WiFi WebSocket Bridge
-    WSServer --> WSClient : WS Telemetry Broadcast
-    WSClient --> HUD : Stream Fallback
-    WSServer --> ServerDB : Audit Logging
-    WSServer --> RiskEngine : Telemetry Scoring
+    MockServer ..> LiveHUD : Local WebSocket Bridge
+    MockServer --> LocalDB : Development Database Log
 ```
 
 ---
 
 ## 7. System Deployment Diagram
 
-Depicts the physical execution targets, protocols, and hardware topology.
-
 ```mermaid
 deploymentDiagram
-    node "VitalGuard C3 Physical Wristband" as Wristband {
-        artifact "Firmware Binary (VitalGuard_ESP32.ino)" as Firmware
-        node "Seeed Studio XIAO ESP32-C3" as ESP32 {
-            [160 MHz 32-bit RISC-V Core]
+    node "VitalGuard-C3 Physical Wristband" as Wristband {
+        artifact "Firmware Binary (C++ / Arduino)" as Firmware
+        node "Seeed Studio XIAO ESP32-C3" as Microcontroller {
+            [160 MHz RISC-V Processor]
             [400 KB SRAM / 4 MB Flash]
-            [Integrated 2.4GHz BLE & Wi-Fi]
+            [Integrated 2.4 GHz BLE Antenna]
+            [Onboard LiPo Charge Management]
         }
-        node "MAX30102 Breakout" as PPG_Hw
-        node "MPU6050 Breakout" as IMU_Hw
-        node "Piezo Buzzer (2.7 kHz, 85dB)" as Buzzer_Hw
-        node "3.7V 500mAh LiPo Battery" as Battery_Hw
+        node "MAX30102 PPG Breakout" as PPG_Hw
+        node "MPU6050 IMU Breakout" as IMU_Hw
+        node "Piezo Buzzer & LED" as Buzzer_Hw
+        node "3.7V 500mAh LiPo Cell" as Battery_Hw
 
-        PPG_Hw -- "I2C Bus (Pins D4, D5)" --> ESP32
-        IMU_Hw -- "I2C Bus (Pins D4, D5)" --> ESP32
-        Buzzer_Hw -- "GPIO 2 (Pin D0)" --> ESP32
-        Battery_Hw -- "Battery Charging Pad" --> ESP32
+        PPG_Hw -- "I2C (SDA/SCL)" --> Microcontroller
+        IMU_Hw -- "I2C (SDA/SCL)" --> Microcontroller
+        Buzzer_Hw -- "GPIO 2" --> Microcontroller
+        Battery_Hw -- "Underside Solder Pads" --> Microcontroller
     }
 
-    node "Nurse Station / Ward Mobile Device" as Tablet {
-        node "Mobile Browser Environment (Brave / Chrome)" as Browser {
-            artifact "Next.js 14 SPA Bundle" as FrontendApp
-            database "Browser IndexedDB (VitalGuardDB)" as ClientCache
-        }
-    }
-
-    node "Facility Local Network Server (Optional)" as FacilityServer {
-        node "Debian Linux / Windows Host" as OS {
-            artifact "Uvicorn ASGI + FastAPI Process" as BackendProcess
-            database "SQLite File (alerts.db)" as DBFile
+    node "Caregiver Mobile Device" as MobileDevice {
+        node "Mobile Browser (Chrome / Bluefy)" as BrowserEngine {
+            artifact "Next.js Mobile WebApp" as WebClient
+            database "Browser IndexedDB (VitalGuardDB)" as LocalIndexedDB
         }
     }
 
-    %% Network Connections
-    ESP32 -- "Web Bluetooth (BLE GATT UUID: 4fafc201...)" --> Browser
-    ESP32 -- "Local LAN WiFi 802.11 b/g/n (WSS / HTTP)" --> BackendProcess
-    BackendProcess -- "TCP WebSocket (Port 8000)" --> Browser
+    node "Optional Local Workstation (Demo Bridge)" as LaptopWorkstation {
+        node "Python Runtime Environment" as PythonEnv {
+            artifact "FastAPI Mock Bridge (Uvicorn)" as BackendProcess
+            database "Local SQLite Database (alerts.db)" as DBStore
+        }
+    }
+
+    Microcontroller -- "Direct Web Bluetooth (BLE GATT)" --> WebClient
+    BackendProcess -- "Local WebSocket (ws://...)" --> WebClient
 ```
 
 ---
 
-## 8. Mathematical & Algorithmic Formulations for Viva Defense
+## 8. Mathematical Formulations for Viva Defense
 
 ### 8.1 Signal Magnitude Vector (SVM)
-To eliminate dependency on the physical orientation of the wearable on the wrist, three-axis accelerometer vectors are collapsed into an invariant scalar magnitude:
+To make fall detection invariant to wrist rotation or hand orientation, three-axis accelerometer vectors are collapsed into an invariant scalar magnitude:
 $$SVM = \sqrt{a_x^2 + a_y^2 + a_z^2}$$
 Under stationary conditions at rest:
 $$SVM \approx 1.0g \quad (9.81 \, m/s^2)$$
 
-### 8.2 Three-Stage Fall Detection Window
-A fall is authenticated if and only if three chronological stages occur in strict sequence:
+### 8.2 Three-Stage Fall Detection Pipeline
+A fall event is authenticated if and only if three chronological motion phases occur in sequence:
 1. **Free-Fall Dip:**
-   $$SVM(t) < 0.4g \quad \text{for duration } \Delta t_{ff} \in [100\,ms, 400\,ms]$$
-2. **Impact Shock:**
-   $$SVM(t + \Delta t_1) > 2.5g \quad \text{where } \Delta t_1 \le 400\,ms$$
+   $$SVM(t) < 0.4g \quad \text{during transition window } \Delta t_{ff}$$
+2. **Impact Shock Spike:**
+   $$SVM(t + \Delta t_1) > 2.5g \quad \text{where } \Delta t_1 \text{ immediately follows free-fall}$$
 3. **Post-Impact Inactivity (Stillness):**
-   $$\frac{1}{T_{still}} \int_{t_{impact}}^{t_{impact}+T_{still}} |SVM(\tau) - 1.0g| \, d\tau < 0.3g \quad \text{where } T_{still} \ge 3.0\,s$$
+   $$|SVM(\tau) - 1.0g| < 0.3g \quad \text{verified over stationary dwell period } T_{still}$$
 
-### 8.3 Pulse Oximetry Ratio of Ratios (SpO2)
-The MAX30102 computes blood oxygenation by illuminating vascular tissue with dual wavelengths ($\lambda_1 = 660\,nm$ Red, $\lambda_2 = 880\,nm$ Infrared):
+### 8.3 Pulse Oximetry Ratio of Wavelengths (SpO2)
+Capillary blood oxygen saturation is derived by comparing absorption under red ($\lambda_1 = 660\,nm$) and infrared ($\lambda_2 = 880\,nm$) light:
 $$R = \frac{(AC_{red} / DC_{red})}{(AC_{ir} / DC_{ir})}$$
 $$SpO_2 = 110 - 25 \times R$$
 
-### 8.4 Clinical Health Safety Score Heuristic
-The risk assessment engine synthesizes longitudinal sensor rollups into a single safety score index (0-100):
-$$Score_{risk} = \min\left(100, \, 25 \cdot N_{falls} + 25 \cdot \mathbb{I}(N_{brady} \ge 3) + 20 \cdot \mathbb{I}(N_{hypo} \ge 5) + 15 \cdot \mathbb{I}(N_{agitation} > 10)\right)$$
-$$Score_{safety} = \max(10, \, 100 - Score_{risk})$$
+### 8.4 Daily Physical Stability Index
+Longitudinal stability is computed using daily aggregated event summaries:
+$$StabilityIndex = \max\left(0, \, 100 - (30 \times N_{falls}) - AnomalyPenalty\right)$$
 
 ---
 
-## 9. Summary for College Examination Board
-- **Core Innovation:** Zero-cloud dependency for safety-critical alerting. All triage and buzzer actuation execute in under 200 milliseconds on a 160MHz RISC-V core.
-- **Cost Advantage:** Total unit Bill of Materials is Rs 1,578 ($18 USD), enabling facility-wide resident deployment compared to Rs 25,000+ proprietary smartwatches.
-- **Privacy & Storage:** 30-day FIFO automatic eviction complies with strict data minimization principles (no cloud telemetry retention, zero PII collection).
-
+## 9. Examination Defense Key Points
+* **Zero Cloud Latency:** The primary safety-critical alert path executes directly on the RISC-V microcontroller to trigger the physical buzzer without network negotiation.
+* **Autonomous Power Design:** The Seeed Studio XIAO ESP32-C3 uses its integrated charge controller and underside solder pads to manage the 3.7V LiPo cell, eliminating external charging IC modules.
+* **Data Minimization:** No raw biometric data leaves the device; only 30 days of compact daily summaries are retained, with Day 31 automatically evicted via a strict rolling FIFO cache.
+* **Low Unit Cost:** The bill of materials totals approximately Rs 1,500 to Rs 2,500, offering a dedicated, non-intrusive alternative to commercial smartwatches for elderly safety monitoring.
 
 ---
 
