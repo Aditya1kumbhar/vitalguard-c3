@@ -650,3 +650,121 @@ $$Score_{safety} = \max(10, \, 100 - Score_{risk})$$
 - **Core Innovation:** Zero-cloud dependency for safety-critical alerting. All triage and buzzer actuation execute in under 200 milliseconds on a 160MHz RISC-V core.
 - **Cost Advantage:** Total unit Bill of Materials is Rs 1,578 ($18 USD), enabling facility-wide resident deployment compared to Rs 25,000+ proprietary smartwatches.
 - **Privacy & Storage:** 30-day FIFO automatic eviction complies with strict data minimization principles (no cloud telemetry retention, zero PII collection).
+
+
+---
+
+## 10. Data Flow Diagram (DFD)
+
+### 10.1 DFD Level 0 (Context Level Diagram)
+Defines the external entity interactions and system boundary.
+
+```mermaid
+graph LR
+    Resident["Resident / Patient (Physical Body)"]
+    Caregiver["Caregiver / Nurse Station"]
+    System(("VitalGuard C3 Sentinel System"))
+
+    Resident -- "Optical PPG and 3-Axis Motion Signals" --> System
+    System -- "85dB Acoustic Alarm and Visual Strobe" --> Resident
+    System -- "Live Telemetry and Emergency Fall Alert" --> Caregiver
+    Caregiver -- "Nurse Acknowledgment and Silence Signal" --> System
+```
+
+### 10.2 DFD Level 1 (Decomposed Functional Data Flow)
+Maps data movement between sub-processes, data stores, and external entities.
+
+```mermaid
+graph TD
+    %% Entities
+    Resident["Resident / Patient"]
+    Caregiver["Nurse / Caregiver"]
+
+    %% Processes
+    P1(("1.0 Sensor Data Acquisition"))
+    P2(("2.0 Edge Feature Extraction and Triage"))
+    P3(("3.0 Hardware Alert Actuation"))
+    P4(("4.0 Wireless Telemetry Dispatch"))
+    P5(("5.0 Longitudinal Storage and Rollup"))
+
+    %% Data Stores
+    D1[("D1: ESP32 LittleFS Flash Memory")]
+    D2[("D2: Browser IndexedDB 30-Day FIFO")]
+    D3[("D3: Facility SQLite Store (alerts.db)")]
+
+    %% Flows
+    Resident -- "Raw Optical PPG (100Hz) and IMU (50Hz)" --> P1
+    P1 -- "Raw Sensor Registers (IR, Red, Ax, Ay, Az)" --> P2
+    P2 -- "SVM Calculation and 3-Stage Match" --> P3
+    P3 -- "Direct GPIO 2 HIGH Output" --> Resident
+    P2 -- "Telemetry Packet (HR, SpO2, SVM, Fall Status)" --> P4
+    P4 -- "BLE GATT Notification (10Hz)" --> Caregiver
+    P4 -- "WebSocket Stream" --> Caregiver
+    Caregiver -- "Silence / Acknowledge Action" --> P3
+    P2 -- "Daily 32-Byte Summary Rollup" --> D1
+    P4 -- "Rollup Records Sync" --> P5
+    P5 -- "Store Daily Rollup" --> D2
+    P5 -- "Automatic Day 31+ Purge" --> D2
+    P4 -- "Audit Logged Incidents" --> D3
+```
+
+---
+
+## 11. System Process Flowchart
+
+Models detailed sequential execution, decision diamonds, and interrupt handlers from power-on through normal monitoring and alert loops.
+
+```mermaid
+flowchart TD
+    Boot(["Power On / Hardware Reset"]) --> SetupHardware["Setup GPIO 2, Serial at 115200, I2C Bus at 400kHz"]
+    SetupHardware --> InitSensors["Initialize MAX30102 and MPU6050 Sensors"]
+    InitSensors --> CheckSensors{"Sensors Responding on I2C?"}
+    CheckSensors -- "No" --> LogError["Log I2C Bus Error and Retry Scan"]
+    LogError --> InitSensors
+    CheckSensors -- "Yes" --> InitBLE["Initialize BLE Stack ('VitalGuard-Band') and LittleFS"]
+    InitBLE --> StartAdvertising["Start BLE Advertising on Service 4fafc201..."]
+
+    StartAdvertising --> MainLoop["Enter Main Operational Loop"]
+    MainLoop --> ReadSensors["Acquire Sample: MPU6050 (Ax, Ay, Az) and MAX30102 (IR, Red)"]
+    ReadSensors --> VectorMath["Compute Signal Magnitude Vector: SVM = sqrt(Ax^2 + Ay^2 + Az^2)"]
+    ReadSensors --> PPGMath["Extract Pulse Peaks: Compute HR (BPM) and SpO2 (%)"]
+
+    VectorMath --> CheckFreeFall{"SVM < 0.4g? (Free-Fall Dip)"}
+    CheckFreeFall -- "Yes" --> MarkFreeFall["Record Free-Fall Timestamp t_ff"]
+    MarkFreeFall --> CheckImpact{"SVM > 2.5g within 400ms? (Impact Shock)"}
+    CheckFreeFall -- "No" --> CheckVitals{"Vital Anomaly? (HR < 50 or SpO2 < 92%)"}
+
+    CheckImpact -- "No (Timeout)" --> ResetTriage["Clear Triage State"]
+    CheckImpact -- "Yes" --> MonitorStillness["Sample Next 3000ms: Monitor Post-Impact Acceleration"]
+    MonitorStillness --> CheckStillness{"|SVM - 1.0g| < 0.3g for >= 3.0s?"}
+
+    CheckStillness -- "No (Recovery Motion)" --> ResetTriage
+    CheckStillness -- "Yes (Stillness Confirmed)" --> TriggerFall["Assert CRITICAL_FALL_CONFIRMED"]
+
+    TriggerFall --> AlarmActuation["Hardware Override: Write GPIO 2 HIGH (Buzzer and Strobe Active)"]
+    CheckVitals -- "Yes" --> FlagAnomaly["Flag Bradycardia / Hypoxemia Warning"]
+    CheckVitals -- "No" --> NormalState["Status: Normal / Sedentary or Active"]
+
+    AlarmActuation --> BuildPacket["Format 180-Byte JSON Telemetry Payload"]
+    FlagAnomaly --> BuildPacket
+    NormalState --> BuildPacket
+    ResetTriage --> BuildPacket
+
+    BuildPacket --> CheckBLE{"BLE Client Connected?"}
+    CheckBLE -- "Yes" --> SendBLE["Transmit BLE GATT Characteristic Notification (10Hz)"]
+    CheckBLE -- "No" --> CheckWS{"LAN WebSocket Active?"}
+    CheckWS -- "Yes" --> SendWS["Broadcast Payload to Connected WebSockets"]
+    CheckWS -- "No" --> RollupCheck{"24-Hour Cycle Complete?"}
+    SendBLE --> CheckAck{"Caregiver Silence / Reset Received?"}
+    SendWS --> CheckAck
+
+    CheckAck -- "Yes" --> SilenceAlarm["Write GPIO 2 LOW and Reset State Machine"]
+    CheckAck -- "No" --> AlarmActuation
+    SilenceAlarm --> RollupCheck
+
+    RollupCheck -- "Yes" --> WriteRollup["Commit 32-Byte Daily Summary to LittleFS and IndexedDB"]
+    WriteRollup --> PurgeOld["Purge Records Older Than 30 Days"]
+    RollupCheck -- "No" --> LoopDelay["Delay 100ms (10Hz Sample Interval)"]
+    PurgeOld --> LoopDelay
+    LoopDelay --> MainLoop
+```
