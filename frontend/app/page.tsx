@@ -559,12 +559,6 @@ export default function VitalGuardDashboard() {
               >
                 I AM OKAY (CANCEL ALARM)
               </button>
-              <button
-                onClick={resetMockFall}
-                className="spring-btn w-full py-3 bg-[#01373D]/80 hover:bg-[#01373D] border border-[#01373D] text-white/70 rounded-2xl font-bold text-sm active:scale-95 transition-all"
-              >
-                Silence Alarm
-              </button>
             </div>
           </div>
         </div>

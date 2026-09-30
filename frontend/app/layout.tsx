@@ -6,7 +6,6 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -37,9 +36,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={dmSans.variable}>
       <body className="font-sans antialiased text-[#01373D] bg-[#F9F8FF] selection:bg-[#FE336A] selection:text-white">
-        {/* Ambient background glow spheres */}
-        <div className="ambient-glow ambient-glow-pink" aria-hidden="true"></div>
-        <div className="ambient-glow ambient-glow-cyan" aria-hidden="true"></div>
         {children}
       </body>
     </html>
