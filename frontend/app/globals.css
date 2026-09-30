@@ -3,39 +3,48 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  /* Biofarma-inspired Design Tokens */
+  --bg-primary: #F9F8FF;
+  --text-primary: #01373D;
+  --text-muted: #44706A;
+  --accent-crimson: #FE336A;
+  --accent-crimson-dark: #CE1A4D;
+  --card-tint: #F1F4F9;
+  --card-tint-blue: #EAF1FF;
+  --border-soft: rgba(1, 55, 61, 0.08);
+  --glow-pink: rgba(254, 51, 106, 0.08);
+  --glow-cyan: rgba(56, 189, 248, 0.06);
 }
 
 html,
 body {
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-dm-sans), "DM Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-image: 
-    radial-gradient(ellipse 70% 35% at 50% -5%, rgba(2, 132, 199, 0.08), transparent 60%),
-    radial-gradient(ellipse 60% 40% at 95% 15%, rgba(59, 130, 246, 0.05), transparent 50%),
-    radial-gradient(ellipse 50% 50% at 5% 95%, rgba(16, 185, 129, 0.04), transparent 60%);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(254, 51, 106, 0.06), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 90% 20%, rgba(56, 189, 248, 0.05), transparent 50%),
+    radial-gradient(ellipse 50% 60% at 10% 90%, rgba(1, 55, 61, 0.03), transparent 60%);
   background-attachment: fixed;
   overflow-x: hidden;
 }
 
-/* iOS Liquid Glass Card */
+/* Biofarma-style Soft Frost Card */
 .royal-card {
   background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(226, 232, 240, 0.85);
-  box-shadow: 
-    0 4px 20px -2px rgba(15, 23, 42, 0.04),
-    0 1px 3px 0 rgba(15, 23, 42, 0.02),
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(1, 55, 61, 0.06);
+  box-shadow:
+    0 4px 24px -4px rgba(1, 55, 61, 0.05),
+    0 1px 3px 0 rgba(1, 55, 61, 0.02),
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
-  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   will-change: transform, box-shadow;
 }
 
@@ -45,11 +54,11 @@ body {
 }
 
 .royal-card-interactive:hover {
-  transform: translateY(-2px);
-  border-color: rgba(203, 213, 225, 0.9);
-  box-shadow: 
-    0 12px 30px -4px rgba(15, 23, 42, 0.07),
-    0 4px 8px -2px rgba(15, 23, 42, 0.03),
+  transform: translateY(-3px);
+  border-color: rgba(1, 55, 61, 0.1);
+  box-shadow:
+    0 16px 40px -6px rgba(1, 55, 61, 0.08),
+    0 4px 10px -2px rgba(1, 55, 61, 0.03),
     inset 0 1px 1px 0 rgba(255, 255, 255, 1);
 }
 
@@ -58,39 +67,51 @@ body {
   transition-duration: 0.12s;
 }
 
-/* Floating Dynamic Island */
+/* Biofarma Floating Pill Navbar */
 .dynamic-island {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 
-    0 12px 35px -4px rgba(15, 23, 42, 0.08),
-    0 2px 6px 0 rgba(15, 23, 42, 0.03),
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(1, 55, 61, 0.06);
+  box-shadow:
+    0 8px 32px -4px rgba(1, 55, 61, 0.08),
+    0 2px 6px 0 rgba(1, 55, 61, 0.03),
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Biofarma Red Dot Accent */
+.accent-dot::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--accent-crimson);
+  margin-left: 6px;
+  vertical-align: middle;
 }
 
 /* Living Vascular Heartbeat Pulse */
 @keyframes living-heartbeat {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 4px 20px -2px rgba(244, 63, 94, 0.04);
+    box-shadow: 0 4px 24px -2px rgba(254, 51, 106, 0.04);
   }
   15% {
     transform: scale(1.025);
-    box-shadow: 0 8px 28px 0 rgba(244, 63, 94, 0.16);
+    box-shadow: 0 8px 32px 0 rgba(254, 51, 106, 0.16);
   }
   28% {
     transform: scale(0.995);
   }
   40% {
     transform: scale(1.018);
-    box-shadow: 0 6px 24px 0 rgba(244, 63, 94, 0.11);
+    box-shadow: 0 6px 28px 0 rgba(254, 51, 106, 0.11);
   }
   60% {
     transform: scale(1);
-    box-shadow: 0 4px 20px -2px rgba(244, 63, 94, 0.04);
+    box-shadow: 0 4px 24px -2px rgba(254, 51, 106, 0.04);
   }
 }
 
@@ -98,9 +119,9 @@ body {
   animation: living-heartbeat var(--pulse-speed, 0.85s) infinite ease-in-out;
 }
 
-/* Tactile Spring Buttons */
+/* Biofarma Pill Buttons */
 .spring-btn {
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   will-change: transform;
 }
 
@@ -113,16 +134,16 @@ body {
   transition-duration: 0.1s;
 }
 
-/* Light Telemetry Oscilloscope Grid */
+/* Biofarma Telemetry Grid (light tint) */
 .telemetry-grid-light {
-  background-color: #f8fafc;
-  background-image: 
-    linear-gradient(to right, rgba(226, 232, 240, 0.8) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(226, 232, 240, 0.8) 1px, transparent 1px);
+  background-color: var(--card-tint);
+  background-image:
+    linear-gradient(to right, rgba(1, 55, 61, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(1, 55, 61, 0.04) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
-/* Modern light scrollbars */
+/* Biofarma-inspired scrollbars */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -133,32 +154,32 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: rgba(1, 55, 61, 0.15);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(1, 55, 61, 0.25);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: rgba(1, 55, 61, 0.15) transparent;
 }
 
 ::selection {
-  background-color: #0284c7;
+  background-color: var(--accent-crimson);
   color: #ffffff;
 }
 
-/* Emergency animation */
+/* Emergency animation - Crimson tint */
 @keyframes emergency-glow {
   0%, 100% {
-    box-shadow: 0 0 25px rgba(239, 68, 68, 0.35), 0 0 50px rgba(220, 38, 38, 0.15);
+    box-shadow: 0 0 25px rgba(254, 51, 106, 0.35), 0 0 50px rgba(206, 26, 77, 0.15);
     transform: scale(1);
   }
   50% {
-    box-shadow: 0 0 45px rgba(239, 68, 68, 0.65), 0 0 80px rgba(220, 38, 38, 0.3);
+    box-shadow: 0 0 45px rgba(254, 51, 106, 0.65), 0 0 80px rgba(206, 26, 77, 0.3);
     transform: scale(1.015);
   }
 }
@@ -182,3 +203,36 @@ body {
   }
 }
 
+/* Biofarma gradient text utility */
+.gradient-text-crimson-teal {
+  background: linear-gradient(135deg, var(--accent-crimson) 0%, var(--text-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Ambient background glow spheres */
+.ambient-glow {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.6;
+}
+
+.ambient-glow-pink {
+  width: 400px;
+  height: 400px;
+  background: rgba(254, 51, 106, 0.08);
+  top: -100px;
+  left: -100px;
+}
+
+.ambient-glow-cyan {
+  width: 350px;
+  height: 350px;
+  background: rgba(56, 189, 248, 0.06);
+  bottom: -80px;
+  right: -80px;
+}

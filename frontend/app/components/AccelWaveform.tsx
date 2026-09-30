@@ -60,17 +60,17 @@ export default function AccelWaveform({ latest }: AccelWaveformProps) {
       className="royal-card rounded-3xl p-5 sm:p-6 flex flex-col gap-3"
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+      <div className="flex items-center justify-between border-b border-[#01373D]/5 pb-3">
         <div className="flex items-center gap-2">
-          <Activity className="w-5 h-5 text-sky-600" />
-          <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+          <Activity className="w-5 h-5 text-[#01373D]" />
+          <h2 className="text-base sm:text-lg font-extrabold text-[#01373D] tracking-tight">
             Live Movement
           </h2>
         </div>
 
-        <span className={`text-xs font-black px-3 py-1 rounded-md uppercase tracking-wide border shadow-xs ${
+        <span className={`text-xs font-extrabold px-3 py-1 rounded-md uppercase tracking-wide border shadow-xs ${
           isFall
-            ? "bg-rose-50 text-rose-700 border-rose-300 animate-pulse"
+            ? "bg-[#FE336A]/10 text-[#FE336A] border-[#FE336A]/30 animate-pulse"
             : isMoving
             ? "bg-amber-50 text-amber-700 border-amber-200"
             : "bg-emerald-50 text-emerald-700 border-emerald-200"
@@ -80,9 +80,9 @@ export default function AccelWaveform({ latest }: AccelWaveformProps) {
       </div>
 
       {/* Clean, Expressive Waveform Canvas */}
-      <div className="w-full h-36 sm:h-44 md:h-52 lg:h-60 pt-1 rounded-2xl border border-slate-200 telemetry-grid-light relative overflow-hidden transition-all duration-300">
+      <div className="w-full h-36 sm:h-44 md:h-52 lg:h-60 pt-1 rounded-2xl border border-[#01373D]/8 telemetry-grid-light relative overflow-hidden transition-all duration-300">
         {data.length === 0 ? (
-          <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs font-medium">
+          <div className="w-full h-full flex items-center justify-center text-[#44706A] text-xs font-medium">
             Monitoring...
           </div>
         ) : (
@@ -94,11 +94,11 @@ export default function AccelWaveform({ latest }: AccelWaveformProps) {
               {/* Fall Warning Threshold Line */}
               <ReferenceLine
                 y={2.5}
-                stroke="#f43f5e"
+                stroke="#FE336A"
                 strokeDasharray="3 3"
                 label={{
                   value: "Danger Level",
-                  fill: "#e11d48",
+                  fill: "#FE336A",
                   fontSize: 10,
                   position: "insideTopRight",
                 }}
@@ -107,7 +107,7 @@ export default function AccelWaveform({ latest }: AccelWaveformProps) {
               <Line
                 type="monotone"
                 dataKey="motion"
-                stroke={isFall ? "#e11d48" : "#0284c7"}
+                stroke={isFall ? "#FE336A" : "#01373D"}
                 strokeWidth={2.5}
                 dot={false}
                 isAnimationActive={false}

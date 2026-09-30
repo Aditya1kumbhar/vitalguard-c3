@@ -136,10 +136,10 @@ export default function VitalGuardDashboard() {
     <main className="min-h-[100dvh] overflow-x-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col justify-between">
       <div className="flex-1 w-full max-w-xl sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto p-3.5 sm:p-5 md:p-6 lg:p-8 responsive-adaptive flex flex-col gap-4 sm:gap-6">
         
-        {/* Dynamic Island Capsule Header */}
-        <header className="dynamic-island rounded-3xl p-3.5 sm:p-4 flex items-center justify-between">
+        {/* Biofarma-style Floating Pill Navbar */}
+        <header className="dynamic-island rounded-[28px] p-3.5 sm:p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 rounded-2xl bg-sky-50 border border-sky-200/80 flex items-center justify-center text-sky-600 shadow-sm">
+            <div className="relative w-10 h-10 rounded-2xl bg-[#FE336A]/10 border border-[#FE336A]/20 flex items-center justify-center text-[#FE336A] shadow-sm">
               <Activity className="w-5 h-5" aria-hidden="true" />
               <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -148,10 +148,10 @@ export default function VitalGuardDashboard() {
             </div>
 
             <div>
-              <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-none flex items-center gap-2">
-                VitalGuard <span className="text-sky-600 font-extrabold">C3</span>
+              <h1 className="text-lg sm:text-xl font-extrabold text-[#01373D] tracking-tight leading-none flex items-center gap-2">
+                VitalGuard <span className="text-[#FE336A] font-extrabold">C3</span>
               </h1>
-              <p className="text-xs text-slate-500 font-bold mt-0.5">
+              <p className="text-xs text-[#44706A] font-semibold mt-0.5">
                 Device 01 | Room 204
               </p>
             </div>
@@ -166,12 +166,12 @@ export default function VitalGuardDashboard() {
               }}
               className={`spring-btn px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
                 mode === 'BLE'
-                  ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-300'
-                  : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-xs'
+                  ? 'bg-[#01373D] text-white shadow-sm ring-2 ring-[#01373D]/30'
+                  : 'bg-white hover:bg-[#F1F4F9] text-[#01373D] border border-[#01373D]/10 shadow-xs'
               }`}
               title="Connect via Bluetooth"
             >
-              <Bluetooth className={`w-3.5 h-3.5 ${mode === 'BLE' ? 'text-white' : 'text-blue-600'}`} />
+              <Bluetooth className={`w-3.5 h-3.5 ${mode === 'BLE' ? 'text-white' : 'text-[#01373D]'}`} />
               <span className="hidden sm:inline">Bluetooth</span>
             </button>
 
@@ -183,7 +183,7 @@ export default function VitalGuardDashboard() {
               className={`spring-btn px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
                 mode === 'WEBSOCKET'
                   ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-300'
-                  : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-xs'
+                  : 'bg-white hover:bg-[#F1F4F9] text-[#01373D] border border-[#01373D]/10 shadow-xs'
               }`}
               title="Connect via Wi-Fi"
             >
@@ -196,11 +196,11 @@ export default function VitalGuardDashboard() {
                 playHaptic('pop');
                 setShowSpecs(true);
               }}
-              className="spring-btn p-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-xs"
+              className="spring-btn p-1.5 rounded-xl text-xs font-bold bg-white hover:bg-[#F1F4F9] text-[#01373D] border border-[#01373D]/10 shadow-xs"
               title="Device Specs"
               aria-label="Device Specs"
             >
-              <Cpu className="w-4 h-4 text-sky-600" />
+              <Cpu className="w-4 h-4 text-[#FE336A]" />
             </button>
           </div>
         </header>
@@ -208,8 +208,8 @@ export default function VitalGuardDashboard() {
         {/* System Specs Modal */}
         <DeviceSpecsModal open={showSpecs} onClose={() => setShowSpecs(false)} />
 
-        {/* Navigation Switcher */}
-        <nav aria-label="Dashboard Tabs" className="grid grid-cols-2 gap-1.5 p-1 bg-slate-200/60 backdrop-blur-xl rounded-2xl border border-slate-200 shadow-inner">
+        {/* Biofarma-style Tab Switcher */}
+        <nav aria-label="Dashboard Tabs" className="grid grid-cols-2 gap-1.5 p-1 bg-[#01373D]/5 backdrop-blur-xl rounded-2xl border border-[#01373D]/8 shadow-inner">
           <button
             onClick={() => {
               playHaptic('pop');
@@ -217,11 +217,11 @@ export default function VitalGuardDashboard() {
             }}
             className={`spring-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-sm sm:text-base ${
               activeTab === 'LIVE'
-                ? 'bg-white text-slate-900 font-black shadow-sm border border-slate-200/80'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white text-[#01373D] font-extrabold shadow-sm border border-[#01373D]/8'
+                : 'text-[#44706A] hover:text-[#01373D]'
             }`}
           >
-            <Radio className={`w-4 h-4 ${activeTab === 'LIVE' ? 'text-sky-600 animate-pulse' : 'text-slate-500'}`} />
+            <Radio className={`w-4 h-4 ${activeTab === 'LIVE' ? 'text-[#FE336A] animate-pulse' : 'text-[#44706A]'}`} />
             <span>Live Monitor</span>
           </button>
           <button
@@ -231,11 +231,11 @@ export default function VitalGuardDashboard() {
             }}
             className={`spring-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-sm sm:text-base ${
               activeTab === 'RECORDS'
-                ? 'bg-white text-slate-900 font-black shadow-sm border border-slate-200/80'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white text-[#01373D] font-extrabold shadow-sm border border-[#01373D]/8'
+                : 'text-[#44706A] hover:text-[#01373D]'
             }`}
           >
-            <Calendar className={`w-4 h-4 ${activeTab === 'RECORDS' ? 'text-sky-600' : 'text-slate-500'}`} />
+            <Calendar className={`w-4 h-4 ${activeTab === 'RECORDS' ? 'text-[#FE336A]' : 'text-[#44706A]'}`} />
             <span>Past Records</span>
           </button>
         </nav>
@@ -253,17 +253,17 @@ export default function VitalGuardDashboard() {
                       <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                     </>
                   ) : (
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-[#FE336A]"></span>
                   )}
                 </span>
-                <span className="text-sm font-bold text-slate-800">
+                <span className="text-sm font-bold text-[#01373D]">
                   {isConnected ? 'Device Connected' : 'Device Offline'}
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 rounded-xl border border-slate-200">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#F1F4F9] rounded-xl border border-[#01373D]/8">
                 <BatteryFull className="w-4 h-4 text-emerald-600" />
-                <span className="font-bold text-slate-800 text-xs">92%</span>
+                <span className="font-bold text-[#01373D] text-xs">92%</span>
               </div>
             </div>
 
@@ -280,10 +280,10 @@ export default function VitalGuardDashboard() {
               >
                 <div className="flex items-center justify-between z-10">
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-xl bg-rose-50 text-rose-600 shadow-xs">
+                    <div className="p-1.5 rounded-xl bg-[#FE336A]/10 text-[#FE336A] shadow-xs">
                       <Heart className="w-4 h-4 animate-pulse" />
                     </div>
-                    <span className="font-extrabold text-xs sm:text-sm text-slate-800">Heart Rate</span>
+                    <span className="font-extrabold text-xs sm:text-sm text-[#01373D]">Heart Rate</span>
                   </div>
                   <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase border ${
                     hr < 50 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -293,10 +293,10 @@ export default function VitalGuardDashboard() {
                 </div>
 
                 <div className="mt-2 flex items-baseline gap-1.5 z-10">
-                  <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 font-mono">
+                  <span className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#01373D] font-mono">
                     {data.heart_rate || '--'}
                   </span>
-                  <span className="text-xs sm:text-sm font-bold text-slate-400">BPM</span>
+                  <span className="text-xs sm:text-sm font-bold text-[#44706A]">BPM</span>
                 </div>
 
                 <div className="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
@@ -312,10 +312,10 @@ export default function VitalGuardDashboard() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-xl bg-sky-50 text-sky-600 shadow-xs">
+                    <div className="p-1.5 rounded-xl bg-[#01373D]/10 text-[#01373D] shadow-xs">
                       <Activity className="w-4 h-4" />
                     </div>
-                    <span className="font-extrabold text-xs sm:text-sm text-slate-800">Oxygen</span>
+                    <span className="font-extrabold text-xs sm:text-sm text-[#01373D]">Oxygen</span>
                   </div>
                   <span className="text-[10px] font-black px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
                     Good
@@ -323,10 +323,10 @@ export default function VitalGuardDashboard() {
                 </div>
 
                 <div className="mt-2 flex items-baseline gap-1.5">
-                  <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 font-mono">
+                  <span className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#01373D] font-mono">
                     {data.spo2 || '--'}
                   </span>
-                  <span className="text-xs sm:text-sm font-bold text-slate-400">%</span>
+                  <span className="text-xs sm:text-sm font-bold text-[#44706A]">%</span>
                 </div>
 
                 <div className="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
@@ -343,15 +343,15 @@ export default function VitalGuardDashboard() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className={`p-1.5 rounded-xl shadow-xs ${
-                      isFall ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'
+                      isFall ? 'bg-[#FE336A]/10 text-[#FE336A]' : 'bg-amber-50 text-amber-600'
                     }`}>
                       <PersonStanding className="w-4 h-4" />
                     </div>
-                    <span className="font-extrabold text-xs sm:text-sm text-slate-800">Movement</span>
+                    <span className="font-extrabold text-xs sm:text-sm text-[#01373D]">Movement</span>
                   </div>
                   <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase border ${
                     isFall 
-                      ? 'bg-rose-100 text-rose-700 border-rose-300 animate-pulse'
+                      ? 'bg-[#FE336A]/10 text-[#FE336A] border-[#FE336A]/30 animate-pulse'
                       : isMoving
                       ? 'bg-amber-50 text-amber-700 border-amber-200'
                       : 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -361,16 +361,16 @@ export default function VitalGuardDashboard() {
                 </div>
 
                 <div className="mt-2">
-                  <span className={`text-2xl sm:text-3xl font-black tracking-tight ${
-                    isFall ? 'text-rose-600' : 'text-slate-900'
+                  <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${
+                    isFall ? 'text-[#FE336A]' : 'text-[#01373D]'
                   }`}>
                     {isFall ? 'FALL!' : isMoving ? 'Walking' : 'Resting'}
                   </span>
                 </div>
 
-                <div className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
+                <div className="text-xs font-bold text-[#44706A] flex items-center gap-1.5">
                   <span className={`w-2 h-2 rounded-full ${
-                    isFall ? 'bg-rose-500' : isMoving ? 'bg-amber-500' : 'bg-emerald-500'
+                    isFall ? 'bg-[#FE336A]' : isMoving ? 'bg-amber-500' : 'bg-emerald-500'
                   }`}></span>
                   <span>{isFall ? 'Fall Detected' : isMoving ? 'Active Body' : 'Calm & Still'}</span>
                 </div>
@@ -384,15 +384,15 @@ export default function VitalGuardDashboard() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className={`p-1.5 rounded-xl shadow-xs ${
-                      isFall ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
+                      isFall ? 'bg-[#FE336A]/10 text-[#FE336A]' : 'bg-emerald-50 text-emerald-600'
                     }`}>
                       <ShieldCheck className="w-4 h-4" />
                     </div>
-                    <span className="font-extrabold text-xs sm:text-sm text-slate-800">Status</span>
+                    <span className="font-extrabold text-xs sm:text-sm text-[#01373D]">Status</span>
                   </div>
                   <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase border ${
                     isFall
-                      ? 'bg-rose-100 text-rose-700 border-rose-300 animate-pulse'
+                      ? 'bg-[#FE336A]/10 text-[#FE336A] border-[#FE336A]/30 animate-pulse'
                       : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                   }`}>
                     {isFall ? 'Danger' : 'Safe'}
@@ -400,8 +400,8 @@ export default function VitalGuardDashboard() {
                 </div>
 
                 <div className="mt-2">
-                  <span className={`text-2xl sm:text-3xl font-black tracking-tight ${
-                    isFall ? 'text-rose-600' : 'text-slate-900'
+                  <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${
+                    isFall ? 'text-[#FE336A]' : 'text-[#01373D]'
                   }`}>
                     {isFall ? 'HELP NEEDED' : 'SAFE & OKAY'}
                   </span>
@@ -426,24 +426,24 @@ export default function VitalGuardDashboard() {
                 {/* Test Fall Alarm Buttons */}
                 <div className="royal-card rounded-2xl p-4 sm:p-5 flex items-center justify-between">
                   <div>
-                    <span className="text-sm font-bold text-slate-900 block">Test Alarm</span>
-                    <span className="text-xs text-slate-400">Trigger test fall warning sequence</span>
+                    <span className="text-sm font-bold text-[#01373D] block">Test Alarm</span>
+                    <span className="text-xs text-[#44706A]">Trigger test fall warning sequence</span>
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={triggerMockFall}
                       disabled={simulating}
-                      className="spring-btn flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold active:scale-95 transition-all shadow-md"
+                      className="spring-btn flex items-center gap-1.5 px-4 py-2 bg-[#FE336A] hover:bg-[#CE1A4D] text-white rounded-xl text-xs font-bold active:scale-95 transition-all shadow-md"
                     >
                       <Zap className={`w-3.5 h-3.5 ${simulating ? 'animate-spin' : ''}`} />
                       <span>{simulating ? 'Testing...' : 'Test Fall'}</span>
                     </button>
                     <button
                       onClick={resetMockFall}
-                      className="spring-btn p-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl border border-slate-200 active:scale-95 transition-all"
+                      className="spring-btn p-2 bg-[#F1F4F9] text-[#01373D] hover:bg-[#E5E9F0] rounded-xl border border-[#01373D]/8 active:scale-95 transition-all"
                       title="Reset Alarm"
                     >
-                      <RotateCcw className="w-4 h-4 text-slate-600" />
+                      <RotateCcw className="w-4 h-4 text-[#44706A]" />
                     </button>
                   </div>
                 </div>
@@ -473,27 +473,27 @@ export default function VitalGuardDashboard() {
 
               {/* Daily History List */}
               <div className="royal-card rounded-2xl p-4 sm:p-5 flex flex-col gap-3">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <h2 className="text-base font-black text-slate-900 tracking-tight">
+                <div className="flex items-center justify-between border-b border-[#01373D]/5 pb-3">
+                  <h2 className="text-base font-extrabold text-[#01373D] tracking-tight">
                     Past 30 Days Log
                   </h2>
-                  <span className="text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-md border border-sky-200">
+                  <span className="text-xs font-bold text-[#01373D] bg-[#01373D]/5 px-2.5 py-0.5 rounded-md border border-[#01373D]/10">
                     {records.length} Days
                   </span>
                 </div>
 
                 <div className="space-y-2 max-h-[40vh] lg:max-h-[380px] overflow-y-auto pr-1">
                   {records.map((r, i) => (
-                    <div key={i} className="p-3 bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/80 rounded-xl flex items-center justify-between text-xs transition-all">
+                    <div key={i} className="p-3 bg-[#F1F4F9]/80 hover:bg-[#E5E9F0]/80 border border-[#01373D]/6 rounded-xl flex items-center justify-between text-xs transition-all">
                       <div>
-                        <span className="font-bold text-slate-900 block">{r.day}</span>
-                        <span className="text-slate-500 text-xs">
-                          Heart: <strong className="text-slate-700">{r.avg_heart_rate}</strong> | Oxygen: <strong className="text-slate-700">{r.avg_spo2}%</strong>
+                        <span className="font-bold text-[#01373D] block">{r.day}</span>
+                        <span className="text-[#44706A] text-xs">
+                          Heart: <strong className="text-[#01373D]">{r.avg_heart_rate}</strong> | Oxygen: <strong className="text-[#01373D]">{r.avg_spo2}%</strong>
                         </span>
                       </div>
                       <div>
                         {r.fall_incidents > 0 ? (
-                          <span className="px-2.5 py-1 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg font-bold text-xs">
+                          <span className="px-2.5 py-1 bg-[#FE336A]/10 border border-[#FE336A]/20 text-[#FE336A] rounded-lg font-bold text-xs">
                             {r.fall_incidents} Fall
                           </span>
                         ) : (
@@ -511,19 +511,19 @@ export default function VitalGuardDashboard() {
           </div>
         )}
 
-        {/* Minimal Clinical Footer */}
-        <footer className="text-center py-6 border-t border-slate-200/80 text-xs text-slate-500 font-medium flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
+        {/* Biofarma-style Minimal Footer */}
+        <footer className="text-center py-6 border-t border-[#01373D]/5 text-xs text-[#44706A] font-medium flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-700">VitalGuard C3</span>
-            <span className="text-slate-300">|</span>
+            <span className="font-bold text-[#01373D]">VitalGuard C3</span>
+            <span className="text-[#01373D]/20">|</span>
             <span>Device 01</span>
-            <span className="text-slate-300">|</span>
+            <span className="text-[#01373D]/20">|</span>
             <span>Room 204</span>
           </div>
-          <div className="flex items-center gap-4 text-xs font-semibold text-slate-600">
-            <a href="/privacy" className="hover:text-sky-600 transition-colors">Privacy Policy</a>
-            <span className="text-slate-300">|</span>
-            <a href="/terms" className="hover:text-sky-600 transition-colors">Terms of Use</a>
+          <div className="flex items-center gap-4 text-xs font-semibold text-[#44706A]">
+            <a href="/privacy" className="hover:text-[#FE336A] transition-colors">Privacy Policy</a>
+            <span className="text-[#01373D]/20">|</span>
+            <a href="/terms" className="hover:text-[#FE336A] transition-colors">Terms of Use</a>
           </div>
         </footer>
 
@@ -534,20 +534,20 @@ export default function VitalGuardDashboard() {
         <div 
           role="alertdialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 bg-rose-950/95 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-6 animate-emergency-light"
+          className="fixed inset-0 z-50 bg-[#01373D]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-6 animate-emergency-light"
         >
           <div className="max-w-md w-full my-auto flex flex-col justify-between py-6">
             <div className="flex flex-col items-center text-center">
-              <div className="w-24 h-24 rounded-2xl bg-rose-600/30 border-2 border-rose-500 flex items-center justify-center mb-5 animate-bounce shadow-xl">
-                <AlertTriangle className="w-14 h-14 text-rose-400" />
+              <div className="w-24 h-24 rounded-2xl bg-[#FE336A]/30 border-2 border-[#FE336A] flex items-center justify-center mb-5 animate-bounce shadow-xl">
+                <AlertTriangle className="w-14 h-14 text-[#FE336A]" />
               </div>
-              <h2 className="text-3xl sm:text-4xl font-black text-white tracking-wide uppercase drop-shadow-md">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-wide uppercase drop-shadow-md">
                 FALL DETECTED!
               </h2>
-              <p className="text-rose-200 text-base mt-2 max-w-sm">
+              <p className="text-[#FE336A]/60 text-base mt-2 max-w-sm">
                 Alarm is ringing. Caregiver has been alerted.
               </p>
-              <div className="mt-3 px-3 py-1 rounded-md bg-rose-900/80 border border-rose-700 text-xs font-bold text-rose-300">
+              <div className="mt-3 px-3 py-1 rounded-md bg-[#01373D]/80 border border-[#01373D] text-xs font-bold text-white/50">
                 Device 01 | Room 204
               </div>
             </div>
@@ -555,13 +555,13 @@ export default function VitalGuardDashboard() {
             <div className="space-y-3 pt-8 w-full">
               <button
                 onClick={resetMockFall}
-                className="spring-btn w-full py-4 bg-white hover:bg-slate-100 text-rose-950 rounded-2xl font-black text-lg active:scale-95 shadow-2xl transition-all"
+                className="spring-btn w-full py-4 bg-white hover:bg-[#F9F8FF] text-[#01373D] rounded-2xl font-extrabold text-lg active:scale-95 shadow-2xl transition-all"
               >
                 I AM OKAY (CANCEL ALARM)
               </button>
               <button
                 onClick={resetMockFall}
-                className="spring-btn w-full py-3 bg-rose-900/80 hover:bg-rose-900 border border-rose-700 text-rose-200 rounded-2xl font-bold text-sm active:scale-95 transition-all"
+                className="spring-btn w-full py-3 bg-[#01373D]/80 hover:bg-[#01373D] border border-[#01373D] text-white/70 rounded-2xl font-bold text-sm active:scale-95 transition-all"
               >
                 Silence Alarm
               </button>

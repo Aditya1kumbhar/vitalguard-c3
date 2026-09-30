@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import "./globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-jakarta",
+  variable: "--font-dm-sans",
   display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -25,7 +26,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#ffffff",
+  themeColor: "#F9F8FF",
 };
 
 export default function RootLayout({
@@ -34,8 +35,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={jakarta.variable}>
-      <body className="font-sans antialiased text-slate-900 bg-[#f8fafc] selection:bg-sky-500 selection:text-white">
+    <html lang="en" className={dmSans.variable}>
+      <body className="font-sans antialiased text-[#01373D] bg-[#F9F8FF] selection:bg-[#FE336A] selection:text-white">
+        {/* Ambient background glow spheres */}
+        <div className="ambient-glow ambient-glow-pink" aria-hidden="true"></div>
+        <div className="ambient-glow ambient-glow-cyan" aria-hidden="true"></div>
         {children}
       </body>
     </html>

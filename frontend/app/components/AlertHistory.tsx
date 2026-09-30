@@ -75,10 +75,10 @@ export default function AlertHistory() {
 
   return (
     <div className="royal-card rounded-3xl p-4 sm:p-5 flex flex-col gap-3.5">
-      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+      <div className="flex items-center justify-between border-b border-[#01373D]/5 pb-3">
         <div className="flex items-center gap-2">
-          <Bell className="w-4 h-4 text-amber-500" />
-          <h2 className="text-base font-black text-slate-900 tracking-tight leading-none">
+          <Bell className="w-4 h-4 text-[#FE336A]" />
+          <h2 className="text-base font-extrabold text-[#01373D] tracking-tight leading-none">
             Recent Alerts
           </h2>
         </div>
@@ -86,13 +86,13 @@ export default function AlertHistory() {
         {alerts.length > 0 && (
           <div className="flex items-center gap-2">
             {unackCount > 0 && (
-              <span className="bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold px-2 py-0.5 rounded-md">
+              <span className="bg-[#FE336A]/10 text-[#FE336A] border border-[#FE336A]/20 text-xs font-bold px-2 py-0.5 rounded-md">
                 {unackCount} Unchecked
               </span>
             )}
             <button
               onClick={clearAlerts}
-              className="spring-btn text-xs text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-lg transition-all"
+              className="spring-btn text-xs text-[#44706A] hover:text-[#01373D] bg-[#F1F4F9] hover:bg-[#E5E9F0] px-2 py-1 rounded-lg transition-all"
               title="Clear all alerts"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -113,27 +113,27 @@ export default function AlertHistory() {
               key={alert.id}
               className={`flex items-center justify-between p-3 rounded-2xl text-xs transition-colors ${
                 alert.acknowledged
-                  ? "bg-slate-50/70 text-slate-500 border border-slate-200/80"
-                  : "bg-rose-50/80 text-rose-900 border border-rose-200 shadow-sm"
+                  ? "bg-[#F1F4F9]/70 text-[#44706A] border border-[#01373D]/6"
+                  : "bg-[#FE336A]/5 text-[#01373D] border border-[#FE336A]/15 shadow-sm"
               }`}
             >
               <div className="flex items-center gap-2">
                 {alert.acknowledged ? (
                   <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
                 ) : (
-                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <AlertTriangle className="w-4 h-4 text-[#FE336A] shrink-0" />
                 )}
                 <div>
-                  <span className="font-bold text-slate-900">Fall Detected</span>
-                  <span className="mx-1.5 text-slate-400">|</span>
-                  <span className="font-mono text-slate-600">{formatTime(alert.timestamp)}</span>
+                  <span className="font-bold text-[#01373D]">Fall Detected</span>
+                  <span className="mx-1.5 text-[#01373D]/20">|</span>
+                  <span className="font-mono text-[#44706A]">{formatTime(alert.timestamp)}</span>
                 </div>
               </div>
 
               {!alert.acknowledged ? (
                 <button
                   onClick={() => acknowledgeAlert(alert.id)}
-                  className="spring-btn flex items-center gap-1 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded-lg shadow-sm"
+                  className="spring-btn flex items-center gap-1 text-xs font-bold bg-[#FE336A] hover:bg-[#CE1A4D] text-white px-2.5 py-1 rounded-lg shadow-sm"
                 >
                   <Check className="w-3 h-3" />
                   <span>Check</span>
