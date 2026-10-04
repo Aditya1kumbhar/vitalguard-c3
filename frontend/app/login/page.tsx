@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Fingerprint, Activity, AlertCircle, KeyRound, CheckCircle2, User, Phone, Mail, Hash, Bluetooth } from 'lucide-react';
+import { ShieldCheck, Fingerprint, Activity, AlertCircle, KeyRound, CheckCircle2, User, Phone, Mail, Hash, Bluetooth, HeartPulse, Zap, Radio } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import PinPad from '../components/PinPad';
 import { 
@@ -501,283 +501,381 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 sm:p-6 relative">
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl relative z-10 flex flex-col items-center overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200 flex flex-col items-center justify-center p-3 sm:p-6 lg:p-10 relative overflow-x-hidden">
+      {/* Ambient decorative lighting for desktop */}
+      <div className="absolute top-12 left-12 w-96 h-96 bg-[#01373D]/5 rounded-full blur-3xl pointer-events-none -z-0" />
+      <div className="absolute bottom-12 right-12 w-96 h-96 bg-[#FE336A]/5 rounded-full blur-3xl pointer-events-none -z-0" />
+
+      <div className="w-full max-w-md lg:max-w-5xl bg-white border border-slate-200 rounded-3xl shadow-2xl relative z-10 flex flex-col lg:flex-row overflow-hidden transition-all duration-300">
         
-        {/* Header Tabs */}
-        <div className="w-full flex border-b border-slate-100 bg-slate-50">
-          <button 
-            onClick={() => { setTab('login'); setError(''); setStatusMessage(''); }}
-            className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${tab === 'login' ? 'text-[#01373D] border-b-2 border-[#FE336A] bg-white' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            Login
-          </button>
-          <button 
-            onClick={() => { setTab('signup'); setError(''); setStatusMessage(''); }}
-            className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${tab === 'signup' ? 'text-[#01373D] border-b-2 border-[#FE336A] bg-white' : 'text-slate-400 hover:text-slate-600'}`}
-          >
-            Sign Up
-          </button>
+        {/* Left Hero Panel (Visible on Desktop / PC screens) */}
+        <div className="hidden lg:flex lg:w-5/12 bg-gradient-to-br from-[#01373D] via-[#02434a] to-[#012428] text-white p-8 xl:p-10 flex-col justify-between relative overflow-hidden">
+          {/* Ambient decorative lighting */}
+          <div className="absolute -top-20 -right-20 w-56 h-56 bg-[#FE336A]/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-20 -left-20 w-56 h-56 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Top Branding Section */}
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] font-bold tracking-wider text-white/90 mb-6 uppercase">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Medical IoT Telemetry</span>
+            </div>
+
+            <div className="flex items-center gap-3.5 mb-4">
+              <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-inner">
+                <Activity className="w-7 h-7 text-[#FE336A] stroke-[2.5]" />
+              </div>
+              <div>
+                <h2 className="text-2xl xl:text-3xl font-black tracking-tight text-white leading-none">
+                  VitalGuard <span className="text-[#FE336A]">C3</span>
+                </h2>
+                <p className="text-[11px] text-slate-300 font-semibold tracking-wider mt-1 uppercase">
+                  Continuous Patient Care
+                </p>
+              </div>
+            </div>
+
+            <p className="text-slate-200/90 text-sm leading-relaxed mt-4 font-normal">
+              Intelligent patient vitals monitoring, instant dual-threshold fall detection, and FIDO2 passkey biometric authentication.
+            </p>
+          </div>
+
+          {/* Center Showcase Cards */}
+          <div className="my-6 space-y-3.5 relative z-10">
+            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs">
+              <div className="p-2 rounded-xl bg-rose-500/20 text-[#FE336A] shrink-0 mt-0.5">
+                <Zap className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Instant Fall Detection</h4>
+                <p className="text-xs text-slate-300 mt-0.5 leading-snug">100Hz MPU6050 accelerometer & gyro interrupt alarms under 100ms.</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs">
+              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0 mt-0.5">
+                <HeartPulse className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Precision Vital Signs</h4>
+                <p className="text-xs text-slate-300 mt-0.5 leading-snug">Continuous MAX30102 PPG optical Heart Rate & SpO2 blood oxygenation.</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs">
+              <div className="p-2 rounded-xl bg-sky-500/20 text-sky-400 shrink-0 mt-0.5">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Hardware-Locked Security</h4>
+                <p className="text-xs text-slate-300 mt-0.5 leading-snug">WebAuthn passkeys bind your patient wristband MAC to your verified identity.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Status Section */}
+          <div className="pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-300 font-medium relative z-10">
+            <div className="flex items-center gap-1.5">
+              <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+              <span>Web Bluetooth & LAN Ready</span>
+            </div>
+            <span className="text-white/70 font-semibold">FIDO2 / WebAuthn</span>
+          </div>
         </div>
 
-        <div className="p-6 sm:p-8 w-full flex flex-col items-center">
-          <div className="w-14 h-14 bg-[#01373D] rounded-2xl flex items-center justify-center shadow-md mb-4">
-            <Activity className="w-7 h-7 text-white stroke-[2.5]" />
-          </div>
+        {/* Right Form Panel (Universal PC & Mobile View) */}
+        <div className="w-full lg:w-7/12 flex flex-col justify-between bg-white">
           
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 mb-6">
-            VitalGuard <span className="text-[#FE336A]">C3</span>
-          </h1>
+          {/* Header Tabs */}
+          <div className="w-full flex border-b border-slate-100 bg-slate-50/80">
+            <button 
+              onClick={() => { setTab('login'); setError(''); setStatusMessage(''); }}
+              className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${tab === 'login' ? 'text-[#01373D] border-b-2 border-[#FE336A] bg-white' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              Login
+            </button>
+            <button 
+              onClick={() => { setTab('signup'); setError(''); setStatusMessage(''); }}
+              className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${tab === 'signup' ? 'text-[#01373D] border-b-2 border-[#FE336A] bg-white' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              Sign Up
+            </button>
+          </div>
 
-          <div className="w-full space-y-4 mb-6">
-            
-            {tab === 'signup' && (
-              <div className="w-full flex bg-slate-100 p-1 rounded-xl mb-2 border border-slate-200">
-                <button 
-                  onClick={() => {
-                    setAuthType('phone');
-                    setError('');
-                    if (!/^\d*$/.test(identifier)) setIdentifier('');
-                  }}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all ${authType === 'phone' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  <Phone className="w-3.5 h-3.5" /> Mobile No. (10 Digits)
-                </button>
-                <button 
-                  onClick={() => {
-                    setAuthType('email');
-                    setError('');
-                    if (/^\d+$/.test(identifier)) setIdentifier('');
-                  }}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all ${authType === 'email' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  <Mail className="w-3.5 h-3.5" /> Email Address
-                </button>
+          <div className="p-6 sm:p-8 lg:p-10 w-full flex flex-col items-center flex-1 justify-center">
+            {/* Mobile Header Logo (Visible on mobile screens) */}
+            <div className="flex lg:hidden flex-col items-center mb-6">
+              <div className="w-14 h-14 bg-[#01373D] rounded-2xl flex items-center justify-center shadow-md mb-3">
+                <Activity className="w-7 h-7 text-white stroke-[2.5]" />
               </div>
-            )}
+              <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+                VitalGuard <span className="text-[#FE336A]">C3</span>
+              </h1>
+            </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-1.5 pl-1">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
-                  {tab === 'signup' 
-                    ? (authType === 'phone' ? 'Mobile Number (Compulsory 10 Digits)' : 'Email Address (e.g. @gmail.com)')
-                    : 'Registered Mobile No. or Email'
-                  }
-                </label>
-                {tab === 'signup' ? (
-                  authType === 'phone' ? (
-                    identifier.length === 10 ? (
-                      <span className="text-emerald-600 font-bold text-xs flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> 10/10 Digits
-                      </span>
+            {/* Desktop Header Greeting (Visible on PC / Desktop) */}
+            <div className="hidden lg:block w-full mb-6 text-left">
+              <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                {tab === 'signup' ? 'Create Guardian Account' : 'Welcome Back'}
+              </h2>
+              <p className="text-xs text-slate-500 font-medium mt-1">
+                {tab === 'signup' 
+                  ? 'Pair your wristband and register hardware biometric passkey.' 
+                  : 'Authenticate with your verified device passkey or secure PIN.'
+                }
+              </p>
+            </div>
+
+            <div className="w-full space-y-4 mb-6">
+              {tab === 'signup' && (
+                <div className="w-full flex bg-slate-100 p-1 rounded-xl mb-2 border border-slate-200">
+                  <button 
+                    onClick={() => {
+                      setAuthType('phone');
+                      setError('');
+                      if (!/^\d*$/.test(identifier)) setIdentifier('');
+                    }}
+                    className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all ${authType === 'phone' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    <Phone className="w-3.5 h-3.5" /> Mobile No. (10 Digits)
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setAuthType('email');
+                      setError('');
+                      if (/^\d+$/.test(identifier)) setIdentifier('');
+                    }}
+                    className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all ${authType === 'email' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    <Mail className="w-3.5 h-3.5" /> Email Address
+                  </button>
+                </div>
+              )}
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5 pl-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
+                    {tab === 'signup' 
+                      ? (authType === 'phone' ? 'Mobile Number (Compulsory 10 Digits)' : 'Email Address (e.g. @gmail.com)')
+                      : 'Registered Mobile No. or Email'
+                    }
+                  </label>
+                  {tab === 'signup' ? (
+                    authType === 'phone' ? (
+                      identifier.length === 10 ? (
+                        <span className="text-emerald-600 font-bold text-xs flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> 10/10 Digits
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 font-semibold text-xs">
+                          {identifier.length}/10 Digits
+                        </span>
+                      )
                     ) : (
-                      <span className="text-slate-400 font-semibold text-xs">
-                        {identifier.length}/10 Digits
-                      </span>
+                      isValidEmail(identifier) ? (
+                        <span className="text-emerald-600 font-bold text-xs flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Valid Email
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 font-medium text-xs">
+                          Must be valid email
+                        </span>
+                      )
                     )
                   ) : (
-                    isValidEmail(identifier) ? (
+                    isValid10DigitPhone(identifier) ? (
+                      <span className="text-emerald-600 font-bold text-xs flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> 10-Digit Mobile
+                      </span>
+                    ) : isValidEmail(identifier) ? (
                       <span className="text-emerald-600 font-bold text-xs flex items-center gap-1">
                         <CheckCircle2 className="w-3.5 h-3.5" /> Valid Email
                       </span>
+                    ) : null
+                  )}
+                </div>
+                <div className="relative">
+                  {tab === 'signup' ? (
+                    authType === 'phone' ? (
+                      <Phone className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${identifier.length === 10 ? 'text-emerald-600' : 'text-slate-400'}`} />
                     ) : (
-                      <span className="text-slate-400 font-medium text-xs">
-                        Must be valid email
-                      </span>
+                      <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isValidEmail(identifier) ? 'text-emerald-600' : 'text-slate-400'}`} />
                     )
-                  )
-                ) : (
-                  isValid10DigitPhone(identifier) ? (
-                    <span className="text-emerald-600 font-bold text-xs flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> 10-Digit Mobile
-                    </span>
-                  ) : isValidEmail(identifier) ? (
-                    <span className="text-emerald-600 font-bold text-xs flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Valid Email
-                    </span>
-                  ) : null
-                )}
-              </div>
-              <div className="relative">
-                {tab === 'signup' ? (
-                  authType === 'phone' ? (
-                    <Phone className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${identifier.length === 10 ? 'text-emerald-600' : 'text-slate-400'}`} />
                   ) : (
-                    <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isValidEmail(identifier) ? 'text-emerald-600' : 'text-slate-400'}`} />
-                  )
-                ) : (
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                )}
-                <input 
-                  type={tab === 'signup' ? (authType === 'phone' ? 'tel' : 'email') : 'text'}
-                  inputMode={tab === 'signup' ? (authType === 'phone' ? 'numeric' : 'email') : undefined}
-                  maxLength={tab === 'signup' && authType === 'phone' ? 10 : undefined}
-                  value={identifier}
-                  onChange={(e) => {
-                    if (tab === 'signup' && authType === 'phone') {
-                      const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
-                      setIdentifier(digits);
-                    } else if (tab === 'signup' && authType === 'email') {
-                      setIdentifier(e.target.value.trim().toLowerCase());
-                    } else {
-                      setIdentifier(e.target.value.trim());
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  )}
+                  <input 
+                    type={tab === 'signup' ? (authType === 'phone' ? 'tel' : 'email') : 'text'}
+                    inputMode={tab === 'signup' ? (authType === 'phone' ? 'numeric' : 'email') : undefined}
+                    maxLength={tab === 'signup' && authType === 'phone' ? 10 : undefined}
+                    value={identifier}
+                    onChange={(e) => {
+                      if (tab === 'signup' && authType === 'phone') {
+                        const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        setIdentifier(digits);
+                      } else if (tab === 'signup' && authType === 'email') {
+                        setIdentifier(e.target.value.trim().toLowerCase());
+                      } else {
+                        setIdentifier(e.target.value.trim());
+                      }
+                    }}
+                    placeholder={
+                      tab === 'signup' 
+                        ? (authType === 'phone' ? 'Enter exactly 10 digits (e.g. 9876543210)' : 'e.g. yourname@gmail.com') 
+                        : 'Enter registered 10-digit number or email'
                     }
-                  }}
-                  placeholder={
-                    tab === 'signup' 
-                      ? (authType === 'phone' ? 'Enter exactly 10 digits (e.g. 9876543210)' : 'e.g. yourname@gmail.com') 
-                      : 'Enter registered 10-digit number or email'
-                  }
-                  className={`w-full bg-slate-50 border rounded-xl pl-10 pr-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none text-sm font-semibold transition-all ${
-                    (tab === 'signup' && authType === 'phone' && identifier.length === 10) ||
-                    (tab === 'signup' && authType === 'email' && isValidEmail(identifier)) ||
-                    (tab === 'login' && (isValid10DigitPhone(identifier) || isValidEmail(identifier)))
-                      ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/20'
-                      : 'border-slate-300 focus:border-[#01373D] focus:ring-2 focus:ring-[#01373D]/20'
-                  }`}
-                />
+                    className={`w-full bg-slate-50 border rounded-xl pl-10 pr-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none text-sm font-semibold transition-all ${
+                      (tab === 'signup' && authType === 'phone' && identifier.length === 10) ||
+                      (tab === 'signup' && authType === 'email' && isValidEmail(identifier)) ||
+                      (tab === 'login' && (isValid10DigitPhone(identifier) || isValidEmail(identifier)))
+                        ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/20'
+                        : 'border-slate-300 focus:border-[#01373D] focus:ring-2 focus:ring-[#01373D]/20'
+                    }`}
+                  />
+                </div>
+                {tab === 'signup' && authType === 'phone' && (
+                  <p className="text-[11px] text-slate-400 mt-1 pl-1 font-medium">
+                    {identifier.length === 10 
+                      ? '✓ 10-digit mobile number ready for passkey pairing' 
+                      : `Enter a 10-digit mobile number (${10 - identifier.length} digits remaining)`
+                    }
+                  </p>
+                )}
+                {tab === 'signup' && authType === 'email' && (
+                  <p className="text-[11px] text-slate-400 mt-1 pl-1 font-medium">
+                    {isValidEmail(identifier)
+                      ? '✓ Valid email address ready for passkey registration'
+                      : 'Valid email (e.g. name@gmail.com or official domain) is compulsory for security'
+                    }
+                  </p>
+                )}
               </div>
-              {tab === 'signup' && authType === 'phone' && (
-                <p className="text-[11px] text-slate-400 mt-1 pl-1 font-medium">
-                  {identifier.length === 10 
-                    ? '✓ 10-digit mobile number ready for passkey pairing' 
-                    : `Enter a 10-digit mobile number (${10 - identifier.length} digits remaining)`
-                  }
-                </p>
-              )}
-              {tab === 'signup' && authType === 'email' && (
-                <p className="text-[11px] text-slate-400 mt-1 pl-1 font-medium">
-                  {isValidEmail(identifier)
-                    ? '✓ Valid email address ready for passkey registration'
-                    : 'Valid email (e.g. name@gmail.com or official domain) is compulsory for security'
-                  }
-                </p>
+
+              {tab === 'signup' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 pl-1">
+                      Your Full Name
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input 
+                        type="text" 
+                        value={guardianName}
+                        onChange={(e) => setGuardianName(e.target.value)}
+                        placeholder="e.g. Aditya K."
+                        className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#01373D] focus:ring-2 focus:ring-[#01373D]/20 text-sm font-semibold transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5 pl-1">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                        Wristband / Device ID
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleDetectWristband}
+                        disabled={detectingBand}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2 py-0.5 rounded-lg transition-all shadow-xs"
+                        title="Auto-scan hardware MAC via Bluetooth"
+                      >
+                        <Bluetooth className={`w-3 h-3 ${detectingBand ? 'animate-pulse text-sky-500' : 'text-sky-600'}`} />
+                        <span>{detectingBand ? 'Detecting...' : 'Detect'}</span>
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input 
+                        type="text" 
+                        value={bandId}
+                        onChange={(e) => {
+                          setBandId(e.target.value);
+                          setBandDetectedMsg('');
+                        }}
+                        placeholder="e.g. VG-C3-AD01"
+                        className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#01373D] focus:ring-2 focus:ring-[#01373D]/20 text-sm font-bold uppercase transition-all"
+                      />
+                    </div>
+                    {bandDetectedMsg && (
+                      <p className="text-[11px] font-semibold text-emerald-600 mt-1 pl-1 flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                        <span>{bandDetectedMsg}</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
 
-            {tab === 'signup' && (
-              <>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 pl-1">
-                    Your Full Name
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input 
-                      type="text" 
-                      value={guardianName}
-                      onChange={(e) => setGuardianName(e.target.value)}
-                      placeholder="e.g. Aditya K."
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#01373D] focus:ring-2 focus:ring-[#01373D]/20 text-sm font-semibold transition-all"
-                    />
-                  </div>
+            <div className="w-full bg-slate-100 p-1 rounded-xl flex mb-6 border border-slate-200">
+              <button 
+                onClick={() => { setMode('passkey'); setError(''); }}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 ${mode === 'passkey' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-800'}`}
+              >
+                <Fingerprint className="w-4 h-4" /> Device Biometrics
+              </button>
+              <button 
+                onClick={() => { setMode('pin'); setError(''); }}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 ${mode === 'pin' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-800'}`}
+              >
+                <KeyRound className="w-4 h-4" /> Custom PIN
+              </button>
+            </div>
+
+            <div className="w-full flex flex-col items-center justify-center">
+              {mode === 'passkey' ? (
+                <div className="flex flex-col items-center w-full">
+                  <button 
+                    onClick={tab === 'signup' ? handleSignupAuth : handleLoginAuth}
+                    disabled={authenticating}
+                    className={`relative group w-32 h-32 rounded-full flex flex-col items-center justify-center transition-colors border-2 ${
+                      authenticating 
+                        ? 'bg-slate-100 border-[#01373D]' 
+                        : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-[#01373D] shadow-sm'
+                    }`}
+                  >
+                    <Fingerprint className={`w-14 h-14 ${authenticating ? 'text-[#01373D]' : 'text-slate-700 group-hover:text-[#01373D]'}`} />
+                    <span className="text-[11px] font-bold uppercase tracking-wider mt-2 text-slate-600">
+                      {authenticating ? 'Waiting...' : (tab === 'signup' ? 'Setup' : 'Verify')}
+                    </span>
+                  </button>
+                  <p className="text-xs text-slate-500 mt-4 max-w-xs text-center leading-relaxed">
+                    Triggers native <strong>Windows Hello</strong>, <strong>Fingerprint</strong>, or <strong>Device Screen Lock PIN</strong> directly to verify identity locally.
+                  </p>
                 </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1.5 pl-1">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                      Wristband / Device ID
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleDetectWristband}
-                      disabled={detectingBand}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2 py-0.5 rounded-lg transition-all shadow-xs"
-                      title="Auto-scan hardware MAC via Bluetooth"
-                    >
-                      <Bluetooth className={`w-3 h-3 ${detectingBand ? 'animate-pulse text-sky-500' : 'text-sky-600'}`} />
-                      <span>{detectingBand ? 'Detecting...' : 'Detect My Wristband'}</span>
-                    </button>
-                  </div>
-                  <div className="relative">
-                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input 
-                      type="text" 
-                      value={bandId}
-                      onChange={(e) => {
-                        setBandId(e.target.value);
-                        setBandDetectedMsg('');
-                      }}
-                      placeholder="e.g. VG-C3-AD01"
-                      className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#01373D] focus:ring-2 focus:ring-[#01373D]/20 text-sm font-bold uppercase transition-all"
-                    />
-                  </div>
-                  {bandDetectedMsg && (
-                    <p className="text-[11px] font-semibold text-emerald-600 mt-1 pl-1 flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                      <span>{bandDetectedMsg}</span>
-                    </p>
-                  )}
+              ) : (
+                <PinPad 
+                  title={tab === 'signup' ? "Create a 4 to 6-digit PIN" : "Enter your PIN"}
+                  onPinComplete={handlePinSubmit}
+                  error={error}
+                />
+              )}
+              
+              {statusMessage && (
+                <div className="mt-5 w-full px-3 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2 text-xs text-emerald-700 font-semibold animate-fadeIn">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                  <span>{statusMessage}</span>
                 </div>
-              </>
-            )}
-          </div>
-
-          <div className="w-full bg-slate-100 p-1 rounded-xl flex mb-6 border border-slate-200">
-            <button 
-              onClick={() => { setMode('passkey'); setError(''); }}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 ${mode === 'passkey' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-800'}`}
-            >
-              <Fingerprint className="w-4 h-4" /> Device Biometrics
-            </button>
-            <button 
-              onClick={() => { setMode('pin'); setError(''); }}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 ${mode === 'pin' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-800'}`}
-            >
-              <KeyRound className="w-4 h-4" /> Custom PIN
-            </button>
-          </div>
-
-          <div className="w-full flex flex-col items-center justify-center">
-            {mode === 'passkey' ? (
-              <div className="flex flex-col items-center w-full">
-                <button 
-                  onClick={tab === 'signup' ? handleSignupAuth : handleLoginAuth}
-                  disabled={authenticating}
-                  className={`relative group w-32 h-32 rounded-full flex flex-col items-center justify-center transition-colors border-2 ${
-                    authenticating 
-                      ? 'bg-slate-100 border-[#01373D]' 
-                      : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-[#01373D] shadow-sm'
-                  }`}
-                >
-                  <Fingerprint className={`w-14 h-14 ${authenticating ? 'text-[#01373D]' : 'text-slate-700 group-hover:text-[#01373D]'}`} />
-                  <span className="text-[11px] font-bold uppercase tracking-wider mt-2 text-slate-600">
-                    {authenticating ? 'Waiting...' : (tab === 'signup' ? 'Setup' : 'Verify')}
-                  </span>
-                </button>
-                <p className="text-xs text-slate-500 mt-4 max-w-xs text-center leading-relaxed">
-                  Triggers native <strong>Windows Hello</strong>, <strong>Fingerprint</strong>, or <strong>Device Screen Lock PIN</strong> directly to verify identity locally.
-                </p>
-              </div>
-            ) : (
-              <PinPad 
-                title={tab === 'signup' ? "Create a 4 to 6-digit PIN" : "Enter your PIN"}
-                onPinComplete={handlePinSubmit}
-                error={error}
-              />
-            )}
+              )}
+              
+              {error && mode === 'passkey' && (
+                <div className="mt-5 w-full px-3 py-2.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-xs text-rose-700 font-semibold animate-fadeIn text-left">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
+            </div>
             
-            {statusMessage && (
-              <div className="mt-5 w-full px-3 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2 text-xs text-emerald-700 font-semibold animate-fadeIn">
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-                <span>{statusMessage}</span>
-              </div>
-            )}
-            
-            {error && mode === 'passkey' && (
-              <div className="mt-5 w-full px-3 py-2.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-xs text-rose-700 font-semibold animate-fadeIn text-left">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
-                <span>{error}</span>
-              </div>
-            )}
           </div>
-          
-        </div>
 
-        <div className="border-t border-slate-100 bg-slate-50 w-full py-4 flex flex-col items-center justify-center">
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>FIDO2 / WebAuthn Compliant Identity Isolation</span>
+          <div className="border-t border-slate-100 bg-slate-50 w-full py-4 flex flex-col items-center justify-center">
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span>FIDO2 / WebAuthn Compliant Identity Isolation</span>
+            </div>
           </div>
+
         </div>
 
       </div>
