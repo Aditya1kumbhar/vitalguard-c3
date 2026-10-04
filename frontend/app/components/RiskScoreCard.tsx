@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { ShieldCheck, AlertCircle, RefreshCw, Heart, Activity, Check } from "lucide-react";
-import { getApiBase } from "../utils/api";
+import { getApiBase, authFetch } from "../utils/api";
 
 export default function RiskScoreCard() {
   const [score, setScore] = useState<number>(85);
@@ -12,7 +12,7 @@ export default function RiskScoreCard() {
   const fetchRisk = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${getApiBase()}/analytics/risk-score`);
+      const res = await authFetch(`${getApiBase()}/analytics/risk-score`);
       if (res.ok) {
         const d = await res.json();
         // Calculate health safety index (100 - risk score = safety score)

@@ -9,108 +9,185 @@
 
 ## 1. Entity-Relationship (ER) Diagram
 
-This diagram defines the seven data entities, their attributes, and the relationships between them using Chen notation.
+This section defines the data architecture, entity specifications, and cardinalities aligned with both academic **Chen Notation** (for theoretical schema defense) and **Relational Crow's-Foot Notation** (for database implementation).
 
-> **Notation Disclosure:** Mermaid.js does not support true Chen ER notation. The following required Chen symbols cannot be rendered natively in Mermaid:
-> - **Double-outline rectangle** for weak entity (VITAL_READING)
-> - **Double-outline ellipse** for multi-valued attributes (guardian_contact, phone)
-> - **Dashed-outline ellipse** for derived attribute (age)
-> - **Dashed-underlined text** for partial key (seq_no)
-> - **Double-outline diamond** for identifying relationship (RECORDS)
-> - **Double line** for total participation (DEVICE-RECORDS-VITAL_READING, DEVICE-LOGS-MOTION_EVENT)
->
-> The canonical Chen model is therefore described structurally in text below. A supplementary Mermaid erDiagram in **crow's-foot notation (not Chen)** is included afterward for machine-renderable reference only.
+![VitalGuard C3 Chen Entity-Relationship Diagram](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Chen_ER.png)
 
-### Chen Notation Structural Description
+> **Vector Asset:** Vector SVG source available at [VitalGuard_Chen_ER.svg](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Chen_ER.svg). Ultra-high resolution 300 DPI raster available at [VitalGuard_Chen_ER.png](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Chen_ER.png).
 
-**Entities**
+---
 
-| Entity | Shape | Type |
-|:---|:---|:---|
-| RESIDENT | Single Rectangle | Strong Entity |
-| CARETAKER | Single Rectangle | Strong Entity |
-| DEVICE | Single Rectangle | Strong Entity |
-| VITAL_READING | Double Rectangle | Weak Entity (existence-dependent on DEVICE) |
-| MOTION_EVENT | Single Rectangle | Strong Entity |
-| ALERT | Single Rectangle | Strong Entity |
-| GUARDIAN | Single Rectangle | Strong Entity (Phase 2 - Not Current Scope) |
+### Conceptual Architecture & Academic Evaluation
 
-**RESIDENT Attributes**
-- `resident_id` - Ellipse, underlined (Primary Key)
-- `full_name` - Ellipse
-- `date_of_birth` - Ellipse
-- `age` - Dashed-outline Ellipse (Derived from date_of_birth)
-- `guardian_contact` - Double Ellipse (Multi-Valued)
-- `room_no` - Ellipse
+Based on the hand-drawn system design:
+1. **User Wearable Binding (`USER` — `WEARS` — `DEVICE`)**:
+   - A 1:1 relationship between an elderly resident/user and their assigned IoT wearable device (ESP32-C3 band/watch).
+2. **Identifying Weak Relationship (`DEVICE` — `RECORDS` — `VITAL_READING` & `MOTION_EVENT`)**:
+   - Both continuous vital telemetry (Heart Rate, SpO2) and motion telemetry (MPU6050 accelerometer events) cannot exist independently of the generating hardware device.
+   - In Chen notation, `RECORDS` is an **identifying relationship (Double Diamond)**, and both `VITAL_READING` and `MOTION_EVENT` are **Weak Entities (Double Rectangles)** with partial discriminators (`seq_no` / `timestamp`).
+3. **Event Anomaly Detection (`TRIGGERS` — `ALERT`)**:
+   - **Normal Motion vs Fall Detection**: Normal motion telemetry is stored as continuous time-series logs. Only when the motion classification engine detects a fall (`event_type == 'FALL_DETECTED'`) or vital threshold breaches (tachycardia/hypoxia) is an `ALERT` entity instantiated via the `TRIGGERS` relationship (cardinality `0..1`).
+4. **Caretaker / Guardian Escalation (`ALERT` — `NOTIFIES` / `ACKNOWLEDGES` — `CARETAKER`)**:
+   - Once an emergency alert is triggered, it is dispatched to the Caretaker / Guardian dashboard and devices. The caretaker performs an `ACKNOWLEDGES` transaction, logging the resolution timestamp and status.
 
-**CARETAKER Attributes**
-- `caretaker_id` - Ellipse, underlined (Primary Key)
-- `full_name` - Ellipse
-- `email` - Ellipse
-- `phone` - Double Ellipse (Multi-Valued)
-- `role` - Ellipse
+---
 
-**DEVICE Attributes**
-- `device_id` - Ellipse, underlined (Primary Key)
-- `board_model` - Ellipse
-- `mac_address` - Ellipse
-- `battery_level` - Ellipse
-- `status` - Ellipse
+### Chen Notation Structural Specification
 
-**VITAL_READING Attributes** (Weak Entity)
-- `seq_no` - Ellipse, dashed-underlined (Partial Key)
-- `heart_rate` - Ellipse
-- `spo2` - Ellipse
-- `recorded_at` - Ellipse
+#### Entities
 
-**MOTION_EVENT Attributes**
-- `event_id` - Ellipse, underlined (Primary Key)
-- `event_type` - Ellipse
-- `confidence_score` - Ellipse
-- `recorded_at` - Ellipse
+| Entity | Shape in Chen | Classification | Description |
+|:---|:---|:---|:---|
+| **USER** | Single Rectangle | Strong Entity | Elderly resident or monitored patient. |
+| **DEVICE** | Single Rectangle | Strong Entity | Wearable hardware unit (ESP32-C3 watch/band). |
+| **VITAL_READING** | Double Rectangle | Weak Entity | Periodic sensor readings (MAX30102). Existence-dependent on `DEVICE`. |
+| **MOTION_EVENT** | Double Rectangle | Weak Entity | Motion telemetry & fall classification (MPU6050). Existence-dependent on `DEVICE`. |
+| **ALERT** | Single Rectangle | Strong Entity | Critical system notification generated upon anomaly detection. |
+| **CARETAKER** | Single Rectangle | Strong Entity | Healthcare professional / nurse attending to residents. |
+| **GUARDIAN** | Single Rectangle | Strong Entity | Family member / legal guardian linked to the user for emergency escalation. |
 
-**ALERT Attributes**
-- `alert_id` - Ellipse, underlined (Primary Key)
-- `alert_type` - Ellipse
-- `severity` - Ellipse
-- `status` - Ellipse
-- `created_at` - Ellipse
+#### Attributes
 
-**GUARDIAN Attributes** (Phase 2 - Not Current Scope)
-- `guardian_id` - Ellipse, underlined (Primary Key)
-- `full_name` - Ellipse
-- `phone` - Ellipse
-- `relationship` - Ellipse
+- **USER**:
+  - `user_id` — Ellipse, solid underline (**Primary Key**)
+  - `full_name` — Ellipse
+  - `date_of_birth` — Ellipse
+  - `age` — Dashed Ellipse (**Derived Attribute**, calculated from `date_of_birth`)
+  - `room_no` — Ellipse
+  - `emergency_contact` — Double Ellipse (**Multi-Valued Attribute**)
 
-**Relationships**
+- **DEVICE (Watch / Band)**:
+  - `device_id` — Ellipse, solid underline (**Primary Key**)
+  - `board_model` — Ellipse (e.g., `ESP32-C3 SuperMini`)
+  - `mac_address` — Ellipse
+  - `battery_level` — Ellipse
+  - `status` — Ellipse (`ONLINE`, `CHARGING`, `OFFLINE`)
 
-| Relationship | Diamond Shape | From | To | Cardinality | Participation |
-|:---|:---|:---|:---|:---|:---|
-| WEARS | Single Diamond | RESIDENT | DEVICE | 1 : 1 | Partial (Single Line) |
-| RECORDS | Double Diamond (Identifying) | DEVICE | VITAL_READING | 1 : M | Total (Double Line) |
-| LOGS | Single Diamond | DEVICE | MOTION_EVENT | 1 : M | Total (Double Line) |
-| RAISES | Single Diamond | RESIDENT | ALERT | 1 : M | Partial (Single Line) |
-| TRIGGERS | Single Diamond | MOTION_EVENT | ALERT | 1 : 0..1 | Partial (Single Line) |
-| ACKNOWLEDGES | Single Diamond | CARETAKER | ALERT | 1 : M | Partial (Single Line) |
-| REGISTERED_TO | Single Diamond | GUARDIAN | RESIDENT | M : 1 | Partial (Single Line) |
-| NOTIFIED_OF | Single Diamond | GUARDIAN | ALERT | 1 : M | Partial (Single Line) |
+- **VITAL_READING** *(Weak Entity)*:
+  - `seq_no` — Ellipse, dashed underline (**Partial Key / Discriminator**)
+  - `heart_rate` — Ellipse (BPM)
+  - `spo2` — Ellipse (%)
+  - `recorded_at` — Ellipse (Timestamp)
 
-### Supplementary Reference (Crow's-Foot Notation - NOT Chen)
+- **MOTION_EVENT** *(Weak Entity)*:
+  - `event_id` — Ellipse, dashed underline (**Partial Key / Discriminator**)
+  - `event_type` — Ellipse (`NORMAL_MOTION`, `FALL_DETECTED`)
+  - `accel_magnitude` — Ellipse (Total acceleration vector $g$)
+  - `confidence_score` — Ellipse (%)
+  - `recorded_at` — Ellipse (Timestamp)
 
-> This Mermaid block uses crow's-foot notation for quick visual reference. It does **not** represent Chen notation and cannot express multi-valued attributes, derived attributes, partial keys, weak entities, identifying relationships, or total participation lines documented above.
+- **ALERT**:
+  - `alert_id` — Ellipse, solid underline (**Primary Key**)
+  - `alert_type` — Ellipse (`FALL_DETECTED`, `CRITICAL_VITALS`, `PROLONGED_INACTIVITY`)
+  - `severity` — Ellipse (`CRITICAL`, `WARNING`, `INFO`)
+  - `status` — Ellipse (`ACTIVE`, `ACKNOWLEDGED`, `RESOLVED`)
+  - `created_at` — Ellipse
+  - `resolved_at` — Ellipse (Nullable)
+
+- **CARETAKER**:
+  - `caretaker_id` — Ellipse, solid underline (**Primary Key**)
+  - `full_name` — Ellipse
+  - `role` — Ellipse (`Nurse`, `Doctor`, `Supervisor`)
+  - `phone` — Double Ellipse (**Multi-Valued Attribute**)
+  - `email` — Ellipse
+
+- **GUARDIAN**:
+  - `guardian_id` — Ellipse, solid underline (**Primary Key**)
+  - `full_name` — Ellipse
+  - `relationship` — Ellipse (`Son`, `Daughter`, `Spouse`)
+  - `phone` — Ellipse
+
+#### Relationships
+
+| Relationship | Shape | From | To | Cardinality | Participation | Description |
+|:---|:---|:---|:---|:---|:---|:---|
+| **WEARS** | Single Diamond | USER | DEVICE | 1 : 1 | Partial (USER) - Total (DEVICE) | A resident wears exactly one device; each active device is worn by one user. |
+| **RECORDS** | Double Diamond (Identifying) | DEVICE | VITAL_READING | 1 : M | Total (Double Line) | Device continuously records vitals. Vitals cannot exist without a device. |
+| **RECORDS** | Double Diamond (Identifying) | DEVICE | MOTION_EVENT | 1 : M | Total (Double Line) | Device continuously records motion states. Cannot exist without a device. |
+| **TRIGGERS** | Single Diamond | VITAL_READING | ALERT | 1 : 0..1 | Partial | Triggered only when HR or SpO2 exceeds safe medical limits. |
+| **TRIGGERS** | Single Diamond | MOTION_EVENT | ALERT | 1 : 0..1 | Partial | Triggered only when `event_type == 'FALL_DETECTED'`. Normal motion does not trigger an alert. |
+| **NOTIFIES** | Single Diamond | ALERT | CARETAKER | M : 1..N | Total (ALERT) | Alerts are instantly pushed via WebSocket / SMS to registered caretakers. |
+| **ACKNOWLEDGES** | Single Diamond | CARETAKER | ALERT | 1 : M | Partial | Caretaker reviews and acknowledges the active alert. |
+| **REGISTERED_TO**| Single Diamond | GUARDIAN | USER | M : 1 | Partial | Guardians are linked to their respective family member/user. |
+| **ESCALATES_TO** | Single Diamond | ALERT | GUARDIAN | M : 0..N | Partial | Critical unacknowledged alerts escalate to family guardians. |
+
+---
+
+### Visual Chen-Notation Diagram (Conceptual Graph)
+
+This flowchart diagram renders the exact Chen semantic shapes: single rectangles for strong entities, double rectangles `[[ ]]` for weak entities, diamonds `{ }` for relationships, and double diamonds for identifying relationships.
+
+```mermaid
+graph TD
+    %% Entities
+    USER["[ USER / RESIDENT ]"]:::strongEntity
+    DEVICE["[ DEVICE (Watch / Band) ]"]:::strongEntity
+    VITAL[["[[ VITAL_READING ]]"]]:::weakEntity
+    MOTION[["[[ MOTION_EVENT ]]"]]:::weakEntity
+    ALERT["[ ALERT ]"]:::strongEntity
+    CARETAKER["[ CARETAKER ]"]:::strongEntity
+    GUARDIAN["[ GUARDIAN ]"]:::strongEntity
+
+    %% Relationships
+    WEARS{"wears"}:::relSingle
+    RECORDS{{"records (identifying)"}}:::relDouble
+    TRIG_V{"triggers"}:::relSingle
+    TRIG_M{"triggers"}:::relSingle
+    NOTIF{"notifies / sends to"}:::relSingle
+    ACK{"acknowledges"}:::relSingle
+    REG{"registered to"}:::relSingle
+
+    %% Connections
+    USER ---|1| WEARS
+    WEARS ---|1| DEVICE
+
+    DEVICE ===|1| RECORDS
+    RECORDS ===|M| VITAL
+    RECORDS ===|M| MOTION
+
+    VITAL -.-|if abnormal HR/SpO2| TRIG_V
+    TRIG_V -->|1| ALERT
+
+    MOTION -.-|if fall detected| TRIG_M
+    TRIG_M -->|1| ALERT
+
+    ALERT ---|M| NOTIF
+    NOTIF --->|N| CARETAKER
+    NOTIF -.->|escalation| GUARDIAN
+
+    CARETAKER ---|1| ACK
+    ACK ---|M| ALERT
+
+    GUARDIAN ---|M| REG
+    REG ---|1| USER
+
+    classDef strongEntity fill:#f8fafc,stroke:#0f172a,stroke-width:2px,color:#0f172a;
+    classDef weakEntity fill:#f1f5f9,stroke:#0f172a,stroke-width:3px,color:#0f172a;
+    classDef relSingle fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
+    classDef relDouble fill:#e0e7ff,stroke:#4f46e5,stroke-width:3px,color:#3730a3;
+```
+
+---
+
+### Relational Schema Diagram (Crow's-Foot Notation)
+
+For direct translation to PostgreSQL / SQLite database tables and foreign keys:
 
 ```mermaid
 erDiagram
-    RESIDENT {
-        string resident_id PK
+    USER {
+        string user_id PK
         string full_name
         date date_of_birth
+        int age "Derived"
         string room_no
+        string emergency_contact
     }
     CARETAKER {
         string caretaker_id PK
         string full_name
         string email
+        string phone
         string role
     }
     DEVICE {
@@ -121,308 +198,451 @@ erDiagram
         string status
     }
     VITAL_READING {
-        int seq_no "Partial Key - weak entity"
+        int seq_no PK "Partial Key"
+        string device_id FK "Identifying Owner"
         int heart_rate
         int spo2
         datetime recorded_at
     }
     MOTION_EVENT {
-        string event_id PK
-        string event_type
+        string event_id PK "Partial Key"
+        string device_id FK "Identifying Owner"
+        string event_type "NORMAL_MOTION | FALL_DETECTED"
+        float accel_magnitude
         float confidence_score
         datetime recorded_at
     }
     ALERT {
         string alert_id PK
-        string alert_type
-        string severity
-        string status
+        string trigger_source "VITAL | MOTION"
+        string alert_type "FALL | HIGH_HR | LOW_SPO2"
+        string severity "CRITICAL | WARNING | INFO"
+        string status "ACTIVE | ACKNOWLEDGED | RESOLVED"
         datetime created_at
+        datetime resolved_at
     }
     GUARDIAN {
         string guardian_id PK
+        string user_id FK
         string full_name
         string phone
         string relationship
     }
 
-    RESIDENT ||--|| DEVICE : "WEARS"
-    DEVICE ||--|{ VITAL_READING : "RECORDS"
-    DEVICE ||--|{ MOTION_EVENT : "LOGS"
-    RESIDENT ||--|{ ALERT : "RAISES"
-    MOTION_EVENT ||--o| ALERT : "TRIGGERS"
+    USER ||--|| DEVICE : "WEARS"
+    DEVICE ||--|{ VITAL_READING : "RECORDS (identifying)"
+    DEVICE ||--|{ MOTION_EVENT : "RECORDS (identifying)"
+    VITAL_READING ||--o| ALERT : "TRIGGERS (on threshold breach)"
+    MOTION_EVENT ||--o| ALERT : "TRIGGERS (on fall detection)"
     CARETAKER ||--|{ ALERT : "ACKNOWLEDGES"
-    GUARDIAN }|--|| RESIDENT : "REGISTERED_TO"
-    GUARDIAN ||--|{ ALERT : "NOTIFIED_OF"
+    ALERT }|--|| CARETAKER : "NOTIFIES"
+    USER ||--|{ GUARDIAN : "ASSOCIATED_WITH"
+    ALERT }o--o| GUARDIAN : "ESCALATES_TO"
 ```
 
 ---
 
-## 2. Class Diagram
+## 2. Class Diagram (Black Book Section 4.2)
 
-This diagram defines the software class hierarchy with inheritance, composition, and association relationships.
+This section defines the software class hierarchy, data attributes, member operations (methods), and UML object relationships (Association, Composition, Cardinality) adhering strictly to the academic UML standards approved by university examiners.
+
+![VitalGuard C3 Class Diagram](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Class_Diagram.png)
+
+> **Vector Asset:** Vector SVG source available at [VitalGuard_Class_Diagram.svg](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Class_Diagram.svg). Ultra-high resolution 300 DPI raster available at [VitalGuard_Class_Diagram.png](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Class_Diagram.png).
+
+---
+
+### Class Specifications & Academic Semantics
+
+Following standard 3-compartment UML specification (Class Name, Attributes with explicit types and `{PK}`, Member Methods):
+
+1. **`CARETAKER` (Admin / Healthcare Provider)**:
+   - **Attributes**: `+ caretaker_id : int {PK}`, `+ name : string`, `+ email : string`, `+ phone : string`, `+ role : string`
+   - **Operations**: `+ addResident()`, `+ removeResident()`, `+ monitorTelemetry()`, `+ acknowledgeAlert()`
+   - **Role**: Manages elderly residents and reviews real-time anomaly alerts.
+
+2. **`RESIDENT` (Monitored Subject)**:
+   - **Attributes**: `+ resident_id : int {PK}`, `+ name : string`, `+ age : int`, `+ room_no : string`, `+ emergency_contact : string`
+   - **Operations**: `+ wearDevice()`, `+ getHealthHistory()`, `+ triggerSOS()`, `+ viewAlerts()`
+   - **Role**: The central subject bound to a single wearable IoT device.
+
+3. **`DEVICE` (ESP32-C3 Wearable Hardware)**:
+   - **Attributes**: `+ device_id : int {PK}`, `+ mac_address : string`, `+ battery_level : int`, `+ status : string`, `+ board_model : string`
+   - **Operations**: `+ readSensors()`, `+ processMotion()`, `+ sendTelemetry()`, `+ soundBuzzer()`
+   - **Role**: Edge computing node executing sensor acquisition and local fall detection.
+
+4. **`VITAL_READING` (MAX30102 Telemetry Entity)**:
+   - **Attributes**: `+ reading_id : int {PK}`, `+ heart_rate : int`, `+ spo2 : int`, `+ temperature : float`, `+ recorded_at : datetime`
+   - **Operations**: `+ checkThreshold()`, `+ logReading()`, `+ getVitalsStream()`
+   - **Semantics**: Composed inside `DEVICE` (filled diamond `◆`). Existence ceases if device data stream is destroyed.
+
+5. **`MOTION_EVENT` (MPU6050 Accelerometer Telemetry Entity)**:
+   - **Attributes**: `+ event_id : int {PK}`, `+ event_type : string`, `+ accel_magnitude : float`, `+ confidence : float`, `+ recorded_at : datetime`
+   - **Operations**: `+ computeSVM()`, `+ detectFall()`, `+ logEvent()`
+   - **Semantics**: Composed inside `DEVICE` (filled diamond `◆`). Distinguishes `NORMAL_MOTION` from `FALL_DETECTED`.
+
+6. **`ALERT` (Emergency Notification Dispatch)**:
+   - **Attributes**: `+ alert_id : int {PK}`, `+ alert_type : string`, `+ severity : string`, `+ status : string`, `+ created_at : datetime`
+   - **Operations**: `+ triggerAlarm()`, `+ sendNotification()`, `+ markAcknowledged()`, `+ escalateAlert()`
+   - **Semantics**: Instantiated when `VITAL_READING` or `MOTION_EVENT` crosses safety boundaries; acknowledged by `CARETAKER`.
+
+---
+
+### Class Diagram (Mermaid Representation)
 
 ```mermaid
 classDiagram
-    class Sensor {
-        <<abstract>>
-        #sensorType : string
-        #isActive : bool
-        +initialize() void
-        +readData() void
+    class CARETAKER {
+        +int caretaker_id PK
+        +string name
+        +string email
+        +string phone
+        +string role
+        +addResident() void
+        +removeResident() void
+        +monitorTelemetry() void
+        +acknowledgeAlert() void
     }
 
-    class HeartRateSensor {
-        -i2cAddress : uint8_t
-        -heartRate : int
-        -spo2 : int
-        +readPPG() void
-        +getHeartRate() int
-        +getSpO2() int
+    class RESIDENT {
+        +int resident_id PK
+        +string name
+        +int age
+        +string room_no
+        +string emergency_contact
+        +wearDevice() void
+        +getHealthHistory() void
+        +triggerSOS() void
+        +viewAlerts() void
     }
 
-    class MotionSensor {
-        -accelX : float
-        -accelY : float
-        -accelZ : float
-        +readAcceleration() void
+    class DEVICE {
+        +int device_id PK
+        +string mac_address
+        +int battery_level
+        +string status
+        +string board_model
+        +readSensors() void
+        +processMotion() void
+        +sendTelemetry() void
+        +soundBuzzer() void
+    }
+
+    class VITAL_READING {
+        +int reading_id PK
+        +int heart_rate
+        +int spo2
+        +float temperature
+        +datetime recorded_at
+        +checkThreshold() bool
+        +logReading() void
+        +getVitalsStream() void
+    }
+
+    class MOTION_EVENT {
+        +int event_id PK
+        +string event_type
+        +float accel_magnitude
+        +float confidence
+        +datetime recorded_at
         +computeSVM() float
+        +detectFall() bool
+        +logEvent() void
     }
 
-    class WearableDevice {
-        -deviceId : string
-        -boardModel : string
-        -batteryLevel : int
-        -connectionState : string
-        +initialize() void
-        +run() void
+    class ALERT {
+        +int alert_id PK
+        +string alert_type
+        +string severity
+        +string status
+        +datetime created_at
+        +triggerAlarm() void
+        +sendNotification() void
+        +markAcknowledged() void
+        +escalateAlert() void
     }
 
-    class AIClassifier {
-        -modelType : string
-        -threshold : float
-        +classifyFall(svm) bool
-        +classifyVitalAnomaly(hr, spo2) bool
-    }
-
-    class BLEConnector {
-        -serviceUUID : string
-        -isConnected : bool
-        +advertise() void
-        +notify(data) void
-    }
-
-    class VitalReading {
-        -seqNo : int
-        -heartRate : int
-        -spo2 : int
-        -recordedAt : datetime
-    }
-
-    class MotionEvent {
-        -eventId : string
-        -eventType : string
-        -confidenceScore : float
-        -recordedAt : datetime
-    }
-
-    class Alert {
-        -alertId : string
-        -alertType : string
-        -severity : string
-        -status : string
-        -createdAt : datetime
-    }
-
-    class Resident {
-        -residentId : string
-        -fullName : string
-        -roomNo : string
-    }
-
-    class Caretaker {
-        -caretakerId : string
-        -fullName : string
-        -role : string
-        +acknowledgeAlert(alertId) void
-    }
-
-    class Guardian {
-        <<Phase2>>
-        -guardianId : string
-        -fullName : string
-        -phone : string
-        -relationship : string
-    }
-
-    Sensor <|-- HeartRateSensor
-    Sensor <|-- MotionSensor
-    WearableDevice *-- HeartRateSensor
-    WearableDevice *-- MotionSensor
-    WearableDevice *-- AIClassifier
-    WearableDevice *-- BLEConnector
-    AIClassifier --> VitalReading : produces
-    AIClassifier --> MotionEvent : produces
-    MotionEvent --> Alert : triggers
-    Resident --> WearableDevice : wears
-    Resident --> VitalReading : has
-    Resident --> MotionEvent : has
-    Resident --> Alert : raises
-    Caretaker --> Alert : acknowledges
-    Guardian --> Resident : registered_to
-    Guardian --> Alert : notified_of
+    CARETAKER "1" --> "0..*" RESIDENT : manages
+    RESIDENT "1" --> "1" DEVICE : wears
+    DEVICE "1" *-- "0..*" VITAL_READING : contains (composition)
+    DEVICE "1" *-- "0..*" MOTION_EVENT : contains (composition)
+    VITAL_READING "0..1" --> "0..*" ALERT : triggers
+    MOTION_EVENT "0..1" --> "0..*" ALERT : triggers
+    CARETAKER "1" --> "0..*" ALERT : acknowledges
 ```
 
 ---
 
-## 3. Object Diagram (Runtime Snapshot)
+## 3. Object Diagram (Black Book Section 4.3)
 
-This diagram shows concrete object instances at a specific moment in time: a fall has been detected and an alert is pending acknowledgment.
+In accordance with **SPPU (Savitribai Phule Pune University) System Design standards**, the Object Diagram serves as a **concrete runtime snapshot** of the Class Diagram (Section 4.2). It illustrates the exact state of instantiated objects, attribute values, and inter-object links at a critical moment in execution: **A high-severity fall incident detected in progress and actively dispatched to the Guardian**.
 
-> **Notation Note:** Mermaid does not have a dedicated object diagram type. The classDiagram syntax is used here with stereotype annotations to represent named object instances.
+![VitalGuard C3 Object Diagram](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Object_Diagram.png)
+
+> **Vector Asset:** Vector SVG source available at [VitalGuard_Object_Diagram.svg](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Object_Diagram.svg). Ultra-high resolution 300 DPI raster available at [VitalGuard_Object_Diagram.png](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Object_Diagram.png).
+
+---
+
+### Runtime Snapshot Specifications (T = 21:14:03 IST)
+
+Following standard UML 2-compartment object box notation with underlined identifiers (`instance_name : ClassName`):
+
+1. **`caretaker_1 : CARETAKER`**:
+   - `caretaker_id = 201`, `name = "Priya Sharma"`, `email = "priya@care.in"`, `phone = "+91-9876543210"`, `role = "Family Guardian"`
+   - *State*: Actively viewing Next.js clinical dashboard; received emergency push notification.
+2. **`resident_1 : RESIDENT`**:
+   - `resident_id = 101`, `name = "Ramesh Sharma"`, `age = 74`, `room_no = "A-204"`, `emergency_contact = "Priya S."`
+   - *State*: Experienced sudden slip and impact in room A-204.
+3. **`device_1 : DEVICE`**:
+   - `device_id = 501`, `mac_address = "E4:65:B8:1A:2F:3C"`, `battery_level = 82%`, `status = "CONNECTED"`, `board_model = "ESP32-C3 SuperMini"`
+   - *State*: Worn on wrist; continuous 50Hz sensor acquisition active.
+4. **`reading_1 : VITAL_READING`**:
+   - `reading_id = 9021`, `heart_rate = 118 BPM`, `spo2 = 91%`, `temperature = 37.1 C`, `recorded_at = 21:14:02.105`
+   - *State*: Tachycardia spike observed immediately post-impact.
+5. **`motion_1 : MOTION_EVENT`**:
+   - `event_id = 4402`, `event_type = "FALL_DETECTED"`, `accel_magnitude = 2.85g`, `confidence = 0.946`, `recorded_at = 21:14:02.820`
+   - *State*: Freefall (<0.4g) followed by 2.85g impact and sustained post-impact stillness.
+6. **`alert_1 : ALERT`**:
+   - `alert_id = 8801`, `alert_type = "FALL_DETECTED"`, `severity = "CRITICAL"`, `status = "TRIGGERED"`, `created_at = 21:14:03.010`
+   - *State*: Active buzzer alarm on wrist; emergency modal popped up on Guardian screen.
+
+---
+
+### Object Diagram (Mermaid Representation)
 
 ```mermaid
 classDiagram
-    class resident1["resident_1 : Resident"] {
-        residentId : R001
-        fullName : SAMPLE_NAME
-        roomNo : 12B
+    class caretaker_1 {
+        <<CARETAKER>>
+        caretaker_id = 201
+        name = "Priya Sharma"
+        phone = "+91-9876543210"
+        role = "Family Guardian"
     }
 
-    class device1["device_1 : WearableDevice"] {
-        deviceId : D001
-        boardModel : ESP32-C3
-        batteryLevel : 78
-        connectionState : connected
+    class resident_1 {
+        <<RESIDENT>>
+        resident_id = 101
+        name = "Ramesh Sharma"
+        age = 74
+        room_no = "A-204"
     }
 
-    class motionSensor1["motionSensor_1 : MotionSensor"] {
-        accelX : 0.02
-        accelY : neg0.01
-        accelZ : 0.30
+    class device_1 {
+        <<DEVICE>>
+        device_id = 501
+        mac_address = "E4:65:B8:1A:2F:3C"
+        battery_level = 82
+        status = "CONNECTED"
     }
 
-    class aiClassifier1["aiClassifier_1 : AIClassifier"] {
-        modelType : DecisionTree
-        threshold : 2.5
+    class reading_1 {
+        <<VITAL_READING>>
+        reading_id = 9021
+        heart_rate = 118
+        spo2 = 91
+        recorded_at = "21:14:02"
     }
 
-    class motionEvent1["motionEvent_1 : MotionEvent"] {
-        eventId : ME001
-        eventType : fall
-        confidenceScore : 0.91
+    class motion_1 {
+        <<MOTION_EVENT>>
+        event_id = 4402
+        event_type = "FALL_DETECTED"
+        accel_magnitude = 2.85
+        confidence = 0.946
     }
 
-    class alert1["alert_1 : Alert"] {
-        alertId : A001
-        alertType : Fall
-        severity : High
-        status : Unacknowledged
+    class alert_1 {
+        <<ALERT>>
+        alert_id = 8801
+        alert_type = "FALL_DETECTED"
+        severity = "CRITICAL"
+        status = "TRIGGERED"
     }
 
-    class caretaker1["caretaker_1 : Caretaker"] {
-        caretakerId : C001
-        fullName : SAMPLE_NAME
-        role : DutyNurse
-    }
-
-    resident1 --> device1 : wears
-    device1 *-- motionSensor1 : contains
-    device1 *-- aiClassifier1 : contains
-    aiClassifier1 --> motionEvent1 : produced
-    motionEvent1 --> alert1 : triggered
-    caretaker1 ..> alert1 : not_yet_acknowledged
+    caretaker_1 -- resident_1 : manages
+    resident_1 -- device_1 : wears
+    device_1 -- reading_1 : records
+    device_1 -- motion_1 : records
+    reading_1 -- alert_1 : triggers
+    motion_1 -- alert_1 : triggers
+    caretaker_1 -- alert_1 : notified_of
 ```
 
 ---
 
-## 4. Sequence Diagram (Fall Detection and Alert Path)
+## 4. Sequence Diagram (Black Book Section 4.4)
 
-This diagram traces the message flow during a fall event, from sensor sampling through autonomous on-device actuation and optional remote notification.
+In accordance with **SPPU (Savitribai Phule Pune University) System Design standards**, the Sequence Diagram visualizes the **dynamic chronological interactions** between actors, hardware sensors, embedded firmware, and backend/frontend subsystems during the critical safety path: **"Continuous Telemetry Sampling, Edge Fall Detection, Autonomous Wrist Actuation, and Remote Guardian Acknowledgment"**.
+
+![VitalGuard C3 Sequence Diagram](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Sequence_Diagram.png)
+
+> **Vector Asset:** Vector SVG source available at [VitalGuard_Sequence_Diagram.svg](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Sequence_Diagram.svg). Ultra-high resolution 300 DPI raster available at [VitalGuard_Sequence_Diagram.png](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Sequence_Diagram.png).
+
+---
+
+### Lifeline & Message Architecture
+
+Ordered logically from Local Peripherals to Edge Controller to Cloud & Guardian:
+
+1. **`Resident (Wearer)`** [«Actor»]: Elderly individual wearing the VitalGuard C3 smart band.
+2. **`Buzzer / LED (Wrist Actuator)`** [«Device»]: High-decibel piezo buzzer (85 dB) and ultra-bright red visual strobe LED driven directly via GPIO with **zero network dependency**.
+3. **`Sensors (MAX30102 / MPU6050)`** [«Device»]: I2C bus peripherals providing 6-DOF inertial measurement and optical PPG bio-signals.
+4. **`ESP32-C3 (Edge Controller)`** [«Controller»]: RISC-V SoC executing continuous sampling, 3-stage SVM classification, autonomous GPIO actuation, and wireless telemetry dispatch.
+5. **`FastAPI Relay (Backend Server)`** [«Boundary»]: High-throughput asynchronous gateway managing WebSocket broadcast channels and alert persistence.
+6. **`Web Dashboard (Next.js UI)`** [«Boundary»]: Clinical web application displaying real-time patient status, waveforms, and urgent emergency modals.
+7. **`Guardian (Caretaker)`** [«Actor»]: Designated family member or nurse receiving immediate audible triage alerts and acknowledging assistance.
+
+---
+
+### Sequence Diagram (Mermaid Representation)
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Resident
-    participant MPU as MPU6050
-    participant ESP as ESP32-C3
-    participant BUZZ as BuzzerLED
-    participant BLE as BLE GATT
-    participant WebApp as Web Dashboard
+    actor Resident as Resident (Wearer)
+    participant Buzzer as Buzzer / LED (Wrist Actuator)
+    participant Sensors as Sensors (MAX30102/MPU6050)
+    participant ESP as ESP32-C3 (Edge Controller)
+    participant Backend as FastAPI Relay (Backend Server)
+    participant WebApp as Web Dashboard (Next.js UI)
+    actor Guardian as Guardian (Caretaker)
 
-    loop Periodic Sensor Sampling
-        ESP->>MPU: Read acceleration registers (Ax, Ay, Az)
-        MPU-->>ESP: Return motion vectors
-        ESP->>ESP: Compute SVM = sqrt(Ax^2 + Ay^2 + Az^2)
+    rect rgb(248, 250, 252)
+    Note over Sensors,ESP: loop [Continuous 50Hz Sensor Acquisition (Every 20ms)]
+    ESP->>Sensors: 1: readRegisters(I2C, MPU6050_REG_ACCEL)
+    Sensors-->>ESP: 2: rawAx, rawAy, rawAz, PPG (IR, Red)
+    ESP->>ESP: 3: computeSVM() = sqrt(Ax² + Ay² + Az²)
     end
 
-    alt Stage 1: Free-Fall Detected
-        ESP->>ESP: SVM drops below 0.4g
-    else Stage 2: Impact Detected
-        ESP->>ESP: SVM exceeds 2.5g shortly after Stage 1
-    else Stage 3: Post-Impact Stillness
-        ESP->>ESP: SVM stays within 0.3g of 1.0g for several seconds
+    Resident->>Sensors: 4: Sudden Slip / Freefall & High-G Impact
+    Sensors-->>ESP: 5: Freefall (<0.4g) + Impact (>2.5g) Spike
+    ESP->>ESP: 6: classifyFall() -> CONFIRMED (Confidence = 94.6%)
+
+    rect rgb(254, 242, 242)
+    Note over Resident,ESP: critical [Autonomous Local Actuation — Zero Cloud Dependency]
+    ESP->>Buzzer: 7: digitalWrite(BUZZER_PIN, HIGH) & enableLED()
+    Buzzer-->>Resident: 8: Audible 85dB Siren + Red Strobe LED Emitted
     end
 
-    critical Autonomous Local Actuation (Zero Network Dependency)
-        ESP->>BUZZ: Drive GPIO HIGH (activate buzzer and LED)
-        BUZZ-->>Resident: Audible alarm and visual warning
-    end
+    ESP->>Backend: 9: dispatchAlert(FALL_CONFIRMED, TelemetryPayload)
+    Backend->>WebApp: 10: WebSocket broadcast: PUSH_EMERGENCY_MODAL
+    WebApp-->>Guardian: 11: Audio Siren + Full-Screen Red Modal UI
 
-    opt Best-Effort Remote Notification
-        ESP->>BLE: Transmit telemetry via GATT notification
-        BLE-->>WebApp: Dispatch BLE event
-        WebApp->>WebApp: Render emergency alert modal
+    rect rgb(248, 250, 252)
+    Note over Buzzer,Guardian: alt [Guardian Triage & Remote Alarm Silencing]
+    Guardian->>WebApp: 12: Click "Acknowledge & Silence Alarm"
+    WebApp->>Backend: 13: POST /api/alerts/acknowledge {alert_id, status}
+    Backend->>ESP: 14: BLE / WebSocket Cmd: SILENCE_ALARM
+    ESP->>Buzzer: 15: digitalWrite(BUZZER_PIN, LOW) -> Alarm Silenced
+    ESP-->>Backend: 16: ACK: Alarm Silenced (Assistance En-Route)
+    Backend-->>WebApp: 17: WebSocket: UPDATE_STATUS_RESOLVED
     end
-
-    Note over WebApp,ESP: Caretaker checks resident and dismisses alarm
-    WebApp->>ESP: Send alarm dismissal command
-    ESP->>BUZZ: Drive GPIO LOW (silence buzzer and LED)
 ```
 
 ---
 
-## 5. Activity Diagram
+## 5. Activity Diagram (Black Book Section 4.5)
 
-This diagram models the system's operational workflow split across two swimlanes, distinguishing on-device logic from optional network-dependent display.
+In accordance with **SPPU (Savitribai Phule Pune University) System Design standards**, the Activity Diagram models the **workflow control logic, concurrent execution threads, decision nodes, and synchronization points** across distinct system partitions (Swimlanes).
 
-> **Notation Disclosure:** Mermaid.js does not support native UML activity diagram elements (filled-circle initial/final nodes, fork/join bars, or formal swimlane partitions). Subgraphs are used to approximate swimlanes, and standard flowchart shapes substitute for UML activity notation elements.
+![VitalGuard C3 Activity Diagram](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Activity_Diagram.png)
+
+> **Vector Asset:** Vector SVG source available at [VitalGuard_Activity_Diagram.svg](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Activity_Diagram.svg). Ultra-high resolution 300 DPI raster available at [VitalGuard_Activity_Diagram.png](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Activity_Diagram.png).
+
+---
+
+### Swimlane Structural Partitions
+
+1. **Swimlane 1: `Resident (Wearer)` (Physical Domain & Local Intervention)**:
+   - Tracks the elderly resident wearing the smart band during daily routines (walking, resting, sleeping).
+   - In the event of a sudden slip / freefall, kinetic impact spikes are registered.
+   - Upon local buzzer alarm activation, provides a 15-second grace window allowing the resident to press the false-alarm cancel button to silence the siren (`[Yes: Cancelled]`) or sustain emergency beaconing if injured (`[No: Injured / Idle]`).
+2. **Swimlane 2: `ESP32-C3 Edge Firmware` (Edge Processing & Embedded Telemetry)**:
+   - Boots system: initializes I2C bus, FreeRTOS tasks, and WiFi / BLE GATT stack.
+   - Continuously acquires 50Hz acceleration (MPU6050) and optical PPG vitals (MAX30102).
+   - Computes Signal Vector Magnitude: $\text{SVM} = \sqrt{A_x^2 + A_y^2 + A_z^2}$.
+   - Evaluates decision diamond: `Fall Threshold Exceeded?` (Freefall $< 0.4g$ & Impact $> 2.5g$).
+     - If normal motion (`[No: Normal Motion]`), loops back to continuous sensor acquisition.
+     - If threshold exceeded (`[Yes: Threshold Exceeded]`), confirms fall incident (confidence score $> 90\%$).
+   - Passes control to the **UML «Fork» Concurrency Bar** to bifurcate execution simultaneously into local on-wrist actuation (Swimlane 1) and remote cloud telemetry dispatch (Swimlane 3).
+   - Receives synchronized execution from the **UML «Join» Synchronization Bar**, logs an audit record in SQLite and the cloud, and terminates cleanly at the **Activity Final Node (`◉`)** centered in Swimlane 2.
+3. **Swimlane 3: `Guardian Web Dashboard` (Remote Cloud Triage & Monitoring)**:
+   - Guardian establishes an authenticated live session and continuously streams real-time heart rate and $\text{SpO}_2$.
+   - Concurrently receives emergency telemetry packets dispatched over BLE GATT / WebSockets.
+   - Immediately renders an urgent full-screen red modal and sounds an audible browser alert.
+   - Guardian inspects vitals, clicks "Acknowledge & Silence", and logs emergency assistance dispatch ETA.
+
+---
+
+### Activity Diagram (Mermaid Representation)
 
 ```mermaid
 flowchart TD
-    subgraph fw["Swimlane: ESP32-C3 Firmware"]
+    subgraph sw1["SWIMLANE 1: RESIDENT (WEARER)"]
         direction TB
-        Init(("Start")) --> ReadMotion["Read MPU6050 (Ax, Ay, Az)"]
-        Init --> ReadVitals["Read MAX30102 (IR, Red)"]
-        ReadMotion --> ComputeSVM["Compute SVM = sqrt of Ax^2 + Ay^2 + Az^2"]
-        ReadVitals --> ExtractHR["Extract Heart Rate and SpO2"]
-        ComputeSVM --> D1{"[SVM below 0.4g?]"}
-        D1 -- Yes --> D2{"[SVM above 2.5g shortly after?]"}
-        D1 -- No --> Normal["Normal State"]
-        D2 -- Yes --> D3{"[SVM within 0.3g of 1.0g, sustained?]"}
-        D2 -- No --> Reset["Reset Triage State"]
-        D3 -- Yes --> FallConfirmed["Fall Confirmed"]
-        D3 -- No --> Reset
-        ExtractHR --> VCheck{"[Irregular HRV Pattern?]"}
-        VCheck -- Yes --> VAnomaly["Vital Anomaly Flagged"]
-        VCheck -- No --> Normal
-        FallConfirmed --> Alarm["Activate Buzzer and LED via GPIO"]
-        VAnomaly --> Alarm
-        Alarm --> Packet["Assemble Telemetry Packet"]
-        Normal --> Packet
-        Reset --> Packet
-        Silence["Silence Buzzer and LED"] --> ReturnLoop(("Return to Loop"))
-        Packet --> ReturnLoop
+        ActWear["Resident Wears Smart Wristband<br/>& Conducts Normal Daily Activity"]
+        ActMotion["Continuous Ambulatory Motion<br/>(Walking, Resting, Sleeping)"]
+        ActSlip["Sudden Slip / Freefall & High-G Impact<br/>(Elderly Resident Falls)"]
+        ActBuzz["Autonomous Local Actuation:<br/>Drive 85dB Buzzer & Red Flashing LED"]
+        DecCancel{"Resident Presses False-Alarm<br/>Cancel Button within 15s?"}
+        ActSilence["Silence Buzzer<br/>(False Alarm Dismissed)"]
+        ActSustain["Sustain 85dB Siren<br/>& Red LED Strobe"]
+        MergeCancel{" "}
+
+        ActWear --> ActMotion
+        ActMotion --> ActSlip
+        ActBuzz --> DecCancel
+        DecCancel -- "[Yes: Cancelled]" --> ActSilence
+        DecCancel -- "[No: Injured / Idle]" --> ActSustain
+        ActSilence --> MergeCancel
+        ActSustain --> MergeCancel
     end
 
-    subgraph web["Swimlane: Web Dashboard (Optional)"]
+    subgraph sw2["SWIMLANE 2: ESP32-C3 EDGE FIRMWARE"]
         direction TB
-        ReceiveBLE["Receive BLE Notification"] --> RenderAlert["Display Alert on Dashboard"]
-        RenderAlert --> Dismiss["Caretaker Dismisses Alert"]
+        StartNode(("● Start"))
+        ActBoot["Initialize I2C, FreeRTOS Tasks<br/>& WiFi / BLE GATT Stack"]
+        ActSample["Acquire 50Hz Accel (MPU6050)<br/>& Optical PPG (MAX30102)"]
+        ActSVM["Compute Signal Vector Magnitude (SVM):<br/>SVM = sqrt(Ax² + Ay² + Az²)"]
+        DecFall{"Fall Threshold Exceeded?<br/>(Freefall < 0.4g & Impact > 2.5g)"}
+        ActConf["CONFIRM FALL INCIDENT<br/>(Confidence Score > 90%)"]
+        ActResolved["Log Incident Audit Trail in SQLite & Cloud<br/>Update Patient Status to 'Resolved'"]
+        EndNode((("◉ Final State")))
+
+        StartNode --> ActBoot
+        ActBoot --> ActSample
+        ActSample --> ActSVM
+        ActSVM --> DecFall
+        DecFall -- "[No: Normal Motion]" --> ActSample
+        DecFall -- "[Yes: Threshold Exceeded]" --> ActConf
+        ActResolved --> EndNode
     end
 
-    Packet -. "BLE GATT Notification (optional)" .-> ReceiveBLE
-    Dismiss -. "Dismiss Command via BLE" .-> Silence
+    subgraph sw3["SWIMLANE 3: GUARDIAN WEB DASHBOARD"]
+        direction TB
+        ActDashConnect["Guardian Connects to Dashboard<br/>& Authenticates Session Token"]
+        ActDashStream["Stream & Render Live Telemetry<br/>(Real-Time Heart Rate & SpO2)"]
+        ActTelemetry["Transmit Emergency Telemetry Packet<br/>via BLE GATT / WiFi WebSockets"]
+        ActModal["Display Urgent Full-Screen Red Modal<br/>& Trigger Audio Siren on Dashboard"]
+        ActAck["Guardian Clicks 'Acknowledge & Silence'<br/>& Dispatches Emergency Assistance"]
+
+        ActDashConnect --> ActDashStream
+        ActTelemetry --> ActModal
+        ActModal --> ActAck
+    end
+
+    ActSlip -- "Kinetic Impact Spike" --> ActConf
+
+    ForkBar["════════════ «Fork» Concurrency Bar (Parallel Local Actuation & Remote Triage) ════════════"]
+    ActConf ==> ForkBar
+    ForkBar ==> ActBuzz
+    ForkBar ==> ActTelemetry
+
+    JoinBar["════════════ «Join» Synchronization Bar (Both Wrist & Dashboard Resolved) ════════════"]
+    MergeCancel ==> JoinBar
+    ActAck ==> JoinBar
+    JoinBar ==> ActResolved
 ```
 
 ---
@@ -565,3 +785,194 @@ graph TD
 | P5: Generate Alert | Classifications from P3 and P4 | Alert record | Creates and stores an alert entry with type, severity, and status |
 | P6: Local Actuation | Direct signal from P3 or P4, dismiss from Caretaker | Buzzer/LED output | Drives GPIO to activate or silence the on-wrist alarm. Has zero dependency on P5 or P7 |
 | P7: Display Sync (Optional) | Alert data from P5 | BLE notification | Transmits alert to connected web dashboard via BLE GATT. Entirely optional, not part of safety-critical path |
+
+---
+
+## 8. Use Case Diagram (Black Book Section 4.6)
+
+This section models the functional behavior of the **VitalGuard C3** platform from the perspective of external actors, defining the system boundary, primary user roles, and operational use cases. 
+
+Following the user's system architecture and feedback, the **Caretaker, Admin, Guardian, and Family Member are unified into ONE single primary stakeholder (`Caretaker / Guardian (Admin / Family)`)**, directly managing the resident, receiving emergency alerts, and configuring the IoT wearable band.
+
+![VitalGuard C3 Use Case Diagram](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_UseCase_Diagram.png)
+
+> **Vector Asset:** Vector SVG source available at [VitalGuard_UseCase_Diagram.svg](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_UseCase_Diagram.svg). Ultra-high resolution 300 DPI raster available at [VitalGuard_UseCase_Diagram.png](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_UseCase_Diagram.png).
+
+---
+
+### System Boundary & Actors
+
+- **System Boundary**: `VitalGuard C3 - Eldercare & Fall Monitoring System`
+- **Primary Actors**:
+  1. **Caretaker / Guardian (Admin / Family) [Left]**:
+     - The single unified supervisory stakeholder (family member, on-duty nurse, or system admin).
+     - Interacts via the Next.js web dashboard to authenticate, register elderly resident profiles, pair ESP32-C3 wearable devices, stream real-time vitals and accelerometer motion, triage and acknowledge fall alerts, configure safety thresholds, and download clinical export reports.
+  2. **Elderly Resident (Monitored Subject) [Right]**:
+     - The monitored individual wearing the wristband hardware.
+     - Wears the smart band, views live vitals and battery status on the on-wrist OLED display, receives local buzzer/LED alert warnings, triggers the physical manual SOS distress button, cancels false alarms with the local reset button, and receives scheduled medication reminders.
+
+---
+
+### Use Case Functional Specifications
+
+| Use Case ID | Use Case Name | Primary Actor | Pre-condition | Post-condition | Description |
+|:---|:---|:---|:---|:---|:---|
+| **UC-01** | Login / Authenticate | Caretaker / Guardian (Admin) | Valid credentials | Auth session established | Secure access to the VitalGuard web portal. |
+| **UC-02** | Register Resident Profile | Caretaker / Guardian (Admin) | Caretaker logged in | Resident profile stored | Creates elderly patient record with medical history, room number, and emergency details. |
+| **UC-03** | Pair & Manage IoT Band | Caretaker / Guardian (Admin) | ESP32-C3 band active | MAC address linked | Binds wearable device hardware to the registered resident profile. |
+| **UC-04** | Monitor Live Telemetry (HR & SpO2) | Caretaker / Guardian (Admin) | Active BLE/WiFi stream | Dashboard updated | Displays real-time heart rate, blood oxygen, and battery percentage via WebSockets. |
+| **UC-05** | View Motion Activity Stream | Caretaker / Guardian (Admin) | MPU6050 streaming | Activity waveform updated | Visualizes SVM acceleration waveforms and continuous motion classification. |
+| **UC-06** | Receive Fall & Anomaly Alerts | Caretaker / Guardian (Admin) | Critical threshold or fall | Alert modal & sound triggered | Dispatches instant visual banner, audio alarm, and automated emergency notification. |
+| **UC-07** | Acknowledge & Silence Alarms | Caretaker / Guardian (Admin) | Fall alert active | Alert state = `ACKNOWLEDGED` | Caretaker verifies emergency, silences the on-wrist buzzer remotely, and logs response time. |
+| **UC-08** | Configure Thresholds & Export Reports | Caretaker / Guardian (Admin) | Caretaker logged in | Settings saved / File exported | Sets custom vital thresholds and exports historical clinical health reports (PDF/CSV). |
+| **UC-09** | Wear Smart Wearable Band | Elderly Resident | Device charged | Continuous sampling started | Resident secures the lightweight ESP32-C3 wristband for continuous monitoring. |
+| **UC-10** | View Vitals on Device OLED | Elderly Resident | Device running | Local OLED displayed | Resident directly checks their current pulse, SpO2, and device battery level. |
+| **UC-11** | Trigger Manual SOS Alarm | Elderly Resident | Distress button long-pressed | Buzzer + Emergency alert raised | Long-pressing hardware button triggers immediate emergency assistance. |
+| **UC-12** | Receive On-Wrist Buzzer Alarm | Elderly Resident | Fall detected by SVM | Audible & visual buzzer active | Immediate feedback alerting the resident and nearby bystanders of detected fall. |
+| **UC-13** | Cancel False Alarm (Local Reset) | Elderly Resident | Local buzzer sounding | Alarm cancelled before timeout | Short-pressing reset button within 15 seconds cancels accidental fall triggers. |
+| **UC-14** | Receive Medication Reminders | Elderly Resident | Scheduled time reached | Gentle vibration & audio tone | Prompts resident to take prescription medicines and stay hydrated. |
+| **UC-15** | Perform Daily Physical Activity | Elderly Resident | Device worn | Step/motion logs recorded | Resident conducts daily routines while continuous motion metrics are analyzed. |
+
+---
+
+### Use Case Diagram (Mermaid Representation)
+
+```mermaid
+graph LR
+    subgraph System["VitalGuard C3 - Eldercare & Fall Monitoring System"]
+        UC1(["Login / Authenticate"])
+        UC2(["Register Resident Profile"])
+        UC3(["Pair & Manage IoT Band"])
+        UC4(["Monitor Live Telemetry (HR & SpO2)"])
+        UC5(["View Motion Activity Stream"])
+        UC6(["Receive Fall & Anomaly Alerts"])
+        UC7(["Acknowledge & Silence Alarms"])
+        UC8(["Configure Thresholds & Export Reports"])
+
+        UC9(["Wear Smart Wearable Band"])
+        UC10(["View Vitals on Device OLED"])
+        UC11(["Trigger Manual SOS Alarm"])
+        UC12(["Receive On-Wrist Buzzer Alarm"])
+        UC13(["Cancel False Alarm (Local Reset)"])
+        UC14(["Receive Medication Reminders"])
+        UC15(["Perform Daily Physical Activity"])
+    end
+
+    Caretaker["👤 Caretaker / Guardian<br/>(Admin / Family)"]
+    Resident["👤 Elderly Resident<br/>(Monitored Subject)"]
+
+    Caretaker --- UC1
+    Caretaker --- UC2
+    Caretaker --- UC3
+    Caretaker --- UC4
+    Caretaker --- UC5
+    Caretaker --- UC6
+    Caretaker --- UC7
+    Caretaker --- UC8
+
+    Resident --- UC9
+    Resident --- UC10
+    Resident --- UC11
+    Resident --- UC12
+    Resident --- UC13
+    Resident --- UC14
+    Resident --- UC15
+```
+
+---
+
+## 9. Component Diagram (Black Book Section 4.7)
+
+In accordance with **SPPU (Savitribai Phule Pune University) System Design standards**, the Component Diagram documents the **high-level modular software architecture, physical boundaries, and interface contracts** among the subsystems of **VitalGuard C3**.
+
+![VitalGuard C3 Component Diagram](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Component_Diagram.png)
+
+> **Vector Asset:** Vector SVG source available at [VitalGuard_Component_Diagram.svg](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Component_Diagram.svg). Ultra-high resolution 300 DPI raster available at [VitalGuard_Component_Diagram.png](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Component_Diagram.png).
+
+---
+
+### Component Breakdown Across 3 Tiers
+
+#### Tier 1: Embedded IoT Wearable Package (`ESP32-C3 Firmware`)
+* **`Sensor Acquisition Module`**:
+  * Directly queries the I2C bus registers of the **MAX30102** optical pulse oximeter and **MPU6050** 6-axis IMU.
+  * *Provides*: `ISensorData` interface (raw acceleration vectors and photoplethysmogram samples).
+* **`Edge Fall Detection Engine`**:
+  * Implements the 3-stage SVM state machine (free-fall dip, dynamic impact, post-fall stillness filter).
+  * *Requires*: `ISensorData`.
+  * *Provides*: `IFallAlert` interface with incident confidence metrics.
+* **`Local Actuation Module`**:
+  * Directly interfaces with the onboard GPIO hardware pins to trigger the 85dB piezo buzzer and flashing emergency LED with **zero network dependency**. Monitors the local reset button for false-alarm cancellation.
+  * *Requires*: `IFallAlert` (autonomous link) and `IRemoteSilence` (from Guardian web client).
+
+#### Tier 2: Backend Relay & Database Package (`FastAPI / SQLite`)
+* **`Telemetry Ingestion & BLE Relay Service`**:
+  * Serves as the real-time bridge receiving data streams via BLE GATT notifications or WiFi HTTP/WebSocket packets.
+  * *Provides*: `ITelemetryRelay` interface for real-time subscribers.
+* **`Time-Series Data Store`**:
+  * Handles asynchronous persistence of historical heart rates, blood oxygen levels, and motion events in a local SQLite / TimescaleDB database.
+  * *Provides*: `IDataPersistence` interface.
+* **`Alert Escalation Service`**:
+  * Maintains state machine for active emergencies, logs triage response times, and dispatches automated SMS alerts via Twilio if unacknowledged.
+  * *Provides*: `IAlertState` interface.
+
+#### Tier 3: Guardian Client Application Package (`Next.js / TypeScript`)
+* **`Live Vitals Charting Engine`**:
+  * High-performance canvas-based visualization rendering continuous heart rate, SpO2, and acceleration SVM waveforms.
+  * *Requires*: `ITelemetryRelay`.
+* **`Guardian Web Dashboard UI`**:
+  * Responsive clinical interface for patient administration, status overview, device pairing, and historical report exports.
+* **`Emergency Alarm Modal & Triage Service`**:
+  * High-priority browser modal triggering audible alarm sirens and visual red alerts; allows the Guardian to send a remote silence command back to the wristband hardware.
+
+---
+
+### Interface Contracts Table
+
+| Interface Name | Provided By | Required By | Protocol / Data Contract |
+|:---|:---|:---|:---|
+| **`ISensorData`** | Sensor Acquisition Module | Edge Fall Detection Engine | I2C Bus (`0x57`, `0x68`) / Raw 16-bit register structs |
+| **`IFallAlert`** | Edge Fall Detection Engine | Local Actuation Module | Internal FreeRTOS EventQueue (`CONFIRMED`, confidence `float`) |
+| **`IBLEStream` / `IWiFiStream`** | Embedded Firmware Tier | Telemetry Ingestion Service | BLE GATT Characteristic / HTTP POST (`JSON`) |
+| **`ITelemetryRelay`** | Telemetry Ingestion Service | Web Dashboard & Charting | WebSocket Full-Duplex Stream (`ws://...`) |
+| **`IDataPersistence`** | Time-Series Data Store | Alert Escalation Service | SQL ORM / ACID SQLite Transaction |
+| **`IRemoteSilence`** | Emergency Alarm Modal | Local Actuation Module | WebSocket / BLE Write Command (`SILENCE_ALARM`) |
+
+---
+
+### Component Diagram (Mermaid Representation)
+
+```mermaid
+graph TD
+    subgraph Firmware["Package: Embedded IoT Wearable (ESP32-C3)"]
+        C_Sensor["<<component>><br/><b>Sensor Acquisition Module</b><br/>(MAX30102 & MPU6050)"]
+        C_SVM["<<component>><br/><b>Edge Fall Detection Engine</b><br/>(3-Stage SVM Classifier)"]
+        C_Act["<<component>><br/><b>Local Actuation Module</b><br/>(Buzzer, LED & Reset Button)"]
+    end
+
+    subgraph Backend["Package: Backend Relay & Database (FastAPI / SQLite)"]
+        C_Comm["<<component>><br/><b>Telemetry Ingestion Service</b><br/>(WebSocket & BLE Relay)"]
+        C_DB["<<component>><br/><b>Time-Series Data Store</b><br/>(SQLite Database)"]
+        C_Triage["<<component>><br/><b>Alert Escalation Service</b><br/>(Triage & Status Manager)"]
+    end
+
+    subgraph Frontend["Package: Guardian Client Application (Next.js / React)"]
+        C_Chart["<<component>><br/><b>Live Vitals Charting Engine</b><br/>(Real-time Canvas / Recharts)"]
+        C_UI["<<component>><br/><b>Guardian Web Dashboard</b><br/>(Next.js App Router UI)"]
+        C_Modal["<<component>><br/><b>Emergency Alarm Modal</b><br/>(Audio Siren & Triage UI)"]
+    end
+
+    C_Sensor -. "ISensorData" .-> C_SVM
+    C_SVM -. "IFallAlert (Autonomous)" .-> C_Act
+
+    C_SVM -. "BLE / WiFi Telemetry" .-> C_Comm
+    C_Comm -. "IDataPersistence" .-> C_DB
+    C_DB -. "IAlertState" .-> C_Triage
+
+    C_Comm -. "WebSocket Live Stream" .-> C_Chart
+    C_Chart -. "IVitalsProps" .-> C_UI
+    C_Triage -. "WebSocket Emergency Push" .-> C_Modal
+    C_UI -. "IModalState" .-> C_Modal
+
+    C_Modal -. "Remote Alarm Silence Command" .-> C_Act
+```

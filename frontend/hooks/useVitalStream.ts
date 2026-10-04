@@ -124,7 +124,10 @@ export function useVitalStream(defaultWsUrl?: string) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL 
       ? process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '') 
       : (typeof window !== 'undefined' ? `http://${window.location.hostname}:8000` : 'http://localhost:8000');
-    fetch(`${apiUrl}/api/reset-fall`, { method: 'POST' }).catch(() => {});
+    
+    import('../app/utils/api').then(({ authFetch }) => {
+      authFetch(`${apiUrl}/api/reset-fall`, { method: 'POST' }).catch(() => {});
+    });
   };
 
   useEffect(() => {

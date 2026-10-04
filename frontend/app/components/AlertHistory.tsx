@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Bell, CheckCircle, AlertTriangle, Trash2, Check } from "lucide-react";
 import { playHaptic } from "../utils/haptics";
-import { getApiBase } from "../utils/api";
+import { getApiBase, authFetch } from "../utils/api";
 
 interface FallAlert {
   id: number;
@@ -18,7 +18,7 @@ export default function AlertHistory() {
 
   const fetchAlerts = useCallback(async () => {
     try {
-      const res = await fetch(`${getApiBase()}/alerts?limit=10`);
+      const res = await authFetch(`${getApiBase()}/alerts?limit=10`);
       if (res.ok) {
         const data: FallAlert[] = await res.json();
         setAlerts(data);
@@ -37,7 +37,7 @@ export default function AlertHistory() {
   const acknowledgeAlert = async (id: number) => {
     playHaptic("pop");
     try {
-      await fetch(`${getApiBase()}/alerts/${id}/acknowledge`, {
+      await authFetch(`${getApiBase()}/alerts/${id}/acknowledge`, {
         method: "POST",
       });
       fetchAlerts();
@@ -49,7 +49,7 @@ export default function AlertHistory() {
   const clearAlerts = async () => {
     playHaptic("click");
     try {
-      await fetch(`${getApiBase()}/alerts/clear`, {
+      await authFetch(`${getApiBase()}/alerts/clear`, {
         method: "POST",
       });
       setAlerts([]);

@@ -26,19 +26,23 @@ import ClinicalSummaryCard from './components/ClinicalSummaryCard';
 import HistoricalTrends from './components/HistoricalTrends';
 import AlertHistory from './components/AlertHistory';
 import type { TelemetryPacket } from './hooks/useTelemetrySocket';
+import { authFetch } from './utils/api';
 import {
   DailyRecord,
   getDailyRecords,
   saveBulkDailyRecordsAndPrune,
   seedInitialDataIfEmpty,
 } from './utils/localDatabase';
+import { useAuth } from './context/AuthContext';
 
 export default function VitalGuardDashboard() {
+  const { isAuthenticated, guardianName, logout } = useAuth();
   const { data, mode, isAlertActive, connectBLE, connectWebSocket, dismissAlert } = useVitalStream();
   const [records, setRecords] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'LIVE' | 'RECORDS'>('LIVE');
   const [showSpecs, setShowSpecs] = useState(false);
   const [simulating, setSimulating] = useState(false);
+
 
   const getApiUrl = (endpoint: string) => {
     if (process.env.NEXT_PUBLIC_API_URL) {
@@ -51,7 +55,7 @@ export default function VitalGuardDashboard() {
   useEffect(() => {
     async function initRecords() {
       try {
-        const res = await fetch(getApiUrl('/api/records'));
+        const res = await authFetch(getApiUrl('/api/records'));
         if (res.ok) {
           const d = await res.json();
           setRecords(d);
@@ -97,7 +101,7 @@ export default function VitalGuardDashboard() {
     playHaptic('warning');
     setSimulating(true);
     try {
-      await fetch(getApiUrl('/api/trigger-fall'), { method: 'POST' });
+      await authFetch(getApiUrl('/api/trigger-fall'), { method: 'POST' });
     } catch {
       // Backend offline fallback
     } finally {
@@ -108,7 +112,7 @@ export default function VitalGuardDashboard() {
   const resetMockFall = () => {
     playHaptic('pop');
     dismissAlert();
-    fetch(getApiUrl('/api/reset-fall'), { method: 'POST' }).catch(() => {});
+    authFetch(getApiUrl('/api/reset-fall'), { method: 'POST' }).catch(() => {});
   };
 
   // Real-time pulse interval in seconds for organic cardiovascular rhythm
@@ -131,6 +135,9 @@ export default function VitalGuardDashboard() {
     stage: data.status,
     timestamp: new Date(data.timestamp).toISOString(),
   };
+
+  // If not authenticated, don't render the dashboard (AuthContext will redirect)
+  if (!isAuthenticated) return null;
 
   return (
     <main className="min-h-[100dvh] overflow-x-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col justify-between">
@@ -157,8 +164,19 @@ export default function VitalGuardDashboard() {
             </div>
           </div>
 
-          {/* Connection Mode Toggles & Specs */}
+          {/* Connection Mode Toggles, Specs & Logout */}
           <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => {
+                playHaptic('pop');
+                logout();
+              }}
+              className="spring-btn px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 shadow-sm mr-1"
+              title="Logout from Dashboard"
+            >
+              <span className="hidden sm:inline">Logout</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </button>
             <button
               onClick={() => {
                 playHaptic('pop');

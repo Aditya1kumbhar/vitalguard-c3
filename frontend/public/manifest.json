@@ -1,0 +1,22 @@
+{
+  "name": "VitalGuard C3 — Clinical Device Monitor",
+  "short_name": "VitalGuard",
+  "description": "Autonomous wearable telemetry and fall detection system for elderly care.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F9F8FF",
+  "theme_color": "#01373D",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

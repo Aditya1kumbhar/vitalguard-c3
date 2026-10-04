@@ -103,6 +103,20 @@ async def init_db() -> None:
             )
         """)
 
+        # 5. Guardians (Auth)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS guardians (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                guardian_name   TEXT NOT NULL,
+                pin_hash        TEXT,
+                credential_id   BLOB,
+                public_key      BLOB,
+                sign_count      INTEGER DEFAULT 0,
+                created_at      TEXT NOT NULL,
+                last_login_at   TEXT
+            )
+        """)
+
         # --- Phase 1 Legacy Table for Backward Compatibility ---
         await db.execute("""
             CREATE TABLE IF NOT EXISTS fall_alerts (

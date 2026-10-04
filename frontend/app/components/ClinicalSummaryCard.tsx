@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Heart, Activity, Thermometer, Printer, RefreshCw } from "lucide-react";
-import { getApiBase } from "../utils/api";
+import { getApiBase, authFetch } from "../utils/api";
 
 export default function ClinicalSummaryCard() {
   const [patient, setPatient] = useState<any>(null);
@@ -11,7 +11,7 @@ export default function ClinicalSummaryCard() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${getApiBase()}/patient`);
+        const res = await authFetch(`${getApiBase()}/patient`);
         if (res.ok) setPatient(await res.json());
       } catch {
         // Fallback

@@ -14,7 +14,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { Calendar, Heart, Droplets, Thermometer, AlertTriangle, RefreshCw, Database } from "lucide-react";
-import { getApiBase } from "../utils/api";
+import { getApiBase, authFetch } from "../utils/api";
 import {
   DailyRecord,
   getDailyRecords,
@@ -54,7 +54,7 @@ export default function HistoricalTrends() {
       setError(null);
       try {
         // Attempt fetch from local ESP32 / Edge server
-        const res = await fetch(`${getApiBase()}/analytics/daily?days=${daysRange}`);
+        const res = await authFetch(`${getApiBase()}/analytics/daily?days=${daysRange}`);
         if (!res.ok) throw new Error(`HTTP error ${res.status}`);
         const json: DailySummary[] = await res.json();
         setData(json);

@@ -6,10 +6,12 @@ import { usePathname } from "next/navigation";
 import { Radio, Calendar, Activity, Cpu } from "lucide-react";
 import { playHaptic } from "../utils/haptics";
 import DeviceSpecsModal from "./DeviceSpecsModal";
+import { useAuth } from "../context/AuthContext";
 
 export default function NavHeader() {
   const pathname = usePathname();
   const [showSpecs, setShowSpecs] = useState(false);
+  const { isAuthenticated, guardianName, logout } = useAuth();
 
   const isLive = pathname === "/";
   const isRecords = pathname === "/records";
@@ -36,6 +38,22 @@ export default function NavHeader() {
 
         {/* Device Capsule & Specs Trigger */}
         <div className="flex items-center gap-2">
+          {isAuthenticated && (
+            <div className="flex items-center gap-2 border-r border-slate-200 pr-3 mr-1">
+              <span className="hidden sm:inline text-xs font-bold text-slate-600">
+                Hi, {guardianName}
+              </span>
+              <button
+                onClick={() => {
+                  playHaptic("pop");
+                  logout();
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-full border border-rose-200 transition-colors shadow-sm"
+              >
+                <span>Logout</span>
+              </button>
+            </div>
+          )}
           <span className="text-sm sm:text-base font-black text-slate-900 tracking-tight">
             Device .1
           </span>

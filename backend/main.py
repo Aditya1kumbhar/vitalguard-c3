@@ -12,7 +12,7 @@ import random
 import math
 from typing import AsyncGenerator, Optional
 
-from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from models import TelemetryPacket, PatientInfo, DailySummary, RiskAssessment
@@ -28,6 +28,7 @@ from db import (
     get_db_connection
 )
 from analytics import calculate_risk_score
+import auth
 
 
 # ── Packet generators ────────────────────────────────────────────────
@@ -190,6 +191,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 app = FastAPI(title="VitalGuard C3 Mock Telemetry", lifespan=lifespan)
 
+app.include_router(auth.router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -219,7 +222,7 @@ async def telemetry_stream(websocket: WebSocket) -> None:
 # ── Fall trigger (demo button) ───────────────────────────────────────
 @app.post("/api/trigger-fall")
 @app.post("/trigger-fall")
-async def trigger_fall() -> dict:
+async def trigger_fall(guardian: dict = Depends(auth.get_current_guardian)) -> dict:
     peak_accel = round(random.uniform(2.8, 4.5), 1)
 
     await broadcaster.fall_sequence_queue.put(stage_packet(0.3, False, "free_fall_dip"))
@@ -238,7 +241,7 @@ async def trigger_fall() -> dict:
 
 @app.post("/api/reset-fall")
 @app.post("/reset-fall")
-async def reset_fall() -> dict:
+async def reset_fall(guardian: dict = Depends(auth.get_current_guardian)) -> dict:
     while not broadcaster.fall_sequence_queue.empty():
         try:
             broadcaster.fall_sequence_queue.get_nowait()
@@ -251,7 +254,7 @@ async def reset_fall() -> dict:
 
 @app.get("/api/records")
 @app.get("/records")
-async def get_records(days: int = 30) -> list[dict]:
+async def get_records(days: int = 30, guardian: dict = Depends(auth.get_current_guardian)) -> list[dict]:
     """
     30-day summary rollups as stored in ESP32 LittleFS or local edge hub.
     Each day is ~32 bytes (avg HR, avg SpO2, fall incidents, timestamp).
@@ -273,24 +276,24 @@ async def get_records(days: int = 30) -> list[dict]:
 # ── REST endpoints (Legacy & New Phase 2) ────────────────────────────
 
 @app.get("/alerts")
-async def list_alerts(limit: int = Query(default=20, ge=1, le=100)) -> list[dict]:
+async def list_alerts(limit: int = Query(default=20, ge=1, le=100), guardian: dict = Depends(auth.get_current_guardian)) -> list[dict]:
     return await get_recent_alerts(limit)
 
 @app.get("/alerts/{alert_id}")
-async def get_alert(alert_id: int) -> dict:
+async def get_alert(alert_id: int, guardian: dict = Depends(auth.get_current_guardian)) -> dict:
     alert = await get_alert_by_id(alert_id)
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
     return alert
 
 @app.post("/alerts/{alert_id}/acknowledge")
-async def ack_alert(alert_id: int) -> dict:
+async def ack_alert(alert_id: int, guardian: dict = Depends(auth.get_current_guardian)) -> dict:
     updated = await acknowledge_alert(alert_id)
     return {"acknowledged": updated, "id": alert_id}
 
 @app.delete("/alerts")
 @app.post("/alerts/clear")
-async def clear_alerts() -> dict:
+async def clear_alerts(guardian: dict = Depends(auth.get_current_guardian)) -> dict:
     deleted_count = await clear_all_alerts()
     return {"status": "cleared", "deleted_count": deleted_count}
 
@@ -305,14 +308,14 @@ async def health() -> dict:
 # ── New Phase 2 Analytics Endpoints ──
 
 @app.get("/patient", response_model=PatientInfo)
-async def get_patient_info():
+async def get_patient_info(guardian: dict = Depends(auth.get_current_guardian)):
     patient = await get_patient(1)
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
     return patient
 
 @app.get("/analytics/daily")
-async def get_daily_analytics(days: int = Query(default=30, ge=1, le=90)) -> list[DailySummary]:
+async def get_daily_analytics(days: int = Query(default=30, ge=1, le=90), guardian: dict = Depends(auth.get_current_guardian)) -> list[DailySummary]:
     """Returns aggregated daily summaries for trend charts."""
     async with get_db_connection() as db:
         cursor = await db.execute(
@@ -323,7 +326,7 @@ async def get_daily_analytics(days: int = Query(default=30, ge=1, le=90)) -> lis
         return [DailySummary(**dict(r)) for r in rows]
 
 @app.get("/analytics/risk-score", response_model=RiskAssessment)
-async def get_risk_score():
+async def get_risk_score(guardian: dict = Depends(auth.get_current_guardian)):
     """Computes a heuristic risk score based on the last 30 days of data."""
     async with get_db_connection() as db:
         # Get raw vitals from the last day for the scoring engine (to simulate recent check)
