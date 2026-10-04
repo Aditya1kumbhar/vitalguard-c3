@@ -1,4 +1,5 @@
 import os
+import re
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -8,6 +9,8 @@ import jwt
 import bcrypt
 from pydantic import BaseModel
 from db import get_db_connection
+
+EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
 
 SECRET_KEY = os.getenv("JWT_SECRET", "dev-secret-key-do-not-use-in-production")
 ALGORITHM = "HS256"
@@ -71,6 +74,28 @@ async def check_identifier(identifier: str):
 
 @router.post("/register")
 async def register(req: RegisterRequest):
+    # Security & Trust Validation: Enforce 10-digit phone number or valid email format
+    if req.auth_type == "phone":
+        clean_digits = re.sub(r'\D', '', req.identifier)
+        if len(clean_digits) == 12 and clean_digits.startswith("91"):
+            clean_digits = clean_digits[2:]
+        if len(clean_digits) != 10:
+            raise HTTPException(status_code=400, detail="Mobile number must be compulsory 10 digits (e.g. 9876543210).")
+        req.identifier = clean_digits
+    elif req.auth_type == "email":
+        clean_email = req.identifier.strip().lower()
+        if not EMAIL_REGEX.match(clean_email):
+            raise HTTPException(status_code=400, detail="Please enter a valid email address (e.g. user@gmail.com).")
+        req.identifier = clean_email
+    else:
+        raise HTTPException(status_code=400, detail="Invalid auth_type. Must be 'phone' or 'email'.")
+
+    if not req.guardian_name.strip() or len(req.guardian_name.strip()) < 2:
+        raise HTTPException(status_code=400, detail="Please enter a valid Full Name (minimum 2 characters).")
+
+    if not req.band_id.strip():
+        raise HTTPException(status_code=400, detail="Please provide a valid Wristband ID.")
+
     async with get_db_connection() as db:
         # Check if identifier or band_id exists
         cursor = await db.execute("SELECT id FROM guardians WHERE identifier = ? OR band_id = ?", (req.identifier, req.band_id))
@@ -95,6 +120,18 @@ async def register(req: RegisterRequest):
 
 @router.post("/login")
 async def login(req: LoginRequest):
+    # Normalize identifier for login
+    ident = req.identifier.strip()
+    clean_digits = re.sub(r'\D', '', ident)
+    if len(clean_digits) == 12 and clean_digits.startswith("91"):
+        clean_digits = clean_digits[2:]
+    if len(clean_digits) == 10:
+        req.identifier = clean_digits
+    elif EMAIL_REGEX.match(ident.lower()):
+        req.identifier = ident.lower()
+    else:
+        raise HTTPException(status_code=400, detail="Identifier must be a valid 10-digit mobile number or email address.")
+
     async with get_db_connection() as db:
         cursor = await db.execute("SELECT * FROM guardians WHERE identifier = ?", (req.identifier,))
         guardian = await cursor.fetchone()

@@ -60,15 +60,57 @@ export default function LoginPage() {
     checkPreviousUser();
   }, []);
 
+  const isValid10DigitPhone = (val: string) => {
+    const digits = val.replace(/\D/g, '');
+    if (digits.length === 12 && digits.startsWith('91')) {
+      return digits.slice(2).length === 10;
+    }
+    return digits.length === 10;
+  };
+
+  const isValidEmail = (val: string) => {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(val.trim().toLowerCase());
+  };
+
   const validateSignup = () => {
-    if (!identifier.trim()) return 'Please enter your Mobile No. or Email.';
-    if (!guardianName.trim()) return 'Please enter your Full Name.';
-    if (!bandId.trim()) return 'Please enter the Wristband ID.';
+    const trimmed = identifier.trim();
+    if (!trimmed) {
+      return authType === 'phone' 
+        ? 'Please enter your 10-digit Mobile Number.' 
+        : 'Please enter your Email Address.';
+    }
+    if (authType === 'phone') {
+      const digits = trimmed.replace(/\D/g, '');
+      if (digits.length !== 10) {
+        return `Mobile Number must be compulsory 10 digits (currently ${digits.length}/10).`;
+      }
+    } else {
+      if (!isValidEmail(trimmed)) {
+        return 'Please enter a valid Email Address (e.g. name@gmail.com).';
+      }
+    }
+    if (!guardianName.trim() || guardianName.trim().length < 2) {
+      return 'Please enter your Full Name (at least 2 characters).';
+    }
+    if (!bandId.trim()) {
+      return 'Please detect or enter your Wristband ID (e.g. VG-C3-XXXX).';
+    }
     return null;
   };
 
   const validateLogin = () => {
-    if (!identifier.trim()) return 'Please enter your Mobile No. or Email.';
+    const trimmed = identifier.trim();
+    if (!trimmed) return 'Please enter your registered 10-digit Mobile No. or Email.';
+    const isPhone = isValid10DigitPhone(trimmed);
+    const isEmail = isValidEmail(trimmed);
+    if (!isPhone && !isEmail) {
+      const digitsOnly = trimmed.replace(/\D/g, '');
+      if (digitsOnly.length > 0 && digitsOnly.length !== 10 && !trimmed.includes('@')) {
+        return `Mobile Number must be compulsory 10 digits (currently ${digitsOnly.length}/10).`;
+      }
+      return 'Please enter a valid 10-digit Mobile Number or Email Address (e.g. name@gmail.com).';
+    }
     return null;
   };
 
@@ -150,7 +192,14 @@ export default function LoginPage() {
 
     try {
       const nameToUse = guardianName.trim();
-      const identToUse = identifier.trim().toLowerCase();
+      let identToUse = identifier.trim().toLowerCase();
+      if (authType === 'phone') {
+        let digits = identToUse.replace(/\D/g, '');
+        if (digits.length === 12 && digits.startsWith('91')) {
+          digits = digits.slice(2);
+        }
+        identToUse = digits;
+      }
       const bandToUse = bandId.trim();
       
       let credentialId = '';
@@ -237,7 +286,14 @@ export default function LoginPage() {
     setAuthenticating(true);
 
     try {
-      const identToUse = identifier.trim().toLowerCase();
+      let identToUse = identifier.trim().toLowerCase();
+      if (isValid10DigitPhone(identToUse)) {
+        let digits = identToUse.replace(/\D/g, '');
+        if (digits.length === 12 && digits.startsWith('91')) {
+          digits = digits.slice(2);
+        }
+        identToUse = digits;
+      }
       let cred = await getCredential(identToUse);
       let credentialId = cred?.credentialId;
 
@@ -329,7 +385,14 @@ export default function LoginPage() {
     setStatusMessage('');
 
     try {
-      const identToUse = identifier.trim().toLowerCase();
+      let identToUse = identifier.trim().toLowerCase();
+      if ((tab === 'signup' && authType === 'phone') || isValid10DigitPhone(identToUse)) {
+        let digits = identToUse.replace(/\D/g, '');
+        if (digits.length === 12 && digits.startsWith('91')) {
+          digits = digits.slice(2);
+        }
+        identToUse = digits;
+      }
       
       if (tab === 'signup') {
         const validationError = validateSignup();
@@ -471,34 +534,125 @@ export default function LoginPage() {
             {tab === 'signup' && (
               <div className="w-full flex bg-slate-100 p-1 rounded-xl mb-2 border border-slate-200">
                 <button 
-                  onClick={() => setAuthType('phone')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 ${authType === 'phone' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500'}`}
+                  onClick={() => {
+                    setAuthType('phone');
+                    setError('');
+                    if (!/^\d*$/.test(identifier)) setIdentifier('');
+                  }}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all ${authType === 'phone' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                  <Phone className="w-3.5 h-3.5" /> Mobile No.
+                  <Phone className="w-3.5 h-3.5" /> Mobile No. (10 Digits)
                 </button>
                 <button 
-                  onClick={() => setAuthType('email')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 ${authType === 'email' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500'}`}
+                  onClick={() => {
+                    setAuthType('email');
+                    setError('');
+                    if (/^\d+$/.test(identifier)) setIdentifier('');
+                  }}
+                  className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all ${authType === 'email' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                  <Mail className="w-3.5 h-3.5" /> Email
+                  <Mail className="w-3.5 h-3.5" /> Email Address
                 </button>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 pl-1">
-                {tab === 'signup' 
-                  ? (authType === 'phone' ? 'Mobile Number' : 'Email Address')
-                  : 'Mobile No. or Email'
-                }
-              </label>
-              <input 
-                type={tab === 'signup' ? (authType === 'phone' ? 'tel' : 'email') : 'text'}
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder={tab === 'signup' ? (authType === 'phone' ? 'e.g. +1 555-0123' : 'e.g. aditya@vitalguard.com') : 'Enter your registered identity'}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#01373D] focus:ring-2 focus:ring-[#01373D]/20 text-sm font-semibold transition-all"
-              />
+              <div className="flex items-center justify-between mb-1.5 pl-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
+                  {tab === 'signup' 
+                    ? (authType === 'phone' ? 'Mobile Number (Compulsory 10 Digits)' : 'Email Address (e.g. @gmail.com)')
+                    : 'Registered Mobile No. or Email'
+                  }
+                </label>
+                {tab === 'signup' ? (
+                  authType === 'phone' ? (
+                    identifier.length === 10 ? (
+                      <span className="text-emerald-600 font-bold text-xs flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> 10/10 Digits
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 font-semibold text-xs">
+                        {identifier.length}/10 Digits
+                      </span>
+                    )
+                  ) : (
+                    isValidEmail(identifier) ? (
+                      <span className="text-emerald-600 font-bold text-xs flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Valid Email
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 font-medium text-xs">
+                        Must be valid email
+                      </span>
+                    )
+                  )
+                ) : (
+                  isValid10DigitPhone(identifier) ? (
+                    <span className="text-emerald-600 font-bold text-xs flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> 10-Digit Mobile
+                    </span>
+                  ) : isValidEmail(identifier) ? (
+                    <span className="text-emerald-600 font-bold text-xs flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Valid Email
+                    </span>
+                  ) : null
+                )}
+              </div>
+              <div className="relative">
+                {tab === 'signup' ? (
+                  authType === 'phone' ? (
+                    <Phone className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${identifier.length === 10 ? 'text-emerald-600' : 'text-slate-400'}`} />
+                  ) : (
+                    <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isValidEmail(identifier) ? 'text-emerald-600' : 'text-slate-400'}`} />
+                  )
+                ) : (
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                )}
+                <input 
+                  type={tab === 'signup' ? (authType === 'phone' ? 'tel' : 'email') : 'text'}
+                  inputMode={tab === 'signup' ? (authType === 'phone' ? 'numeric' : 'email') : undefined}
+                  maxLength={tab === 'signup' && authType === 'phone' ? 10 : undefined}
+                  value={identifier}
+                  onChange={(e) => {
+                    if (tab === 'signup' && authType === 'phone') {
+                      const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setIdentifier(digits);
+                    } else if (tab === 'signup' && authType === 'email') {
+                      setIdentifier(e.target.value.trim().toLowerCase());
+                    } else {
+                      setIdentifier(e.target.value.trim());
+                    }
+                  }}
+                  placeholder={
+                    tab === 'signup' 
+                      ? (authType === 'phone' ? 'Enter exactly 10 digits (e.g. 9876543210)' : 'e.g. yourname@gmail.com') 
+                      : 'Enter registered 10-digit number or email'
+                  }
+                  className={`w-full bg-slate-50 border rounded-xl pl-10 pr-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none text-sm font-semibold transition-all ${
+                    (tab === 'signup' && authType === 'phone' && identifier.length === 10) ||
+                    (tab === 'signup' && authType === 'email' && isValidEmail(identifier)) ||
+                    (tab === 'login' && (isValid10DigitPhone(identifier) || isValidEmail(identifier)))
+                      ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/20'
+                      : 'border-slate-300 focus:border-[#01373D] focus:ring-2 focus:ring-[#01373D]/20'
+                  }`}
+                />
+              </div>
+              {tab === 'signup' && authType === 'phone' && (
+                <p className="text-[11px] text-slate-400 mt-1 pl-1 font-medium">
+                  {identifier.length === 10 
+                    ? '✓ 10-digit mobile number ready for passkey pairing' 
+                    : `Enter a 10-digit mobile number (${10 - identifier.length} digits remaining)`
+                  }
+                </p>
+              )}
+              {tab === 'signup' && authType === 'email' && (
+                <p className="text-[11px] text-slate-400 mt-1 pl-1 font-medium">
+                  {isValidEmail(identifier)
+                    ? '✓ Valid email address ready for passkey registration'
+                    : 'Valid email (e.g. name@gmail.com or official domain) is compulsory for security'
+                  }
+                </p>
+              )}
             </div>
 
             {tab === 'signup' && (
