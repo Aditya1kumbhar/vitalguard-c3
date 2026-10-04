@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Fingerprint, Activity, AlertCircle, KeyRound, CheckCircle2, User, Phone, Mail, Hash, Bluetooth, HeartPulse, Zap, Radio } from 'lucide-react';
+import { ShieldCheck, Fingerprint, Activity, AlertCircle, KeyRound, CheckCircle2, User, Phone, Mail, Hash, Bluetooth } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import PinPad from '../components/PinPad';
 import { 
@@ -501,130 +501,33 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200 flex flex-col items-center justify-center p-3 sm:p-6 lg:p-10 relative overflow-x-hidden">
-      {/* Ambient decorative lighting for desktop */}
-      <div className="absolute top-12 left-12 w-96 h-96 bg-[#01373D]/5 rounded-full blur-3xl pointer-events-none -z-0" />
-      <div className="absolute bottom-12 right-12 w-96 h-96 bg-[#FE336A]/5 rounded-full blur-3xl pointer-events-none -z-0" />
-
-      <div className="w-full max-w-md lg:max-w-5xl bg-white border border-slate-200 rounded-3xl shadow-2xl relative z-10 flex flex-col lg:flex-row overflow-hidden transition-all duration-300">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 relative">
+      <div className="w-full max-w-md sm:max-w-lg md:max-w-xl bg-white border border-slate-200 rounded-2xl shadow-xl relative z-10 flex flex-col items-center overflow-hidden">
         
-        {/* Left Hero Panel (Visible on Desktop / PC screens) */}
-        <div className="hidden lg:flex lg:w-5/12 bg-gradient-to-br from-[#01373D] via-[#02434a] to-[#012428] text-white p-8 xl:p-10 flex-col justify-between relative overflow-hidden">
-          {/* Ambient decorative lighting */}
-          <div className="absolute -top-20 -right-20 w-56 h-56 bg-[#FE336A]/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-20 -left-20 w-56 h-56 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
-
-          {/* Top Branding Section */}
-          <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] font-bold tracking-wider text-white/90 mb-6 uppercase">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Medical IoT Telemetry</span>
-            </div>
-
-            <div className="flex items-center gap-3.5 mb-4">
-              <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-inner">
-                <Activity className="w-7 h-7 text-[#FE336A] stroke-[2.5]" />
-              </div>
-              <div>
-                <h2 className="text-2xl xl:text-3xl font-black tracking-tight text-white leading-none">
-                  VitalGuard <span className="text-[#FE336A]">C3</span>
-                </h2>
-                <p className="text-[11px] text-slate-300 font-semibold tracking-wider mt-1 uppercase">
-                  Continuous Patient Care
-                </p>
-              </div>
-            </div>
-
-            <p className="text-slate-200/90 text-sm leading-relaxed mt-4 font-normal">
-              Intelligent patient vitals monitoring, instant dual-threshold fall detection, and FIDO2 passkey biometric authentication.
-            </p>
-          </div>
-
-          {/* Center Showcase Cards */}
-          <div className="my-6 space-y-3.5 relative z-10">
-            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs">
-              <div className="p-2 rounded-xl bg-rose-500/20 text-[#FE336A] shrink-0 mt-0.5">
-                <Zap className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Instant Fall Detection</h4>
-                <p className="text-xs text-slate-300 mt-0.5 leading-snug">100Hz MPU6050 accelerometer & gyro interrupt alarms under 100ms.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs">
-              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0 mt-0.5">
-                <HeartPulse className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Precision Vital Signs</h4>
-                <p className="text-xs text-slate-300 mt-0.5 leading-snug">Continuous MAX30102 PPG optical Heart Rate & SpO2 blood oxygenation.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs">
-              <div className="p-2 rounded-xl bg-sky-500/20 text-sky-400 shrink-0 mt-0.5">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Hardware-Locked Security</h4>
-                <p className="text-xs text-slate-300 mt-0.5 leading-snug">WebAuthn passkeys bind your patient wristband MAC to your verified identity.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Status Section */}
-          <div className="pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-300 font-medium relative z-10">
-            <div className="flex items-center gap-1.5">
-              <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-              <span>Web Bluetooth & LAN Ready</span>
-            </div>
-            <span className="text-white/70 font-semibold">FIDO2 / WebAuthn</span>
-          </div>
+        {/* Header Tabs */}
+        <div className="w-full flex border-b border-slate-100 bg-slate-50">
+          <button 
+            onClick={() => { setTab('login'); setError(''); setStatusMessage(''); }}
+            className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${tab === 'login' ? 'text-[#01373D] border-b-2 border-[#FE336A] bg-white' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            Login
+          </button>
+          <button 
+            onClick={() => { setTab('signup'); setError(''); setStatusMessage(''); }}
+            className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${tab === 'signup' ? 'text-[#01373D] border-b-2 border-[#FE336A] bg-white' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            Sign Up
+          </button>
         </div>
 
-        {/* Right Form Panel (Universal PC & Mobile View) */}
-        <div className="w-full lg:w-7/12 flex flex-col justify-between bg-white">
-          
-          {/* Header Tabs */}
-          <div className="w-full flex border-b border-slate-100 bg-slate-50/80">
-            <button 
-              onClick={() => { setTab('login'); setError(''); setStatusMessage(''); }}
-              className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${tab === 'login' ? 'text-[#01373D] border-b-2 border-[#FE336A] bg-white' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              Login
-            </button>
-            <button 
-              onClick={() => { setTab('signup'); setError(''); setStatusMessage(''); }}
-              className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${tab === 'signup' ? 'text-[#01373D] border-b-2 border-[#FE336A] bg-white' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              Sign Up
-            </button>
+        <div className="p-6 sm:p-8 md:p-10 w-full flex flex-col items-center">
+          <div className="w-14 h-14 bg-[#01373D] rounded-2xl flex items-center justify-center shadow-md mb-4">
+            <Activity className="w-7 h-7 text-white stroke-[2.5]" />
           </div>
-
-          <div className="p-6 sm:p-8 lg:p-10 w-full flex flex-col items-center flex-1 justify-center">
-            {/* Mobile Header Logo (Visible on mobile screens) */}
-            <div className="flex lg:hidden flex-col items-center mb-6">
-              <div className="w-14 h-14 bg-[#01373D] rounded-2xl flex items-center justify-center shadow-md mb-3">
-                <Activity className="w-7 h-7 text-white stroke-[2.5]" />
-              </div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
-                VitalGuard <span className="text-[#FE336A]">C3</span>
-              </h1>
-            </div>
-
-            {/* Desktop Header Greeting (Visible on PC / Desktop) */}
-            <div className="hidden lg:block w-full mb-6 text-left">
-              <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                {tab === 'signup' ? 'Create Guardian Account' : 'Welcome Back'}
-              </h2>
-              <p className="text-xs text-slate-500 font-medium mt-1">
-                {tab === 'signup' 
-                  ? 'Pair your wristband and register hardware biometric passkey.' 
-                  : 'Authenticate with your verified device passkey or secure PIN.'
-                }
-              </p>
-            </div>
+          
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 mb-6">
+            VitalGuard <span className="text-[#FE336A]">C3</span>
+          </h1>
 
             <div className="w-full space-y-4 mb-6">
               {tab === 'signup' && (
@@ -875,8 +778,6 @@ export default function LoginPage() {
               <span>FIDO2 / WebAuthn Compliant Identity Isolation</span>
             </div>
           </div>
-
-        </div>
 
       </div>
     </div>
