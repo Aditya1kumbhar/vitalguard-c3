@@ -188,7 +188,3 @@ Deploy this full-stack system worldwide for **$0 / zero cost** without requiring
 - **Safiya N. Shaikh**
 
 ---
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
