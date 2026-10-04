@@ -13,7 +13,7 @@ export default function PinPad({ onPinComplete, title = "Enter your PIN", error,
 
   const handleKeyPress = (digit: string) => {
     if (disabled) return;
-    playHaptic('light');
+    playHaptic('soft');
     if (digit === '⌫') {
       setPin(prev => prev.slice(0, -1));
     } else if (digit === '✓') {
