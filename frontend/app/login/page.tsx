@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Fingerprint, Activity, AlertCircle, KeyRound, CheckCircle2, User, Phone, Mail, Hash } from 'lucide-react';
+import { ShieldCheck, Fingerprint, Activity, AlertCircle, KeyRound, CheckCircle2, User, Phone, Mail, Hash, Bluetooth } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import PinPad from '../components/PinPad';
 import { 
@@ -40,6 +40,8 @@ export default function LoginPage() {
   // Status & Feedback
   const [error, setError] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
+  const [detectingBand, setDetectingBand] = useState(false);
+  const [bandDetectedMsg, setBandDetectedMsg] = useState('');
 
   useEffect(() => {
     isPlatformAuthenticatorAvailable().then(supported => setHasPlatformBiometrics(supported));
@@ -68,6 +70,62 @@ export default function LoginPage() {
   const validateLogin = () => {
     if (!identifier.trim()) return 'Please enter your Mobile No. or Email.';
     return null;
+  };
+
+  const handleDetectWristband = async () => {
+    setError('');
+    setBandDetectedMsg('');
+    playHaptic('click');
+    const nav = navigator as any;
+    if (!nav.bluetooth) {
+      setError('Web Bluetooth is not supported on this browser. Use Chrome (Desktop/Android) or type your Band ID manually.');
+      return;
+    }
+
+    setDetectingBand(true);
+    setStatusMessage('Scanning for nearby VitalGuard wristband...');
+
+    try {
+      const SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
+      const DEVICE_ID_CHAR_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a9';
+
+      const device = await nav.bluetooth.requestDevice({
+        filters: [{ namePrefix: 'VitalGuard' }],
+        optionalServices: [SERVICE_UUID],
+      });
+
+      setStatusMessage(`Found ${device.name || 'Wristband'}! Reading factory identity...`);
+
+      let detectedId = '';
+
+      try {
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService(SERVICE_UUID);
+        const char = await service.getCharacteristic(DEVICE_ID_CHAR_UUID);
+        const val = await char.readValue();
+        detectedId = new TextDecoder().decode(val);
+        device.gatt.disconnect();
+      } catch (gattErr) {
+        if (device.name && device.name.includes('-')) {
+          const suffix = device.name.split('-')[1];
+          detectedId = `VG-C3-${suffix.toUpperCase()}`;
+        } else {
+          detectedId = device.name || 'VG-C3-0001';
+        }
+      }
+
+      setBandId(detectedId);
+      setBandDetectedMsg(`Device discovered & bound: ${detectedId}`);
+      setStatusMessage('');
+      playHaptic('pop');
+    } catch (err: any) {
+      if (err.name !== 'NotFoundError') {
+        setError(err.message || 'Failed to detect wristband.');
+      }
+      setStatusMessage('');
+    } finally {
+      setDetectingBand(false);
+    }
   };
 
   const handleSignupAuth = async () => {
@@ -461,19 +519,40 @@ export default function LoginPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 pl-1">
-                    Wristband / Device ID
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5 pl-1">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                      Wristband / Device ID
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleDetectWristband}
+                      disabled={detectingBand}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2 py-0.5 rounded-lg transition-all shadow-xs"
+                      title="Auto-scan hardware MAC via Bluetooth"
+                    >
+                      <Bluetooth className={`w-3 h-3 ${detectingBand ? 'animate-pulse text-sky-500' : 'text-sky-600'}`} />
+                      <span>{detectingBand ? 'Detecting...' : 'Detect My Wristband'}</span>
+                    </button>
+                  </div>
                   <div className="relative">
                     <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input 
                       type="text" 
                       value={bandId}
-                      onChange={(e) => setBandId(e.target.value)}
-                      placeholder="e.g. VG-C3-0001"
+                      onChange={(e) => {
+                        setBandId(e.target.value);
+                        setBandDetectedMsg('');
+                      }}
+                      placeholder="e.g. VG-C3-AD01"
                       className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#01373D] focus:ring-2 focus:ring-[#01373D]/20 text-sm font-bold uppercase transition-all"
                     />
                   </div>
+                  {bandDetectedMsg && (
+                    <p className="text-[11px] font-semibold text-emerald-600 mt-1 pl-1 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                      <span>{bandDetectedMsg}</span>
+                    </p>
+                  )}
                 </div>
               </>
             )}

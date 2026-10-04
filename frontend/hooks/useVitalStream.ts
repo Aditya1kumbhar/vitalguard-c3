@@ -18,6 +18,7 @@ export interface TelemetryData {
 
 const SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
 const CHARACTERISTIC_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a8';
+const DEVICE_ID_CHAR_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a9';
 
 export function useVitalStream(defaultWsUrl?: string) {
   const getDynamicWsUrl = () => {
@@ -83,13 +84,43 @@ export function useVitalStream(defaultWsUrl?: string) {
         alert('Web Bluetooth is not supported on this browser. Use Chrome (Desktop/Android) or Bluefy on iOS.');
         return;
       }
+
+      const session = await getSession();
+      const userBandId = session?.bandId;
+
       const device = await nav.bluetooth.requestDevice({
-        filters: [{ name: 'VitalGuard-Band' }, { namePrefix: 'VitalGuard' }],
+        filters: [{ namePrefix: 'VitalGuard' }],
         optionalServices: [SERVICE_UUID],
       });
       bleDeviceRef.current = device;
       const server = await device.gatt.connect();
       const service = await server.getPrimaryService(SERVICE_UUID);
+
+      // Enforce 1-to-1 Hardware Privacy: Validate this band belongs to this logged-in account
+      try {
+        const idChar = await service.getCharacteristic(DEVICE_ID_CHAR_UUID);
+        const idVal = await idChar.readValue();
+        const hardwareBandId = new TextDecoder().decode(idVal);
+
+        if (userBandId && hardwareBandId && hardwareBandId.toLowerCase() !== userBandId.toLowerCase()) {
+          device.gatt.disconnect();
+          alert(`Access Denied: This wristband (${hardwareBandId}) is bound to another user's account.\n\nYour registered band: ${userBandId}. Privacy protection active.`);
+          setMode('DISCONNECTED');
+          return;
+        }
+      } catch (idErr) {
+        // Name fallback check
+        if (userBandId && device.name && device.name.includes('-')) {
+          const suffix = device.name.split('-')[1];
+          if (!userBandId.toLowerCase().includes(suffix.toLowerCase())) {
+            device.gatt.disconnect();
+            alert(`Access Denied: This wristband (${device.name}) does not match your registered device (${userBandId}).`);
+            setMode('DISCONNECTED');
+            return;
+          }
+        }
+      }
+
       const characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
       await characteristic.startNotifications();
       setMode('BLE');
