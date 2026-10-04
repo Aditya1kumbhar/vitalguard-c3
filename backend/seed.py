@@ -50,9 +50,9 @@ async def seed_data():
                 ts = (now - timedelta(days=day_offset, hours=random.randint(1, 23))).isoformat()
                 peak_g = round(random.uniform(2.8, 4.5), 2)
                 await db.execute("""
-                    INSERT INTO fall_alerts (timestamp, peak_accel, severity, acknowledged)
-                    VALUES (?, ?, 'high', 0)
-                """, (ts, peak_g))
+                    INSERT INTO fall_alerts (band_id, timestamp, peak_accel, severity, acknowledged)
+                    VALUES (?, ?, ?, 'high', 0)
+                """, ("VG-C3-AD01", ts, peak_g))
                 
         # Generate 1000 rows of raw 1Hz data for the risk engine to score (about 16 minutes)
         print("Seeding recent raw telemetry...")

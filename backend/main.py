@@ -86,68 +86,64 @@ def stage_packet(total_accel_g: float, fall_detected: bool, stage: str) -> Telem
 # ── Telemetry Broadcaster (Multi-Client & Concurrency Safe) ─────────
 class TelemetryBroadcaster:
     def __init__(self) -> None:
-        self._subscribers: set[asyncio.Queue[TelemetryPacket]] = set()
-        self.fall_sequence_queue: "asyncio.Queue[TelemetryPacket]" = asyncio.Queue()
-        self._latest_packet: TelemetryPacket = normal_packet()
+        self._subscribers: dict[str, set[asyncio.Queue[TelemetryPacket]]] = {}
+        self.fall_sequence_queue: "asyncio.Queue[tuple[str, TelemetryPacket]]" = asyncio.Queue()
+        self._latest_packet: dict[str, TelemetryPacket] = {}
         self._task: Optional[asyncio.Task] = None
 
-    @property
-    def latest_packet(self) -> TelemetryPacket:
-        return self._latest_packet
+    def get_latest(self, band_id: str) -> TelemetryPacket:
+        return self._latest_packet.get(band_id) or normal_packet()
 
     @property
     def subscriber_count(self) -> int:
-        return len(self._subscribers)
+        return sum(len(s) for s in self._subscribers.values())
 
-    def register(self) -> asyncio.Queue[TelemetryPacket]:
+    def register(self, band_id: str) -> asyncio.Queue[TelemetryPacket]:
+        if band_id not in self._subscribers:
+            self._subscribers[band_id] = set()
         client_queue: asyncio.Queue[TelemetryPacket] = asyncio.Queue(maxsize=30)
-        self._subscribers.add(client_queue)
+        self._subscribers[band_id].add(client_queue)
         return client_queue
 
-    def unregister(self, client_queue: asyncio.Queue[TelemetryPacket]) -> None:
-        self._subscribers.discard(client_queue)
+    def unregister(self, band_id: str, client_queue: asyncio.Queue[TelemetryPacket]) -> None:
+        if band_id in self._subscribers:
+            self._subscribers[band_id].discard(client_queue)
+            if not self._subscribers[band_id]:
+                del self._subscribers[band_id]
 
-    def broadcast(self, packet: TelemetryPacket) -> None:
-        self._latest_packet = packet
-        for q in list(self._subscribers):
-            try:
-                q.put_nowait(packet)
-            except asyncio.QueueFull:
-                try:
-                    q.get_nowait()
-                except asyncio.QueueEmpty:
-                    pass
+    def broadcast(self, band_id: str, packet: TelemetryPacket) -> None:
+        self._latest_packet[band_id] = packet
+        if band_id in self._subscribers:
+            for q in list(self._subscribers[band_id]):
                 try:
                     q.put_nowait(packet)
                 except asyncio.QueueFull:
-                    pass
+                    try:
+                        q.get_nowait()
+                    except asyncio.QueueEmpty:
+                        pass
+                    try:
+                        q.put_nowait(packet)
+                    except asyncio.QueueFull:
+                        pass
 
     async def _run_loop(self) -> None:
         while True:
             try:
-                if not self.fall_sequence_queue.empty():
-                    try:
-                        packet = self.fall_sequence_queue.get_nowait()
-                    except asyncio.QueueEmpty:
-                        packet = normal_packet()
-                else:
+                # We can broadcast to all active band_ids
+                for band_id in list(self._subscribers.keys()):
                     packet = normal_packet()
-
-                self.broadcast(packet)
-                
-                # Persist vital sample asynchronously to avoid blocking the broadcast
-                asyncio.create_task(record_vital_sample(
-                    patient_id=1,
-                    hr=packet.heart_rate,
-                    spo2=packet.spo2,
-                    temp=packet.body_temp,
-                    ax=packet.accel_x,
-                    ay=packet.accel_y,
-                    az=packet.accel_z,
-                    svm=packet.svm
-                ))
+                    self.broadcast(band_id, packet)
             except Exception:
                 pass
+            
+            try:
+                while not self.fall_sequence_queue.empty():
+                    band_id, packet = self.fall_sequence_queue.get_nowait()
+                    self.broadcast(band_id, packet)
+            except Exception:
+                pass
+            
             await asyncio.sleep(1)
 
     def start(self) -> None:
@@ -157,7 +153,6 @@ class TelemetryBroadcaster:
     def stop(self) -> None:
         if self._task and not self._task.done():
             self._task.cancel()
-
 
 broadcaster = TelemetryBroadcaster()
 
@@ -203,11 +198,22 @@ app.add_middleware(
 
 # ── WebSocket stream ─────────────────────────────────────────────────
 @app.websocket("/ws/telemetry")
-async def telemetry_stream(websocket: WebSocket) -> None:
-    await websocket.accept()
-    client_queue = broadcaster.register()
+async def telemetry_stream(websocket: WebSocket, token: str = Query(...)) -> None:
     try:
-        await websocket.send_text(broadcaster.latest_packet.model_dump_json())
+        guardian = await auth.get_current_guardian(token)
+    except Exception:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
+        
+    band_id = guardian.get("band_id")
+    if not band_id:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
+
+    await websocket.accept()
+    client_queue = broadcaster.register(band_id)
+    try:
+        await websocket.send_text(broadcaster.get_latest(band_id).model_dump_json())
         while True:
             packet = await client_queue.get()
             await websocket.send_text(packet.model_dump_json())
@@ -216,7 +222,7 @@ async def telemetry_stream(websocket: WebSocket) -> None:
     except Exception:
         return
     finally:
-        broadcaster.unregister(client_queue)
+        broadcaster.unregister(band_id, client_queue)
 
 
 # ── Fall trigger (demo button) ───────────────────────────────────────
@@ -225,11 +231,11 @@ async def telemetry_stream(websocket: WebSocket) -> None:
 async def trigger_fall(guardian: dict = Depends(auth.get_current_guardian)) -> dict:
     peak_accel = round(random.uniform(2.8, 4.5), 1)
 
-    await broadcaster.fall_sequence_queue.put(stage_packet(0.3, False, "free_fall_dip"))
-    await broadcaster.fall_sequence_queue.put(stage_packet(peak_accel, True, "impact_spike"))
-    await broadcaster.fall_sequence_queue.put(stage_packet(1.0, False, "post_fall_stillness"))
+    await broadcaster.fall_sequence_queue.put((guardian["band_id"], stage_packet(0.3, False, "free_fall_dip")))
+    await broadcaster.fall_sequence_queue.put((guardian["band_id"], stage_packet(peak_accel, True, "impact_spike")))
+    await broadcaster.fall_sequence_queue.put((guardian["band_id"], stage_packet(1.0, False, "post_fall_stillness")))
 
-    alert_id = await record_alert(peak_accel=peak_accel, severity="high")
+    alert_id = await record_alert(band_id=guardian["band_id"], peak_accel=peak_accel, severity="high")
 
     return {
         "status": "fall sequence queued",
@@ -248,7 +254,7 @@ async def reset_fall(guardian: dict = Depends(auth.get_current_guardian)) -> dic
         except asyncio.QueueEmpty:
             break
     packet = normal_packet()
-    broadcaster.broadcast(packet)
+    broadcaster.broadcast(guardian["band_id"], packet)
     return {"status": "cleared", "message": "Fall alert cleared"}
 
 
@@ -277,24 +283,24 @@ async def get_records(days: int = 30, guardian: dict = Depends(auth.get_current_
 
 @app.get("/alerts")
 async def list_alerts(limit: int = Query(default=20, ge=1, le=100), guardian: dict = Depends(auth.get_current_guardian)) -> list[dict]:
-    return await get_recent_alerts(limit)
+    return await get_recent_alerts(band_id=guardian["band_id"], limit=limit)
 
 @app.get("/alerts/{alert_id}")
 async def get_alert(alert_id: int, guardian: dict = Depends(auth.get_current_guardian)) -> dict:
-    alert = await get_alert_by_id(alert_id)
+    alert = await get_alert_by_id(band_id=guardian["band_id"], alert_id=alert_id)
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
     return alert
 
 @app.post("/alerts/{alert_id}/acknowledge")
 async def ack_alert(alert_id: int, guardian: dict = Depends(auth.get_current_guardian)) -> dict:
-    updated = await acknowledge_alert(alert_id)
+    updated = await acknowledge_alert(band_id=guardian["band_id"], alert_id=alert_id)
     return {"acknowledged": updated, "id": alert_id}
 
 @app.delete("/alerts")
 @app.post("/alerts/clear")
 async def clear_alerts(guardian: dict = Depends(auth.get_current_guardian)) -> dict:
-    deleted_count = await clear_all_alerts()
+    deleted_count = await clear_all_alerts(band_id=guardian["band_id"])
     return {"status": "cleared", "deleted_count": deleted_count}
 
 @app.get("/health")

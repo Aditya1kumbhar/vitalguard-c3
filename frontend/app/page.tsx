@@ -36,7 +36,7 @@ import {
 import { useAuth } from './context/AuthContext';
 
 export default function VitalGuardDashboard() {
-  const { isAuthenticated, guardianName, logout } = useAuth();
+  const { isAuthenticated, guardianName } = useAuth();
   const { data, mode, isAlertActive, connectBLE, connectWebSocket, dismissAlert } = useVitalStream();
   const [records, setRecords] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'LIVE' | 'RECORDS'>('LIVE');
@@ -166,17 +166,7 @@ export default function VitalGuardDashboard() {
 
           {/* Connection Mode Toggles, Specs & Logout */}
           <div className="flex items-center gap-1.5">
-            <button
-              onClick={() => {
-                playHaptic('pop');
-                logout();
-              }}
-              className="spring-btn px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 shadow-sm mr-1"
-              title="Logout from Dashboard"
-            >
-              <span className="hidden sm:inline">Logout</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-            </button>
+
             <button
               onClick={() => {
                 playHaptic('pop');

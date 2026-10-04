@@ -1,6 +1,7 @@
 import os
 import secrets
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 import jwt
@@ -8,7 +9,6 @@ import bcrypt
 from pydantic import BaseModel
 from db import get_db_connection
 
-# JWT Configuration
 SECRET_KEY = os.getenv("JWT_SECRET", "dev-secret-key-do-not-use-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 30
@@ -16,12 +16,18 @@ ACCESS_TOKEN_EXPIRE_DAYS = 30
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
-class PINSetup(BaseModel):
+class RegisterRequest(BaseModel):
+    auth_type: str # 'phone' or 'email'
+    identifier: str
     guardian_name: str
-    pin_hash: str # Note: In a real app this would be the raw PIN or client-side hash, we're accepting the offline hash to demonstrate offline/online PIN parity.
+    band_id: str
+    credential_id: Optional[str] = None
+    pin_hash: Optional[str] = None
 
-class PINLogin(BaseModel):
-    pin_hash: str # Offline client hash to verify
+class LoginRequest(BaseModel):
+    identifier: str
+    credential_id: Optional[str] = None
+    pin_hash: Optional[str] = None
 
 def create_access_token(data: dict, expires_delta: timedelta):
     to_encode = data.copy()
@@ -52,113 +58,67 @@ async def get_current_guardian(token: str = Depends(oauth2_scheme)):
 
 @router.get("/challenge")
 async def get_challenge():
-    challenge = secrets.token_urlsafe(32)
-    return {"challenge": challenge}
+    return {"challenge": secrets.token_urlsafe(32)}
 
-@router.post("/set-pin")
-async def set_pin(setup: PINSetup):
-    # Hash the client-side hash again with bcrypt for storage
-    server_hash = bcrypt.hashpw(setup.pin_hash.encode(), bcrypt.gensalt()).decode()
-    
+@router.get("/check-identifier")
+async def check_identifier(identifier: str):
     async with get_db_connection() as db:
+        cursor = await db.execute("SELECT credential_id FROM guardians WHERE identifier = ?", (identifier,))
+        row = await cursor.fetchone()
+        if row:
+            return {"exists": True, "credential_id": row["credential_id"]}
+        return {"exists": False}
+
+@router.post("/register")
+async def register(req: RegisterRequest):
+    async with get_db_connection() as db:
+        # Check if identifier or band_id exists
+        cursor = await db.execute("SELECT id FROM guardians WHERE identifier = ? OR band_id = ?", (req.identifier, req.band_id))
+        if await cursor.fetchone():
+            raise HTTPException(status_code=400, detail="Account with this identifier or Band ID already exists.")
+            
         ts = datetime.now(timezone.utc).isoformat()
+        server_pin_hash = bcrypt.hashpw(req.pin_hash.encode(), bcrypt.gensalt()).decode() if req.pin_hash else None
+        
         cursor = await db.execute("""
-            INSERT INTO guardians (guardian_name, pin_hash, created_at, last_login_at)
-            VALUES (?, ?, ?, ?)
-        """, (setup.guardian_name, server_hash, ts, ts))
+            INSERT INTO guardians (auth_type, identifier, guardian_name, band_id, pin_hash, credential_id, created_at, last_login_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (req.auth_type, req.identifier, req.guardian_name, req.band_id, server_pin_hash, req.credential_id, ts, ts))
         await db.commit()
         guardian_id = cursor.lastrowid
         
     access_token = create_access_token(
-        data={"sub": str(guardian_id), "name": setup.guardian_name},
+        data={"sub": str(guardian_id), "name": req.guardian_name, "identifier": req.identifier, "band_id": req.band_id},
         expires_delta=timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer", "guardian_name": req.guardian_name, "band_id": req.band_id}
 
-@router.post("/verify-pin")
-async def verify_pin(login: PINLogin):
+@router.post("/login")
+async def login(req: LoginRequest):
     async with get_db_connection() as db:
-        # Assuming ID 1 for single guardian
-        cursor = await db.execute("SELECT * FROM guardians WHERE id = 1")
+        cursor = await db.execute("SELECT * FROM guardians WHERE identifier = ?", (req.identifier,))
         guardian = await cursor.fetchone()
         
     if not guardian:
-        raise HTTPException(status_code=400, detail="Guardian not found")
+        raise HTTPException(status_code=404, detail="Account not found.")
         
-    if not bcrypt.checkpw(login.pin_hash.encode(), guardian["pin_hash"].encode()):
-        raise HTTPException(status_code=401, detail="Incorrect PIN")
+    # Verify Passkey if provided
+    if req.credential_id:
+        if req.credential_id != guardian["credential_id"]:
+            raise HTTPException(status_code=401, detail="Invalid biometric credential.")
+    elif req.pin_hash:
+        if not guardian["pin_hash"] or not bcrypt.checkpw(req.pin_hash.encode(), guardian["pin_hash"].encode()):
+            raise HTTPException(status_code=401, detail="Incorrect PIN.")
+    else:
+        raise HTTPException(status_code=400, detail="Must provide credential_id or pin_hash.")
         
     async with get_db_connection() as db:
         ts = datetime.now(timezone.utc).isoformat()
-        await db.execute("UPDATE guardians SET last_login_at = ? WHERE id = 1", (ts,))
+        await db.execute("UPDATE guardians SET last_login_at = ? WHERE id = ?", (ts, guardian["id"]))
         await db.commit()
 
     access_token = create_access_token(
-        data={"sub": str(guardian["id"]), "name": guardian["guardian_name"]},
+        data={"sub": str(guardian["id"]), "name": guardian["guardian_name"], "identifier": guardian["identifier"], "band_id": guardian["band_id"]},
         expires_delta=timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
     )
-    return {"access_token": access_token, "token_type": "bearer"}
-
-class PasskeyRegister(BaseModel):
-    guardian_name: str
-    credential_id: str
-
-class PasskeyLogin(BaseModel):
-    credential_id: str
-    guardian_id: int = 1
-
-@router.post("/passkey-register")
-async def passkey_register(reg: PasskeyRegister):
-    async with get_db_connection() as db:
-        ts = datetime.now(timezone.utc).isoformat()
-        cursor = await db.execute("SELECT id FROM guardians WHERE id = 1")
-        existing = await cursor.fetchone()
-        if existing:
-            await db.execute("""
-                UPDATE guardians 
-                SET guardian_name = ?, last_login_at = ?
-                WHERE id = 1
-            """, (reg.guardian_name, ts))
-            guardian_id = 1
-        else:
-            cursor = await db.execute("""
-                INSERT INTO guardians (guardian_name, created_at, last_login_at)
-                VALUES (?, ?, ?)
-            """, (reg.guardian_name, ts, ts))
-            guardian_id = cursor.lastrowid
-        await db.commit()
-
-    access_token = create_access_token(
-        data={"sub": str(guardian_id), "name": reg.guardian_name},
-        expires_delta=timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
-
-@router.post("/passkey-login")
-async def passkey_login(login: PasskeyLogin):
-    async with get_db_connection() as db:
-        cursor = await db.execute("SELECT * FROM guardians ORDER BY id ASC LIMIT 1")
-        guardian = await cursor.fetchone()
-        
-        if not guardian:
-            ts = datetime.now(timezone.utc).isoformat()
-            cursor = await db.execute("""
-                INSERT INTO guardians (guardian_name, created_at, last_login_at)
-                VALUES ('Guardian', ?, ?)
-            """, (ts, ts))
-            await db.commit()
-            guardian_id = cursor.lastrowid
-            guardian_name = 'Guardian'
-        else:
-            guardian_id = guardian["id"]
-            guardian_name = guardian["guardian_name"]
-            ts = datetime.now(timezone.utc).isoformat()
-            await db.execute("UPDATE guardians SET last_login_at = ? WHERE id = ?", (ts, guardian_id))
-            await db.commit()
-
-    access_token = create_access_token(
-        data={"sub": str(guardian_id), "name": guardian_name},
-        expires_delta=timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
-    )
-    return {"access_token": access_token, "token_type": "bearer", "guardian_name": guardian_name}
-
+    return {"access_token": access_token, "token_type": "bearer", "guardian_name": guardian["guardian_name"], "band_id": guardian["band_id"]}

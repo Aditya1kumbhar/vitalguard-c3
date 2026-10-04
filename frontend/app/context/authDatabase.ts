@@ -6,13 +6,14 @@
 const DB_NAME = "VitalGuardAuthDB";
 const STORE_CREDS = "credentials";
 const STORE_SESSIONS = "sessions";
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Upgraded schema for identifier
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 export interface SessionData {
   sessionId: string;
-  guardianId: number;
+  identifier: string;
   guardianName: string;
+  bandId: string;
   authenticatedAt: number;
   expiresAt: number;
   authMethod: "passkey" | "pin";
@@ -20,12 +21,12 @@ export interface SessionData {
 }
 
 export interface CredentialData {
-  guardianId: number;
+  identifier: string; // phone or email
   guardianName: string;
+  bandId: string;
   pinHash: string; // bcrypt hash or PBKDF2 derived key
   pinSalt: string; // salt for offline PBKDF2 verification
   credentialId?: string; // WebAuthn credential ID
-  publicKey?: string; // WebAuthn public key
 }
 
 export async function openAuthDB(): Promise<IDBDatabase> {
@@ -36,10 +37,21 @@ export async function openAuthDB(): Promise<IDBDatabase> {
 
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onupgradeneeded = () => {
+    request.onupgradeneeded = (event: any) => {
       const db = request.result;
+      const oldVersion = event.oldVersion;
+
+      if (oldVersion < 2) {
+        if (db.objectStoreNames.contains(STORE_CREDS)) {
+            db.deleteObjectStore(STORE_CREDS);
+        }
+        if (db.objectStoreNames.contains(STORE_SESSIONS)) {
+            db.deleteObjectStore(STORE_SESSIONS);
+        }
+      }
+
       if (!db.objectStoreNames.contains(STORE_CREDS)) {
-        db.createObjectStore(STORE_CREDS, { keyPath: "guardianId" });
+        db.createObjectStore(STORE_CREDS, { keyPath: "identifier" });
       }
       if (!db.objectStoreNames.contains(STORE_SESSIONS)) {
         db.createObjectStore(STORE_SESSIONS, { keyPath: "sessionId" });
@@ -100,44 +112,40 @@ export async function saveCredential(cred: CredentialData): Promise<void> {
   });
 }
 
-export async function getCredential(guardianId: number = 1): Promise<CredentialData | null> {
+export async function getCredential(identifier: string): Promise<CredentialData | null> {
   const db = await openAuthDB();
   return new Promise<CredentialData | null>((resolve, reject) => {
     const tx = db.transaction(STORE_CREDS, "readonly");
-    const req = tx.objectStore(STORE_CREDS).get(guardianId);
+    const req = tx.objectStore(STORE_CREDS).get(identifier);
     req.onsuccess = () => resolve(req.result || null);
     req.onerror = () => reject(req.error);
   });
 }
 
-// Generate PBKDF2 hash for PIN verification offline
-export async function hashPinOffline(pin: string, saltHex: string): Promise<string> {
-  const encoder = new TextEncoder();
+export async function hashPinOffline(pin: string, salt: string): Promise<string> {
+  const enc = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
     "raw",
-    encoder.encode(pin),
+    enc.encode(pin),
     { name: "PBKDF2" },
     false,
     ["deriveBits", "deriveKey"]
   );
-
-  const saltBuffer = new Uint8Array(saltHex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
-
+  
   const key = await crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
-      salt: saltBuffer,
+      salt: enc.encode(salt),
       iterations: 100000,
-      hash: "SHA-256"
+      hash: "SHA-256",
     },
     keyMaterial,
     { name: "AES-GCM", length: 256 },
     true,
     ["encrypt", "decrypt"]
   );
-
+  
   const exported = await crypto.subtle.exportKey("raw", key);
-  return Array.from(new Uint8Array(exported))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
+  const hashArray = Array.from(new Uint8Array(exported));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }

@@ -103,24 +103,31 @@ async def init_db() -> None:
             )
         """)
 
-        # 5. Guardians (Auth)
+        # 5. Guardians (Auth & Multi-Tenant Mapping)
         await db.execute("""
             CREATE TABLE IF NOT EXISTS guardians (
                 id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                auth_type       TEXT NOT NULL,        -- 'phone' or 'email'
+                identifier      TEXT UNIQUE NOT NULL, -- e.g., '+919876543210' or 'user@example.com'
                 guardian_name   TEXT NOT NULL,
+                band_id         TEXT UNIQUE NOT NULL, -- The unique wristband MAC/ID (e.g., 'VG-C3-AD01')
                 pin_hash        TEXT,
-                credential_id   BLOB,
-                public_key      BLOB,
+                pin_salt        TEXT,
+                credential_id   TEXT,
+                public_key      TEXT,
                 sign_count      INTEGER DEFAULT 0,
                 created_at      TEXT NOT NULL,
                 last_login_at   TEXT
             )
         """)
+        await db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_guardians_ident ON guardians(identifier)")
+        await db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_guardians_band ON guardians(band_id)")
 
-        # --- Phase 1 Legacy Table for Backward Compatibility ---
+        # --- Phase 1 Legacy Table for Backward Compatibility (Updated with band_id) ---
         await db.execute("""
             CREATE TABLE IF NOT EXISTS fall_alerts (
                 id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                band_id      TEXT    NOT NULL,
                 timestamp    TEXT    NOT NULL,
                 peak_accel   REAL    NOT NULL,
                 severity     TEXT    NOT NULL DEFAULT 'high',
@@ -130,7 +137,7 @@ async def init_db() -> None:
         
         await db.execute("""
             CREATE INDEX IF NOT EXISTS idx_fall_alerts_ack_id
-            ON fall_alerts (acknowledged, id DESC)
+            ON fall_alerts (band_id, acknowledged, id DESC)
         """)
         
         await db.commit()
@@ -139,7 +146,7 @@ async def init_db() -> None:
 # Phase 1 Legacy Functions (Maintained so main.py doesn't break yet)
 # =====================================================================
 
-async def record_alert(peak_accel: float, severity: str = "high") -> int:
+async def record_alert(band_id: str, peak_accel: float, severity: str = "high") -> int:
     """Insert a fall alert. Used by Phase 1 code."""
     try:
         val = float(peak_accel)
@@ -155,13 +162,13 @@ async def record_alert(peak_accel: float, severity: str = "high") -> int:
     ts = datetime.now(timezone.utc).isoformat()
     async with get_db_connection() as db:
         cursor = await db.execute(
-            "INSERT INTO fall_alerts (timestamp, peak_accel, severity) VALUES (?, ?, ?)",
-            (ts, round(val, 2), clean_severity),
+            "INSERT INTO fall_alerts (band_id, timestamp, peak_accel, severity) VALUES (?, ?, ?, ?)",
+            (band_id, ts, round(val, 2), clean_severity),
         )
         await db.commit()
         return int(cursor.lastrowid or 0)
 
-async def get_recent_alerts(limit: int = 20) -> list[dict]:
+async def get_recent_alerts(band_id: str, limit: int = 20) -> list[dict]:
     """Return recent alerts from Phase 1 table."""
     try:
         safe_limit = max(1, min(int(limit), 100))
@@ -170,13 +177,13 @@ async def get_recent_alerts(limit: int = 20) -> list[dict]:
 
     async with get_db_connection() as db:
         cursor = await db.execute(
-            "SELECT id, timestamp, peak_accel, severity, acknowledged FROM fall_alerts ORDER BY id DESC LIMIT ?",
-            (safe_limit,),
+            "SELECT id, timestamp, peak_accel, severity, acknowledged FROM fall_alerts WHERE band_id = ? ORDER BY id DESC LIMIT ?",
+            (band_id, safe_limit,),
         )
         rows = await cursor.fetchall()
         return [dict(row) for row in rows]
 
-async def get_alert_by_id(alert_id: int) -> Optional[dict]:
+async def get_alert_by_id(band_id: str, alert_id: int) -> Optional[dict]:
     """Retrieve an alert by ID from Phase 1 table."""
     try:
         clean_id = int(alert_id)
@@ -185,13 +192,13 @@ async def get_alert_by_id(alert_id: int) -> Optional[dict]:
 
     async with get_db_connection() as db:
         cursor = await db.execute(
-            "SELECT id, timestamp, peak_accel, severity, acknowledged FROM fall_alerts WHERE id = ?",
-            (clean_id,),
+            "SELECT id, timestamp, peak_accel, severity, acknowledged FROM fall_alerts WHERE id = ? AND band_id = ?",
+            (clean_id, band_id,),
         )
         row = await cursor.fetchone()
         return dict(row) if row else None
 
-async def acknowledge_alert(alert_id: int) -> bool:
+async def acknowledge_alert(band_id: str, alert_id: int) -> bool:
     """Acknowledge Phase 1 alert."""
     try:
         clean_id = int(alert_id)
@@ -200,16 +207,16 @@ async def acknowledge_alert(alert_id: int) -> bool:
 
     async with get_db_connection() as db:
         cursor = await db.execute(
-            "UPDATE fall_alerts SET acknowledged = 1 WHERE id = ?",
-            (clean_id,),
+            "UPDATE fall_alerts SET acknowledged = 1 WHERE id = ? AND band_id = ?",
+            (clean_id, band_id,),
         )
         await db.commit()
         return cursor.rowcount > 0
 
-async def clear_all_alerts() -> int:
+async def clear_all_alerts(band_id: str) -> int:
     """Clear Phase 1 alerts."""
     async with get_db_connection() as db:
-        cursor = await db.execute("DELETE FROM fall_alerts")
+        cursor = await db.execute("DELETE FROM fall_alerts WHERE band_id = ?", (band_id,))
         await db.commit()
         return cursor.rowcount
 

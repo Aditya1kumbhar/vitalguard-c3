@@ -8,7 +8,9 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   guardianName: string | null;
-  login: (name: string) => void;
+  identifier: string | null;
+  bandId: string | null;
+  login: (name: string, identifier: string, bandId: string) => void;
   logout: () => void;
 }
 
@@ -16,6 +18,8 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   isLoading: true,
   guardianName: null,
+  identifier: null,
+  bandId: null,
   login: () => {},
   logout: () => {},
 });
@@ -24,6 +28,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [guardianName, setGuardianName] = useState<string | null>(null);
+  const [identifier, setIdentifier] = useState<string | null>(null);
+  const [bandId, setBandId] = useState<string | null>(null);
+  
   const router = useRouter();
   const pathname = usePathname();
 
@@ -34,9 +41,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session && session.expiresAt > Date.now()) {
           setIsAuthenticated(true);
           setGuardianName(session.guardianName);
+          setIdentifier(session.identifier);
+          setBandId(session.bandId);
         } else {
           setIsAuthenticated(false);
           setGuardianName(null);
+          setIdentifier(null);
+          setBandId(null);
         }
       } catch (err) {
         setIsAuthenticated(false);
@@ -57,9 +68,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isLoading, isAuthenticated, pathname, router]);
 
-  const login = (name: string) => {
+  const login = (name: string, ident: string, band: string) => {
     setIsAuthenticated(true);
     setGuardianName(name);
+    setIdentifier(ident);
+    setBandId(band);
     router.push('/');
   };
 
@@ -71,11 +84,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setIsAuthenticated(false);
     setGuardianName(null);
+    setIdentifier(null);
+    setBandId(null);
     router.push('/login');
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, guardianName, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, guardianName, identifier, bandId, login, logout }}>
       {!isLoading && children}
     </AuthContext.Provider>
   );
