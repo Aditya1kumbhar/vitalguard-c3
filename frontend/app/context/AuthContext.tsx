@@ -86,7 +86,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setGuardianName(null);
     setIdentifier(null);
     setBandId(null);
-    router.push('/login');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    } else {
+      router.push('/login');
+    }
   };
 
   return (

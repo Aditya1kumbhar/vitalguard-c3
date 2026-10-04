@@ -15,6 +15,7 @@ import {
   saveCredential, 
   getCredential, 
   saveSession, 
+  getSession,
   clearSession, 
 } from '../context/authDatabase';
 import { getApiBase } from '../utils/api';
@@ -42,6 +43,19 @@ export default function LoginPage() {
 
   useEffect(() => {
     isPlatformAuthenticatorAvailable().then(supported => setHasPlatformBiometrics(supported));
+    
+    async function checkPreviousUser() {
+      try {
+        const lastSession = await getSession();
+        if (lastSession?.identifier) {
+          setIdentifier(lastSession.identifier);
+          setTab('login');
+        }
+      } catch {
+        // ignore
+      }
+    }
+    checkPreviousUser();
   }, []);
 
   const validateSignup = () => {
@@ -166,19 +180,35 @@ export default function LoginPage() {
 
     try {
       const identToUse = identifier.trim().toLowerCase();
-      const cred = await getCredential(identToUse);
-      
-      if (!cred) {
-        throw new Error('Device not recognized for this user. Please Sign Up on this device.');
+      let cred = await getCredential(identToUse);
+      let credentialId = cred?.credentialId;
+
+      if (!credentialId) {
+        const apiBase = getApiBase();
+        try {
+          const checkRes = await fetch(`${apiBase}/api/auth/check-identifier?identifier=${encodeURIComponent(identToUse)}`);
+          if (checkRes.ok) {
+            const checkData = await checkRes.json();
+            if (checkData.exists && checkData.credential_id) {
+              credentialId = checkData.credential_id;
+            }
+          }
+        } catch {
+          // offline
+        }
+      }
+
+      if (!cred && !credentialId) {
+        throw new Error('Identity not recognized on this device. Please Sign Up first.');
       }
       
-      if (mode === 'passkey' && !cred.credentialId) {
+      if (mode === 'passkey' && !credentialId) {
         throw new Error('Biometrics not setup for this user. Please use PIN.');
       }
 
       setStatusMessage('Touch fingerprint sensor or enter PIN in system prompt...');
 
-      const verifyResult = await verifyPlatformBiometrics(cred.credentialId);
+      const verifyResult = await verifyPlatformBiometrics(credentialId);
 
       const apiBase = getApiBase();
       const res = await fetch(`${apiBase}/api/auth/login`, {
@@ -191,14 +221,24 @@ export default function LoginPage() {
       });
 
       if (!res.ok) {
-        throw new Error('Invalid biometrics or backend rejected.');
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Invalid biometrics or backend rejected.');
       }
 
       const data = await res.json();
       const jwtToken = data.access_token;
       
-      const bandToUse = data.band_id || cred.bandId;
-      const nameToUse = data.guardian_name || cred.guardianName;
+      const bandToUse = data.band_id || cred?.bandId || 'VG-C3-0001';
+      const nameToUse = data.guardian_name || cred?.guardianName || 'Guardian';
+
+      await saveCredential({
+        identifier: identToUse,
+        guardianName: nameToUse,
+        bandId: bandToUse,
+        pinHash: cred?.pinHash || '',
+        pinSalt: cred?.pinSalt || '',
+        credentialId: verifyResult.credentialId,
+      });
 
       await saveSession({
         sessionId: crypto.randomUUID(),

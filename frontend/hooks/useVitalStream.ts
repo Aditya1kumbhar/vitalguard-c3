@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { getSession } from '../app/context/authDatabase';
 
 export interface TelemetryData {
   heart_rate: number;
@@ -41,9 +42,18 @@ export function useVitalStream(defaultWsUrl?: string) {
   const wsRef = useRef<WebSocket | null>(null);
   const bleDeviceRef = useRef<any>(null);
 
-  const connectWebSocket = () => {
+  const connectWebSocket = async () => {
     if (wsRef.current) wsRef.current.close();
-    const wsUrl = getDynamicWsUrl();
+    let wsUrl = getDynamicWsUrl();
+    try {
+      const session = await getSession();
+      if (session && session.token) {
+        const sep = wsUrl.includes('?') ? '&' : '?';
+        wsUrl = `${wsUrl}${sep}token=${encodeURIComponent(session.token)}`;
+      }
+    } catch (e) {
+      console.warn('Could not retrieve session for WebSocket:', e);
+    }
     const ws = new WebSocket(wsUrl);
     ws.onopen = () => setMode('WEBSOCKET');
     ws.onmessage = (event) => {

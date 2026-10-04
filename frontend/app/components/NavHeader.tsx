@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Radio, Calendar, Activity, Cpu } from "lucide-react";
+import { Radio, Calendar, Activity, Cpu, LogOut } from "lucide-react";
 import { playHaptic } from "../utils/haptics";
 import DeviceSpecsModal from "./DeviceSpecsModal";
 import { useAuth } from "../context/AuthContext";
@@ -11,7 +11,7 @@ import { useAuth } from "../context/AuthContext";
 export default function NavHeader() {
   const pathname = usePathname();
   const [showSpecs, setShowSpecs] = useState(false);
-  const { isAuthenticated, guardianName } = useAuth();
+  const { isAuthenticated, guardianName, logout } = useAuth();
 
   const isLive = pathname === "/";
   const isRecords = pathname === "/records";
@@ -64,6 +64,21 @@ export default function NavHeader() {
             <Cpu className="w-3 h-3 text-sky-600" />
             <span className="hidden sm:inline">Specs</span>
           </button>
+
+          {isAuthenticated && (
+            <button
+              onClick={() => {
+                playHaptic("pop");
+                logout();
+              }}
+              className="spring-btn flex items-center gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2 py-0.5 rounded-md shadow-xs ml-1"
+              title="Logout"
+              aria-label="Logout"
+            >
+              <LogOut className="w-3 h-3 text-rose-500" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+          )}
         </div>
       </div>
 
