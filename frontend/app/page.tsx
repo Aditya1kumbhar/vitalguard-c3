@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { useVitalStream } from '../hooks/useVitalStream';
 import { playHaptic } from './utils/haptics';
-import DeviceSpecsModal from './components/DeviceSpecsModal';
 import AccelWaveform from './components/AccelWaveform';
 import RiskScoreCard from './components/RiskScoreCard';
 import ClinicalSummaryCard from './components/ClinicalSummaryCard';
@@ -37,11 +36,10 @@ import {
 import { useAuth } from './context/AuthContext';
 
 export default function VitalGuardDashboard() {
-  const { isAuthenticated, guardianName, logout } = useAuth();
+  const { isAuthenticated, guardianName, bandId, logout } = useAuth();
   const { data, mode, isAlertActive, connectBLE, connectWebSocket, dismissAlert } = useVitalStream();
   const [records, setRecords] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'LIVE' | 'RECORDS'>('LIVE');
-  const [showSpecs, setShowSpecs] = useState(false);
   const [simulating, setSimulating] = useState(false);
 
 
@@ -159,9 +157,14 @@ export default function VitalGuardDashboard() {
               <h1 className="text-lg sm:text-xl font-extrabold text-[#01373D] tracking-tight leading-none flex items-center gap-2">
                 VitalGuard <span className="text-[#FE336A] font-extrabold">C3</span>
               </h1>
-              <p className="text-xs text-[#44706A] font-semibold mt-0.5">
-                Device 01 | Room 204
-              </p>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="text-xs font-bold text-[#01373D] bg-white border border-[#01373D]/10 px-2 py-0.5 rounded-md shadow-xs">
+                  {guardianName || 'Guardian'}
+                </span>
+                <span className="text-xs font-mono font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-md shadow-xs">
+                  Band: {bandId || 'VG-C3-0001'}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -200,18 +203,6 @@ export default function VitalGuardDashboard() {
               <span className="hidden sm:inline">Wi-Fi</span>
             </button>
 
-            <button
-              onClick={() => {
-                playHaptic('pop');
-                setShowSpecs(true);
-              }}
-              className="spring-btn p-1.5 rounded-xl text-xs font-bold bg-white hover:bg-[#F1F4F9] text-[#01373D] border border-[#01373D]/10 shadow-xs"
-              title="Device Specs"
-              aria-label="Device Specs"
-            >
-              <Cpu className="w-4 h-4 text-[#FE336A]" />
-            </button>
-
             {isAuthenticated && (
               <button
                 onClick={() => {
@@ -228,9 +219,6 @@ export default function VitalGuardDashboard() {
             )}
           </div>
         </header>
-
-        {/* System Specs Modal */}
-        <DeviceSpecsModal open={showSpecs} onClose={() => setShowSpecs(false)} />
 
         {/* Biofarma-style Tab Switcher */}
         <nav aria-label="Dashboard Tabs" className="grid grid-cols-2 gap-1.5 p-1 bg-[#01373D]/5 backdrop-blur-xl rounded-2xl border border-[#01373D]/8 shadow-inner">
@@ -535,19 +523,17 @@ export default function VitalGuardDashboard() {
           </div>
         )}
 
-        {/* Biofarma-style Minimal Footer */}
+        {/* Minimal Prototype Footer */}
         <footer className="text-center py-6 border-t border-[#01373D]/5 text-xs text-[#44706A] font-medium flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
           <div className="flex items-center gap-2">
             <span className="font-bold text-[#01373D]">VitalGuard C3</span>
             <span className="text-[#01373D]/20">|</span>
-            <span>Device 01</span>
+            <span className="font-semibold text-[#01373D]">{guardianName || 'Guardian'}</span>
             <span className="text-[#01373D]/20">|</span>
-            <span>Room 204</span>
+            <span className="font-mono text-sky-700">Band: {bandId || 'VG-C3-0001'}</span>
           </div>
-          <div className="flex items-center gap-4 text-xs font-semibold text-[#44706A]">
-            <a href="/privacy" className="hover:text-[#FE336A] transition-colors">Privacy Policy</a>
-            <span className="text-[#01373D]/20">|</span>
-            <a href="/terms" className="hover:text-[#FE336A] transition-colors">Terms of Use</a>
+          <div className="text-xs text-[#44706A]/70 font-semibold">
+            Prototype Device Active
           </div>
         </footer>
 
@@ -571,8 +557,8 @@ export default function VitalGuardDashboard() {
               <p className="text-[#FE336A]/60 text-base mt-2 max-w-sm">
                 Alarm is ringing. Caregiver has been alerted.
               </p>
-              <div className="mt-3 px-3 py-1 rounded-md bg-[#01373D]/80 border border-[#01373D] text-xs font-bold text-white/50">
-                Device 01 | Room 204
+              <div className="mt-3 px-3 py-1 rounded-md bg-[#01373D]/80 border border-[#01373D] text-xs font-bold text-white/70">
+                {guardianName || 'Guardian'} | Band: {bandId || 'VG-C3-0001'}
               </div>
             </div>
 

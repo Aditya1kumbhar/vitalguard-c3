@@ -4,8 +4,11 @@ import NavHeader from "../components/NavHeader";
 import RiskScoreCard from "../components/RiskScoreCard";
 import ClinicalSummaryCard from "../components/ClinicalSummaryCard";
 import HistoricalTrends from "../components/HistoricalTrends";
+import { useAuth } from "../context/AuthContext";
 
 export default function RecordsPage() {
+  const { guardianName, bandId } = useAuth();
+
   return (
     <main className="min-h-[100dvh] overflow-x-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col">
       <div className="flex-1 w-full max-w-xl sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto p-3.5 sm:p-5 md:p-6 lg:p-8 responsive-adaptive flex flex-col gap-4 sm:gap-6">
@@ -29,19 +32,17 @@ export default function RecordsPage() {
 
         </div>
 
-        {/* Minimal Clinical Footer */}
+        {/* Minimal Prototype Footer */}
         <footer className="text-center py-6 border-t border-slate-200/80 text-xs text-slate-500 font-medium flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
           <div className="flex items-center gap-2">
             <span className="font-bold text-slate-700">VitalGuard C3</span>
             <span className="text-slate-300">|</span>
-            <span>Device 01</span>
+            <span className="font-semibold text-slate-700">{guardianName || 'Guardian'}</span>
             <span className="text-slate-300">|</span>
-            <span>Room 204</span>
+            <span className="font-mono text-sky-700">Band: {bandId || 'VG-C3-0001'}</span>
           </div>
-          <div className="flex items-center gap-4 text-xs font-semibold text-slate-600">
-            <a href="/privacy" className="hover:text-sky-600 transition-colors">Privacy Policy</a>
-            <span className="text-slate-300">|</span>
-            <a href="/terms" className="hover:text-sky-600 transition-colors">Terms of Use</a>
+          <div className="text-xs text-slate-400 font-semibold">
+            Prototype Records Active
           </div>
         </footer>
 

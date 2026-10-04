@@ -3,15 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Radio, Calendar, Activity, Cpu, LogOut } from "lucide-react";
+import { Radio, Calendar, Activity, LogOut } from "lucide-react";
 import { playHaptic } from "../utils/haptics";
-import DeviceSpecsModal from "./DeviceSpecsModal";
 import { useAuth } from "../context/AuthContext";
 
 export default function NavHeader() {
   const pathname = usePathname();
-  const [showSpecs, setShowSpecs] = useState(false);
-  const { isAuthenticated, guardianName, logout } = useAuth();
+  const { isAuthenticated, guardianName, bandId, logout } = useAuth();
 
   const isLive = pathname === "/";
   const isRecords = pathname === "/records";
@@ -36,34 +34,14 @@ export default function NavHeader() {
           </div>
         </div>
 
-        {/* Device Capsule & Specs Trigger */}
+        {/* Patient and Band Details + Logout */}
         <div className="flex items-center gap-2">
-          {isAuthenticated && (
-            <div className="flex items-center gap-2 border-r border-slate-200 pr-3 mr-1">
-              <span className="hidden sm:inline text-xs font-bold text-slate-600">
-                Hi, {guardianName}
-              </span>
-
-            </div>
-          )}
-          <span className="text-sm sm:text-base font-black text-slate-900 tracking-tight">
-            Device .1
+          <span className="text-xs font-bold text-slate-800 bg-white border border-slate-200 px-2.5 py-1 rounded-lg shadow-xs">
+            {guardianName || 'Guardian'}
           </span>
-          <span className="text-xs font-bold text-sky-800 bg-sky-50/90 border border-sky-200 px-2.5 py-0.5 rounded-md shadow-sm">
-            Room 204
+          <span className="text-xs font-mono font-bold text-sky-800 bg-sky-50 border border-sky-200 px-2.5 py-1 rounded-lg shadow-xs">
+            Band: {bandId || 'VG-C3-0001'}
           </span>
-          <button
-            onClick={() => {
-              playHaptic("pop");
-              setShowSpecs(true);
-            }}
-            className="spring-btn flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-white/95 hover:bg-white border border-slate-200 px-2 py-0.5 rounded-md shadow-xs"
-            title="System Specifications & Architecture"
-            aria-label="View System Specs"
-          >
-            <Cpu className="w-3 h-3 text-sky-600" />
-            <span className="hidden sm:inline">Specs</span>
-          </button>
 
           {isAuthenticated && (
             <button
@@ -71,7 +49,7 @@ export default function NavHeader() {
                 playHaptic("pop");
                 logout();
               }}
-              className="spring-btn flex items-center gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2 py-0.5 rounded-md shadow-xs ml-1"
+              className="spring-btn flex items-center gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2 py-1 rounded-lg shadow-xs ml-1"
               title="Logout"
               aria-label="Logout"
             >
@@ -81,8 +59,6 @@ export default function NavHeader() {
           )}
         </div>
       </div>
-
-      <DeviceSpecsModal open={showSpecs} onClose={() => setShowSpecs(false)} />
 
       {/* iOS Fluid Segmented Control */}
       <nav aria-label="Main Navigation" className="grid grid-cols-2 gap-1.5 p-1 bg-slate-200/60 backdrop-blur-xl rounded-2xl border border-slate-200 shadow-inner">
