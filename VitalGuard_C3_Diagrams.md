@@ -473,7 +473,9 @@ classDiagram
 
 ## 4. Sequence Diagram (Black Book Section 4.4)
 
-In accordance with **SPPU (Savitribai Phule Pune University) System Design standards**, the Sequence Diagram visualizes the **dynamic chronological interactions** between actors, hardware sensors, embedded firmware, and backend/frontend subsystems during the critical safety path: **"Continuous Telemetry Sampling, Edge Fall Detection, Autonomous Wrist Actuation, and Remote Guardian Acknowledgment"**.
+In accordance with **Academic System Design & University Black Book standards (SPPU / MU Final Year B.E. Examination)**, the Sequence Diagram visualizes the **dynamic chronological interactions, partitioned control flows, and message exchanges** across two interconnected operational perspectives:
+1. **Flow 1: Guardian Onboarding, Biometric Passkey Registration & Hardware Auto-Binding Flow (Option B: Web Bluetooth Tap-to-Discover & Factory eFuse MAC Binding)**.
+2. **Flow 2: Real-Time Edge Vital Telemetry, 3-Stage SVM Fall Detection, Local 85dB Wrist Siren Actuation & Remote Emergency Triage Escalation**.
 
 ![VitalGuard C3 Sequence Diagram](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Sequence_Diagram.png)
 
@@ -481,17 +483,24 @@ In accordance with **SPPU (Savitribai Phule Pune University) System Design stand
 
 ---
 
-### Lifeline & Message Architecture
+### Partitioned Lifeline & Message Architecture
 
-Ordered logically from Local Peripherals to Edge Controller to Cloud & Guardian:
+The sequence diagram is compartmentalized into two distinct operational flows separated by a structural dividing demarcation:
 
-1. **`Resident (Wearer)`** [«Actor»]: Elderly individual wearing the VitalGuard C3 smart band.
-2. **`Buzzer / LED (Wrist Actuator)`** [«Device»]: High-decibel piezo buzzer (85 dB) and ultra-bright red visual strobe LED driven directly via GPIO with **zero network dependency**.
-3. **`Sensors (MAX30102 / MPU6050)`** [«Device»]: I2C bus peripherals providing 6-DOF inertial measurement and optical PPG bio-signals.
-4. **`ESP32-C3 (Edge Controller)`** [«Controller»]: RISC-V SoC executing continuous sampling, 3-stage SVM classification, autonomous GPIO actuation, and wireless telemetry dispatch.
-5. **`FastAPI Relay (Backend Server)`** [«Boundary»]: High-throughput asynchronous gateway managing WebSocket broadcast channels and alert persistence.
-6. **`Web Dashboard (Next.js UI)`** [«Boundary»]: Clinical web application displaying real-time patient status, waveforms, and urgent emergency modals.
-7. **`Guardian (Caretaker)`** [«Actor»]: Designated family member or nurse receiving immediate audible triage alerts and acknowledging assistance.
+#### Flow 1: Guardian Authentication & Hardware Auto-Binding Flow (`GUARDIAN FLOW`)
+- **`Guardian (User/Caretaker)`** [«Actor»]: Signs up using Mobile No. or Email, performs device-native biometric passkey registration (FIDO2 / WebAuthn), and taps "Detect My Wristband".
+- **`Portal (PWA)`** [«Boundary»]: Next.js 14 Web Application managing WebAuthn challenges, Web Bluetooth GATT discovery, and persistent 30-day authenticated sessions.
+- **`FastAPI Backend`** [«Controller»]: Asynchronous REST API orchestrating cryptographic challenge issuance, credential verification, and account provisioning.
+- **`Database`** [«Entity»]: SQLite persistence engine enforcing strict `UNIQUE` constraints on guardian identifiers, credentials, and registered wristband hardware MACs.
+- **`ESP32 Sentinel`** [«Device»]: Physical smart band exposing factory-burned eFuse MAC address via read-only Identity Characteristic (`DEVICE_ID_CHAR_UUID`).
+
+#### Flow 2: Edge Fall Detection & Emergency Triage Flow (`EMERGENCY FLOW`)
+- **`Patient (Elderly Resident)`** [«Actor»]: Wearer undergoing kinetic slip/fall event resulting in sudden high-G impact.
+- **`Sensors / IMU`** [«Device»]: High-frequency I2C bus peripherals (MAX30102 PPG sensor and MPU6050 6-DOF IMU) streaming inertial acceleration and vital telemetry.
+- **`ESP32 Firmware`** [«Controller»]: RISC-V SoC executing continuous signal vector magnitude ($\text{SVM} = \sqrt{A_x^2 + A_y^2 + A_z^2}$) classification, edge inference, and autonomous GPIO pin 2 buzzer actuation.
+- **`Buzzer Actuator`** [«Device»]: High-decibel wristband piezo alarm delivering instant audible local warning with zero internet or cloud dependency.
+- **`Portal & Server`** [«Boundary»]: FastAPI WebSocket telemetry pipeline broadcasting urgent `CRITICAL_FALL` emergency payload.
+- **`Guardian UI`** [«Boundary»]: Full-screen red alert modal with audible siren, patient risk telemetry, and one-tap alarm silencing acknowledgment.
 
 ---
 
@@ -500,43 +509,57 @@ Ordered logically from Local Peripherals to Edge Controller to Cloud & Guardian:
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Resident as Resident (Wearer)
-    participant Buzzer as Buzzer / LED (Wrist Actuator)
-    participant Sensors as Sensors (MAX30102/MPU6050)
-    participant ESP as ESP32-C3 (Edge Controller)
-    participant Backend as FastAPI Relay (Backend Server)
-    participant WebApp as Web Dashboard (Next.js UI)
-    actor Guardian as Guardian (Caretaker)
+
+    %% ==========================================
+    %% FLOW 1: GUARDIAN ONBOARDING & HARDWARE BINDING
+    %% ==========================================
+    actor Guardian as Guardian (User/Caretaker)
+    participant Portal as Portal (PWA WebApp)
+    participant Backend as FastAPI Backend
+    participant DB as Database (SQLite)
+    participant ESP_HW as ESP32 Sentinel (Wristband HW)
 
     rect rgb(248, 250, 252)
-    Note over Sensors,ESP: loop [Continuous 50Hz Sensor Acquisition (Every 20ms)]
-    ESP->>Sensors: 1: readRegisters(I2C, MPU6050_REG_ACCEL)
-    Sensors-->>ESP: 2: rawAx, rawAy, rawAz, PPG (IR, Red)
-    ESP->>ESP: 3: computeSVM() = sqrt(Ax² + Ay² + Az²)
+    Note over Guardian,ESP_HW: GUARDIAN FLOW: Biometric Passkey Registration & Option B Auto-Pairing
+    Guardian->>Portal: 1. signup(mobile_or_email, name, band_id)
+    Portal->>Backend: 2. requestPasskeyChallenge(identifier)
+    Backend-->>Portal: 3. returnWebAuthnOptions(challenge)
+    Portal-->>Guardian: 4. promptBiometricPasskey()
+    Guardian->>Portal: 5. submitBiometricSignature()
+    Portal->>ESP_HW: 6. detectMyWristband(Web Bluetooth Scan)
+    ESP_HW-->>Portal: 7. returnFactoryMAC("VG-C3-XXXX")
+    Portal->>Backend: 8. registerAccountAndBind(identifier, band_id, passkey)
+    Backend->>DB: 9. insertGuardianRecord(identifier, band_id, key)
+    DB-->>Backend: 10. recordSaved(UNIQUE_ENFORCED)
+    Backend-->>Portal: 11. authSuccess(30_day_persistent_token)
+    Portal-->>Guardian: 12. renderDashboard(guardianName, bandId)
     end
 
-    Resident->>Sensors: 4: Sudden Slip / Freefall & High-G Impact
-    Sensors-->>ESP: 5: Freefall (<0.4g) + Impact (>2.5g) Spike
-    ESP->>ESP: 6: classifyFall() -> CONFIRMED (Confidence = 94.6%)
+    %% ==========================================
+    %% FLOW 2: EDGE FALL DETECTION & EMERGENCY TRIAGE
+    %% ==========================================
+    actor Patient as Patient (Elderly Resident)
+    participant Sensors as Sensors/IMU (MAX30102 / MPU6050)
+    participant ESP_FW as ESP32 Firmware (Edge AI Classifier)
+    participant Buzzer as Buzzer Actuator (GPIO 2)
+    participant Server as Portal & Server (FastAPI / WebSocket)
+    participant GuardUI as Guardian UI (Recipient / Modal)
 
     rect rgb(254, 242, 242)
-    Note over Resident,ESP: critical [Autonomous Local Actuation — Zero Cloud Dependency]
-    ESP->>Buzzer: 7: digitalWrite(BUZZER_PIN, HIGH) & enableLED()
-    Buzzer-->>Resident: 8: Audible 85dB Siren + Red Strobe LED Emitted
-    end
-
-    ESP->>Backend: 9: dispatchAlert(FALL_CONFIRMED, TelemetryPayload)
-    Backend->>WebApp: 10: WebSocket broadcast: PUSH_EMERGENCY_MODAL
-    WebApp-->>Guardian: 11: Audio Siren + Full-Screen Red Modal UI
-
-    rect rgb(248, 250, 252)
-    Note over Buzzer,Guardian: alt [Guardian Triage & Remote Alarm Silencing]
-    Guardian->>WebApp: 12: Click "Acknowledge & Silence Alarm"
-    WebApp->>Backend: 13: POST /api/alerts/acknowledge {alert_id, status}
-    Backend->>ESP: 14: BLE / WebSocket Cmd: SILENCE_ALARM
-    ESP->>Buzzer: 15: digitalWrite(BUZZER_PIN, LOW) -> Alarm Silenced
-    ESP-->>Backend: 16: ACK: Alarm Silenced (Assistance En-Route)
-    Backend-->>WebApp: 17: WebSocket: UPDATE_STATUS_RESOLVED
+    Note over Patient,GuardUI: EMERGENCY FLOW: Edge Fall Classification, Local Actuation & Remote Triage
+    Patient->>Sensors: 13. physicalFallImpact(sudden slip / high-G shock)
+    Sensors-->>ESP_FW: 14. rawTelemetry(accel_mag > 25.0 m/s², SVM spike)
+    ESP_FW->>ESP_FW: 15. classifyFallEvent() -> CONFIRMED (94.6%)
+    ESP_FW->>Buzzer: 16. triggerSiren(digitalWrite(BUZZER_PIN, HIGH))
+    Buzzer--)Patient: 17. emitLocal85dBSiren()
+    ESP_FW->>Server: 18. streamAlert(FALL_CONFIRMED, telemetry_packet)
+    Server->>GuardUI: 19. pushEmergencyModal(audioSiren, highRiskScore)
+    GuardUI->>Server: 20. acknowledgeAndSilenceAlarm()
+    Server->>ESP_FW: 21. dispatchSilenceCmd(SILENCE_BUZZER)
+    ESP_FW->>Buzzer: 22. silenceBuzzer(digitalWrite(BUZZER_PIN, LOW))
+    Buzzer-->>ESP_FW: 23. buzzerSilencedACK()
+    ESP_FW-->>Server: 24. updateStatus(RESOLVED, assistance_en_route)
+    Server-->>GuardUI: 25. refreshDashboardModal(STATUS_NORMAL)
     end
 ```
 
