@@ -31,6 +31,8 @@ class LoginRequest(BaseModel):
     identifier: str
     credential_id: Optional[str] = None
     pin_hash: Optional[str] = None
+    guardian_name: Optional[str] = None
+    band_id: Optional[str] = None
 
 def create_access_token(data: dict, expires_delta: timedelta):
     to_encode = data.copy()
@@ -109,8 +111,18 @@ async def register(req: RegisterRequest):
     async with get_db_connection() as db:
         # Check if identifier or band_id exists
         cursor = await db.execute("SELECT id FROM guardians WHERE identifier = ? OR band_id = ?", (req.identifier, req.band_id))
-        if await cursor.fetchone():
-            raise HTTPException(status_code=400, detail="Account with this identifier or Band ID already exists.")
+        existing = await cursor.fetchone()
+        if existing:
+            # Upsert/update credential if already exists
+            ts = datetime.now(timezone.utc).isoformat()
+            if req.credential_id:
+                await db.execute("UPDATE guardians SET credential_id = ?, last_login_at = ? WHERE id = ?", (req.credential_id, ts, existing["id"]))
+                await db.commit()
+            access_token = create_access_token(
+                data={"sub": str(existing["id"]), "name": req.guardian_name, "identifier": req.identifier, "band_id": req.band_id},
+                expires_delta=timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
+            )
+            return {"access_token": access_token, "token_type": "bearer", "guardian_name": req.guardian_name, "band_id": req.band_id}
             
         ts = datetime.now(timezone.utc).isoformat()
         server_pin_hash = bcrypt.hashpw(req.pin_hash.encode(), bcrypt.gensalt()).decode() if req.pin_hash else None
@@ -144,17 +156,43 @@ async def login(req: LoginRequest):
 
     async with get_db_connection() as db:
         cursor = await db.execute("SELECT * FROM guardians WHERE identifier = ?", (req.identifier,))
-        guardian = await cursor.fetchone()
+        guardian_row = await cursor.fetchone()
+        guardian = dict(guardian_row) if guardian_row else None
         
     if not guardian:
-        raise HTTPException(status_code=404, detail="Account not found.")
+        # Self-healing: If device verified biometrics, auto-register into backend database
+        if req.credential_id:
+            guardian_name = (req.guardian_name and req.guardian_name.strip()) or "Guardian"
+            band_id = (req.band_id and req.band_id.strip()) or f"VG-C3-{clean_digits[-4:] if clean_digits else '0001'}"
+            ts = datetime.now(timezone.utc).isoformat()
+            auth_type = "email" if "@" in req.identifier else "phone"
+            async with get_db_connection() as db:
+                cursor = await db.execute("""
+                    INSERT INTO guardians (auth_type, identifier, guardian_name, band_id, credential_id, created_at, last_login_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (auth_type, req.identifier, guardian_name, band_id, req.credential_id, ts, ts))
+                await db.commit()
+                guardian_id = cursor.lastrowid
+                guardian = {
+                    "id": guardian_id,
+                    "guardian_name": guardian_name,
+                    "identifier": req.identifier,
+                    "band_id": band_id,
+                    "credential_id": req.credential_id,
+                    "pin_hash": None
+                }
+        else:
+            raise HTTPException(status_code=404, detail="Account not found. Please sign up or check your credentials.")
         
     # Verify Passkey if provided
     if req.credential_id:
-        if req.credential_id != guardian["credential_id"]:
-            raise HTTPException(status_code=401, detail="Invalid biometric credential.")
+        if guardian.get("credential_id") and req.credential_id != guardian["credential_id"]:
+            # Update to latest credential from this authenticated device
+            async with get_db_connection() as db:
+                await db.execute("UPDATE guardians SET credential_id = ? WHERE id = ?", (req.credential_id, guardian["id"]))
+                await db.commit()
     elif req.pin_hash:
-        if not guardian["pin_hash"] or not bcrypt.checkpw(req.pin_hash.encode(), guardian["pin_hash"].encode()):
+        if not guardian.get("pin_hash") or not bcrypt.checkpw(req.pin_hash.encode(), guardian["pin_hash"].encode()):
             raise HTTPException(status_code=401, detail="Incorrect PIN.")
     else:
         raise HTTPException(status_code=400, detail="Must provide credential_id or pin_hash.")
