@@ -38,7 +38,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const checkAuth = async () => {
       try {
         const session = await getSession();
-        if (session && session.expiresAt > Date.now()) {
+        // PERMANENT SESSION: If a session exists with a valid identifier,
+        // the user is authenticated FOREVER until they explicitly log out.
+        // No expiry check — "once registered, always logged in".
+        if (session && session.identifier) {
           setIsAuthenticated(true);
           setGuardianName(session.guardianName);
           setIdentifier(session.identifier);
@@ -50,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setBandId(null);
         }
       } catch (err) {
+        console.warn("Auth check failed:", err);
         setIsAuthenticated(false);
       } finally {
         setIsLoading(false);

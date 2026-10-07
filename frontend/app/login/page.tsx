@@ -246,14 +246,14 @@ export default function LoginPage() {
         credentialId: credentialId,
       });
 
-      // Save persistent session (30 days offline support)
+      // Save persistent session (permanent until logout)
       await saveSession({
-        sessionId: crypto.randomUUID(),
+        sessionId: 'current',
         identifier: identToUse,
         guardianName: nameToUse,
         bandId: bandToUse,
         authenticatedAt: Date.now(),
-        expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
+        expiresAt: Date.now() + 365 * 24 * 60 * 60 * 1000,
         authMethod: 'passkey',
         token: jwtToken,
       });
@@ -297,34 +297,43 @@ export default function LoginPage() {
       let cred = await getCredential(identToUse);
       let credentialId = cred?.credentialId;
 
-      if (!credentialId) {
-        const apiBase = getApiBase();
-        try {
-          const checkRes = await fetch(`${apiBase}/api/auth/check-identifier?identifier=${encodeURIComponent(identToUse)}`);
-          if (checkRes.ok) {
-            const checkData = await checkRes.json();
-            if (checkData.exists && checkData.credential_id) {
-              credentialId = checkData.credential_id;
-            }
+      // Always check backend — even if local cred exists, backend is the source of truth
+      let backendAccountExists = false;
+      let backendCredentialId: string | undefined;
+      let backendGuardianData: any = null;
+      const apiBase = getApiBase();
+
+      try {
+        const checkRes = await fetch(`${apiBase}/api/auth/check-identifier?identifier=${encodeURIComponent(identToUse)}`);
+        if (checkRes.ok) {
+          const checkData = await checkRes.json();
+          backendAccountExists = checkData.exists;
+          if (checkData.exists && checkData.credential_id) {
+            backendCredentialId = checkData.credential_id;
           }
-        } catch {
-          // offline
         }
+      } catch {
+        // Offline — rely on local credentials only
       }
 
-      if (!cred && !credentialId) {
-        throw new Error('Identity not recognized on this device. Please Sign Up first.');
+      // Use backend credential if local is missing
+      if (!credentialId && backendCredentialId) {
+        credentialId = backendCredentialId;
       }
-      
+
+      // If neither local nor backend know this user
+      if (!cred && !backendAccountExists) {
+        throw new Error('Account not found. Please Sign Up first.');
+      }
+
       if (mode === 'passkey' && !credentialId) {
-        throw new Error('Biometrics not setup for this user. Please use PIN.');
+        throw new Error('Biometrics not set up for this account. Please use PIN.');
       }
 
       setStatusMessage('Touch fingerprint sensor or enter PIN in system prompt...');
 
       const verifyResult = await verifyPlatformBiometrics(credentialId);
 
-      const apiBase = getApiBase();
       const res = await fetch(`${apiBase}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -345,6 +354,7 @@ export default function LoginPage() {
       const bandToUse = data.band_id || cred?.bandId || 'VG-C3-0001';
       const nameToUse = data.guardian_name || cred?.guardianName || 'Guardian';
 
+      // Re-save credentials locally (restores them if IndexedDB was cleared)
       await saveCredential({
         identifier: identToUse,
         guardianName: nameToUse,
@@ -355,12 +365,12 @@ export default function LoginPage() {
       });
 
       await saveSession({
-        sessionId: crypto.randomUUID(),
+        sessionId: 'current',
         identifier: identToUse,
         guardianName: nameToUse,
         bandId: bandToUse,
         authenticatedAt: Date.now(),
-        expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
+        expiresAt: Date.now() + 365 * 24 * 60 * 60 * 1000, // 1 year (not actually checked)
         authMethod: 'passkey',
         token: jwtToken,
       });
@@ -433,12 +443,12 @@ export default function LoginPage() {
         });
 
         await saveSession({
-          sessionId: crypto.randomUUID(),
+          sessionId: 'current',
           identifier: identToUse,
           guardianName: nameToUse,
           bandId: bandToUse,
           authenticatedAt: Date.now(),
-          expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
+          expiresAt: Date.now() + 365 * 24 * 60 * 60 * 1000,
           authMethod: 'pin',
           token: data.access_token,
         });
@@ -482,12 +492,12 @@ export default function LoginPage() {
         }
 
         await saveSession({
-          sessionId: crypto.randomUUID(),
+          sessionId: 'current',
           identifier: identToUse,
           guardianName: finalName,
           bandId: finalBandId,
           authenticatedAt: Date.now(),
-          expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
+          expiresAt: Date.now() + 365 * 24 * 60 * 60 * 1000,
           authMethod: 'pin',
           token: jwtToken,
         });
