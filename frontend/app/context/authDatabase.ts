@@ -209,18 +209,33 @@ export async function getSession(): Promise<SessionData | null> {
   return getSessionFromLS();
 }
 
+const LS_LAST_IDENTIFIER = "vg_c3_last_identifier";
+
+export function setLastIdentifier(identifier: string): void {
+  try {
+    localStorage.setItem(LS_LAST_IDENTIFIER, identifier);
+  } catch {
+    // ignore
+  }
+}
+
+export function getLastIdentifier(): string | null {
+  try {
+    return localStorage.getItem(LS_LAST_IDENTIFIER);
+  } catch {
+    return null;
+  }
+}
+
 export async function clearSession(): Promise<void> {
-  // Clear localStorage backup
+  // Clear session from localStorage ONLY (keep registered credentials!)
   clearSessionFromLS();
-  clearCredFromLS();
 
   try {
     const db = await openAuthDB();
     return new Promise<void>((resolve, reject) => {
-      const tx = db.transaction([STORE_SESSIONS, STORE_CREDS], "readwrite");
+      const tx = db.transaction(STORE_SESSIONS, "readwrite");
       tx.objectStore(STORE_SESSIONS).clear();
-      // Also clear credentials on logout so re-login works fresh
-      tx.objectStore(STORE_CREDS).clear();
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });

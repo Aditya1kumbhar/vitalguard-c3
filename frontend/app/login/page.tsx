@@ -16,7 +16,9 @@ import {
   getCredential, 
   saveSession, 
   getSession,
-  clearSession, 
+  clearSession,
+  getLastIdentifier,
+  setLastIdentifier,
 } from '../context/authDatabase';
 import { getApiBase } from '../utils/api';
 import { playHaptic } from '../utils/haptics';
@@ -48,6 +50,12 @@ export default function LoginPage() {
     
     async function checkPreviousUser() {
       try {
+        const remembered = getLastIdentifier();
+        if (remembered) {
+          setIdentifier(remembered);
+          setTab('login');
+          return;
+        }
         const lastSession = await getSession();
         if (lastSession?.identifier) {
           setIdentifier(lastSession.identifier);
@@ -258,6 +266,7 @@ export default function LoginPage() {
         token: jwtToken,
       });
 
+      setLastIdentifier(identToUse);
       playHaptic('pop');
       setStatusMessage('Biometric identity confirmed! Launching VitalGuard...');
       setTimeout(() => login(nameToUse, identToUse, bandToUse), 600);
@@ -375,6 +384,7 @@ export default function LoginPage() {
         token: jwtToken,
       });
 
+      setLastIdentifier(identToUse);
       playHaptic('pop');
       setStatusMessage('Identity verified! Access granted.');
       setTimeout(() => login(nameToUse, identToUse, bandToUse), 500);
@@ -453,6 +463,7 @@ export default function LoginPage() {
           token: data.access_token,
         });
 
+        setLastIdentifier(identToUse);
         login(nameToUse, identToUse, bandToUse);
 
       } else {
@@ -502,6 +513,7 @@ export default function LoginPage() {
           token: jwtToken,
         });
 
+        setLastIdentifier(identToUse);
         login(finalName, identToUse, finalBandId);
       }
     } catch (err: any) {

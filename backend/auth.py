@@ -63,10 +63,20 @@ async def get_current_guardian(token: str = Depends(oauth2_scheme)):
 async def get_challenge():
     return {"challenge": secrets.token_urlsafe(32)}
 
+def normalize_identifier(raw: str) -> str:
+    ident = raw.strip()
+    clean_digits = re.sub(r'\D', '', ident)
+    if len(clean_digits) == 12 and clean_digits.startswith("91"):
+        clean_digits = clean_digits[2:]
+    if len(clean_digits) == 10:
+        return clean_digits
+    return ident.lower()
+
 @router.get("/check-identifier")
 async def check_identifier(identifier: str):
+    clean_id = normalize_identifier(identifier)
     async with get_db_connection() as db:
-        cursor = await db.execute("SELECT credential_id FROM guardians WHERE identifier = ?", (identifier,))
+        cursor = await db.execute("SELECT credential_id FROM guardians WHERE identifier = ?", (clean_id,))
         row = await cursor.fetchone()
         if row:
             return {"exists": True, "credential_id": row["credential_id"]}
