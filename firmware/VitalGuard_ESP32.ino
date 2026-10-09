@@ -13,7 +13,7 @@ bool deviceConnected = false;
 class ServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer *pServer) { deviceConnected = true; };
   void onDisconnect(BLEServer *pServer) {
-    deviceConnected = false;7]\
+    deviceConnected = false;
 
 
 
