@@ -27,7 +27,7 @@ from db import (
     get_patient,
     get_db_connection
 )
-from analytics import calculate_risk_score
+from analytics import calculate_risk_score, detect_sleep_state
 import auth
 
 
@@ -184,29 +184,53 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     broadcaster.stop()
 
 
+import os
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import Request
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from limiter import limiter
+
+# Secure Security Headers Middleware
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Content-Security-Policy"] = "default-src 'self'"
+        return response
+
 app = FastAPI(title="VitalGuard C3 Mock Telemetry", lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.include_router(auth.router)
 
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
+allowed_origins = [origin.strip() for origin in allowed_origins_str.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=allowed_origins,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
-
+app.add_middleware(SecurityHeadersMiddleware)
 
 # ── WebSocket stream ─────────────────────────────────────────────────
 @app.websocket("/ws/telemetry")
-async def telemetry_stream(websocket: WebSocket, token: Optional[str] = Query(None)) -> None:
-    band_id = "VG-C3-0001"
-    if token:
-        try:
-            guardian = await auth.get_current_guardian(token)
-            band_id = guardian.get("band_id", "VG-C3-0001")
-        except Exception:
-            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-            return
+async def telemetry_stream(websocket: WebSocket, token: str = Query(...)) -> None:
+    try:
+        guardian = await auth.get_current_guardian(token)
+        band_id = guardian.get("band_id")
+        if not band_id:
+            raise ValueError("No band_id in guardian")
+    except Exception:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
 
     await websocket.accept()
     client_queue = broadcaster.register(band_id)
@@ -226,12 +250,13 @@ async def telemetry_stream(websocket: WebSocket, token: Optional[str] = Query(No
 # ── Fall trigger (demo button) ───────────────────────────────────────
 @app.post("/api/trigger-fall")
 @app.post("/trigger-fall")
-async def trigger_fall(guardian: dict = Depends(auth.get_current_guardian)) -> dict:
+@limiter.limit("5/minute")
+async def trigger_fall(request: Request, guardian: dict = Depends(auth.get_current_guardian)) -> dict:
     peak_accel = round(random.uniform(2.8, 4.5), 1)
 
     await broadcaster.fall_sequence_queue.put((guardian["band_id"], stage_packet(0.3, False, "free_fall_dip")))
     await broadcaster.fall_sequence_queue.put((guardian["band_id"], stage_packet(peak_accel, True, "impact_spike")))
-    await broadcaster.fall_sequence_queue.put((guardian["band_id"], stage_packet(1.0, False, "post_fall_stillness")))
+    await broadcaster.fall_sequence_queue.put((guardian["band_id"], stage_packet(1.0, True, "post_fall_stillness")))
 
     alert_id = await record_alert(band_id=guardian["band_id"], peak_accel=peak_accel, severity="high")
 
@@ -245,7 +270,8 @@ async def trigger_fall(guardian: dict = Depends(auth.get_current_guardian)) -> d
 
 @app.post("/api/reset-fall")
 @app.post("/reset-fall")
-async def reset_fall(guardian: dict = Depends(auth.get_current_guardian)) -> dict:
+@limiter.limit("5/minute")
+async def reset_fall(request: Request, guardian: dict = Depends(auth.get_current_guardian)) -> dict:
     while not broadcaster.fall_sequence_queue.empty():
         try:
             broadcaster.fall_sequence_queue.get_nowait()
@@ -302,7 +328,8 @@ async def clear_alerts(guardian: dict = Depends(auth.get_current_guardian)) -> d
     return {"status": "cleared", "deleted_count": deleted_count}
 
 @app.get("/health")
-async def health() -> dict:
+@limiter.limit("30/minute")
+async def health(request: Request) -> dict:
     return {
         "status": "ok",
         "mode": "simulation",
@@ -344,4 +371,7 @@ async def get_risk_score(guardian: dict = Depends(auth.get_current_guardian)):
         fall_count = (await cursor.fetchone())[0]
         
     score_data = calculate_risk_score(vitals, fall_count)
+    is_sleeping, sleep_stage = detect_sleep_state(vitals)
+    score_data["is_sleeping"] = is_sleeping
+    score_data["sleep_stage"] = sleep_stage
     return RiskAssessment(**score_data)

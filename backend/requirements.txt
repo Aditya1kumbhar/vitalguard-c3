@@ -7,3 +7,4 @@ aiosqlite>=0.20.0
 PyJWT>=2.9.0
 bcrypt>=4.2.0
 python-multipart>=0.0.12
+slowapi>=0.1.9

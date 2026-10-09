@@ -3,12 +3,13 @@ import re
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 import bcrypt
 from pydantic import BaseModel
 from db import get_db_connection
+from limiter import limiter
 
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
 
@@ -62,7 +63,8 @@ async def get_current_guardian(token: str = Depends(oauth2_scheme)):
     return dict(guardian)
 
 @router.get("/challenge")
-async def get_challenge():
+@limiter.limit("10/minute")
+async def get_challenge(request: Request):
     return {"challenge": secrets.token_urlsafe(32)}
 
 def normalize_identifier(raw: str) -> str:
@@ -75,7 +77,8 @@ def normalize_identifier(raw: str) -> str:
     return ident.lower()
 
 @router.get("/check-identifier")
-async def check_identifier(identifier: str):
+@limiter.limit("10/minute")
+async def check_identifier(request: Request, identifier: str):
     clean_id = normalize_identifier(identifier)
     async with get_db_connection() as db:
         cursor = await db.execute("SELECT credential_id FROM guardians WHERE identifier = ?", (clean_id,))
@@ -85,7 +88,8 @@ async def check_identifier(identifier: str):
         return {"exists": False}
 
 @router.post("/register")
-async def register(req: RegisterRequest):
+@limiter.limit("5/minute")
+async def register(request: Request, req: RegisterRequest):
     # Security & Trust Validation: Enforce 10-digit phone number or valid email format
     if req.auth_type == "phone":
         clean_digits = re.sub(r'\D', '', req.identifier)
@@ -141,7 +145,8 @@ async def register(req: RegisterRequest):
     return {"access_token": access_token, "token_type": "bearer", "guardian_name": req.guardian_name, "band_id": req.band_id}
 
 @router.post("/login")
-async def login(req: LoginRequest):
+@limiter.limit("10/minute")
+async def login(request: Request, req: LoginRequest):
     # Normalize identifier for login
     ident = req.identifier.strip()
     clean_digits = re.sub(r'\D', '', ident)

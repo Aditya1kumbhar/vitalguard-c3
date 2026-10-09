@@ -1,4 +1,5 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
+import math
 
 def calculate_risk_score(recent_vitals: List[Dict[str, Any]], recent_falls: int) -> dict:
     """
@@ -69,3 +70,39 @@ def calculate_risk_score(recent_vitals: List[Dict[str, Any]], recent_falls: int)
         "factors": factors,
         "recommendation": rec
     }
+
+def detect_sleep_state(recent_vitals: List[Dict[str, Any]]) -> Tuple[bool, str]:
+    """
+    Experimental Sleep Detection Algorithm using Actigraphy & HR.
+    Returns (is_sleeping, sleep_stage).
+    Requires at least 10 minutes of continuous data to be accurate, 
+    but for this MVP we evaluate the provided recent_vitals window.
+    """
+    if not recent_vitals:
+        return False, "unknown"
+
+    # Analyze Heart Rate Variability and Nocturnal Dips
+    avg_hr = sum(v.get('heart_rate', 70) for v in recent_vitals) / len(recent_vitals)
+    
+    # Analyze Actigraphy (Movement/SVM)
+    avg_svm = sum(v.get('svm', 1.0) for v in recent_vitals) / len(recent_vitals)
+    
+    # Analyze SpO2 (often slightly lower and very stable during sleep)
+    avg_spo2 = sum(v.get('spo2', 98) for v in recent_vitals) / len(recent_vitals)
+    
+    # Criteria for Sleep:
+    # 1. Very low movement (SVM close to 1.0G, indicating stillness)
+    # 2. Lower than average resting heart rate (< 65 bpm is a heuristic proxy here)
+    is_still = avg_svm < 1.05
+    is_hr_low = avg_hr < 65
+
+    if is_still and is_hr_low:
+        if avg_hr < 55:
+            return True, "deep_sleep"
+        return True, "light_sleep"
+    
+    if is_still and not is_hr_low:
+        return False, "resting_awake"
+        
+    return False, "awake"
+

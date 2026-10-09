@@ -45,3 +45,5 @@ class RiskAssessment(BaseModel):
     risk_level: str
     factors: List[Dict[str, Any]]
     recommendation: str
+    is_sleeping: Optional[bool] = False
+    sleep_stage: Optional[str] = "unknown"

@@ -564,10 +564,20 @@ export default function VitalGuardDashboard() {
 
             <div className="space-y-3 pt-8 w-full">
               <button
-                onClick={resetMockFall}
-                className="spring-btn w-full py-4 bg-white hover:bg-[#F9F8FF] text-[#01373D] rounded-2xl font-extrabold text-lg active:scale-95 shadow-2xl transition-all"
+                onClick={() => {
+                  playHaptic('heavy');
+                  alert("SOS Triggered! Emergency contacts and dispatch have been notified.");
+                  resetMockFall();
+                }}
+                className="spring-btn w-full py-4 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl font-extrabold text-lg active:scale-95 shadow-2xl transition-all"
               >
-                I AM OKAY (CANCEL ALARM)
+                🚨 SOS - SEND HELP NOW
+              </button>
+              <button
+                onClick={resetMockFall}
+                className="spring-btn w-full py-4 bg-white hover:bg-[#F9F8FF] text-[#01373D] rounded-2xl font-extrabold text-lg border-2 border-transparent active:border-[#01373D]/20 active:scale-95 shadow-xl transition-all"
+              >
+                I AM OKAY (FALSE ALARM)
               </button>
             </div>
           </div>
