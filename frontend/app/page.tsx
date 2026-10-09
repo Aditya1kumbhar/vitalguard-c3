@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Heart, 
-  Activity, 
-  ShieldCheck, 
-  AlertTriangle, 
-  Bluetooth, 
-  Wifi, 
-  RotateCcw, 
-  Zap, 
-  Radio, 
+import {
+  Heart,
+  Activity,
+  ShieldCheck,
+  AlertTriangle,
+  Bluetooth,
+  Wifi,
+  RotateCcw,
+  Zap,
+  Radio,
   Calendar,
   BatteryFull,
   Cpu,
@@ -37,10 +37,11 @@ import { useAuth } from './context/AuthContext';
 
 export default function VitalGuardDashboard() {
   const { isAuthenticated, guardianName, bandId, logout } = useAuth();
-  const { data, mode, isAlertActive, connectBLE, connectWebSocket, dismissAlert } = useVitalStream();
+  const { data, mode, isAlertActive, connectBLE, connectWebSocket, dismissAlert, triggerFallAlert } = useVitalStream();
   const [records, setRecords] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'LIVE' | 'RECORDS'>('LIVE');
   const [simulating, setSimulating] = useState(false);
+  const [sosSent, setSosSent] = useState(false);
 
 
   const getApiUrl = (endpoint: string) => {
@@ -99,19 +100,29 @@ export default function VitalGuardDashboard() {
   const triggerMockFall = async () => {
     playHaptic('warning');
     setSimulating(true);
+    setSosSent(false);
+
+    // Instant local activation — works immediately on click regardless of network status!
+    triggerFallAlert();
+
     try {
       await authFetch(getApiUrl('/api/trigger-fall'), { method: 'POST' });
-    } catch {
-      // Backend offline fallback
+    } catch (err) {
+      console.warn('Backend trigger-fall notice (local simulation active):', err);
     } finally {
-      setTimeout(() => setSimulating(false), 800);
+      setTimeout(() => setSimulating(false), 600);
     }
   };
 
-  const resetMockFall = () => {
+  const resetMockFall = async () => {
     playHaptic('pop');
+    setSosSent(false);
     dismissAlert();
-    authFetch(getApiUrl('/api/reset-fall'), { method: 'POST' }).catch(() => {});
+    try {
+      await authFetch(getApiUrl('/api/reset-fall'), { method: 'POST' });
+    } catch (err) {
+      console.warn('Backend reset-fall notice:', err);
+    }
   };
 
   // Real-time pulse interval in seconds for organic cardiovascular rhythm
@@ -141,7 +152,7 @@ export default function VitalGuardDashboard() {
   return (
     <main className="min-h-[100dvh] overflow-x-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col justify-between">
       <div className="flex-1 w-full max-w-xl sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto p-3.5 sm:p-5 md:p-6 lg:p-8 responsive-adaptive flex flex-col gap-4 sm:gap-6">
-        
+
         {/* Biofarma-style Floating Pill Navbar */}
         <header className="dynamic-island rounded-[28px] p-3.5 sm:p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -176,11 +187,10 @@ export default function VitalGuardDashboard() {
                 playHaptic('pop');
                 connectBLE();
               }}
-              className={`spring-btn px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
-                mode === 'BLE'
+              className={`spring-btn px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${mode === 'BLE'
                   ? 'bg-[#01373D] text-white shadow-sm ring-2 ring-[#01373D]/30'
                   : 'bg-white hover:bg-[#F1F4F9] text-[#01373D] border border-[#01373D]/10 shadow-xs'
-              }`}
+                }`}
               title="Connect via Bluetooth"
             >
               <Bluetooth className={`w-3.5 h-3.5 ${mode === 'BLE' ? 'text-white' : 'text-[#01373D]'}`} />
@@ -192,11 +202,10 @@ export default function VitalGuardDashboard() {
                 playHaptic('pop');
                 connectWebSocket();
               }}
-              className={`spring-btn px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
-                mode === 'WEBSOCKET'
+              className={`spring-btn px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${mode === 'WEBSOCKET'
                   ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-300'
                   : 'bg-white hover:bg-[#F1F4F9] text-[#01373D] border border-[#01373D]/10 shadow-xs'
-              }`}
+                }`}
               title="Connect via Wi-Fi"
             >
               <Wifi className={`w-3.5 h-3.5 ${mode === 'WEBSOCKET' ? 'text-white' : 'text-emerald-600'}`} />
@@ -227,11 +236,10 @@ export default function VitalGuardDashboard() {
               playHaptic('pop');
               setActiveTab('LIVE');
             }}
-            className={`spring-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-sm sm:text-base ${
-              activeTab === 'LIVE'
+            className={`spring-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-sm sm:text-base ${activeTab === 'LIVE'
                 ? 'bg-white text-[#01373D] font-extrabold shadow-sm border border-[#01373D]/8'
                 : 'text-[#44706A] hover:text-[#01373D]'
-            }`}
+              }`}
           >
             <Radio className={`w-4 h-4 ${activeTab === 'LIVE' ? 'text-[#FE336A] animate-pulse' : 'text-[#44706A]'}`} />
             <span>Live Monitor</span>
@@ -241,11 +249,10 @@ export default function VitalGuardDashboard() {
               playHaptic('pop');
               setActiveTab('RECORDS');
             }}
-            className={`spring-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-sm sm:text-base ${
-              activeTab === 'RECORDS'
+            className={`spring-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-sm sm:text-base ${activeTab === 'RECORDS'
                 ? 'bg-white text-[#01373D] font-extrabold shadow-sm border border-[#01373D]/8'
                 : 'text-[#44706A] hover:text-[#01373D]'
-            }`}
+              }`}
           >
             <Calendar className={`w-4 h-4 ${activeTab === 'RECORDS' ? 'text-[#FE336A]' : 'text-[#44706A]'}`} />
             <span>Past Records</span>
@@ -254,7 +261,7 @@ export default function VitalGuardDashboard() {
 
         {activeTab === 'LIVE' ? (
           <div className="flex flex-col gap-4 sm:gap-6">
-            
+
             {/* Live Status Bar */}
             <div className="royal-card rounded-2xl px-4 py-3 flex items-center justify-between gap-4">
               <div className="flex items-center gap-2.5">
@@ -281,14 +288,13 @@ export default function VitalGuardDashboard() {
 
             {/* Visual Metrics Matrix: 2x2 on Mobile, 4 across on iPad / Laptop */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 w-full transition-all duration-300">
-              
+
               {/* Card 1: Heart Rate */}
               <div
                 onClick={() => playHaptic('soft')}
                 style={{ '--pulse-speed': pulseSpeed } as React.CSSProperties}
-                className={`royal-card royal-card-interactive p-4 sm:p-5 rounded-3xl flex flex-col justify-between min-h-[140px] sm:min-h-[150px] relative overflow-hidden ${
-                  isConnected && hr > 0 ? 'animate-living-heart' : ''
-                }`}
+                className={`royal-card royal-card-interactive p-4 sm:p-5 rounded-3xl flex flex-col justify-between min-h-[140px] sm:min-h-[150px] relative overflow-hidden ${isConnected && hr > 0 ? 'animate-living-heart' : ''
+                  }`}
               >
                 <div className="flex items-center justify-between z-10">
                   <div className="flex items-center gap-2">
@@ -297,9 +303,8 @@ export default function VitalGuardDashboard() {
                     </div>
                     <span className="font-extrabold text-xs sm:text-sm text-[#01373D]">Heart Rate</span>
                   </div>
-                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase border ${
-                    hr < 50 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  }`}>
+                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase border ${hr < 50 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    }`}>
                     {hr < 50 ? 'Low' : 'Normal'}
                   </span>
                 </div>
@@ -354,36 +359,32 @@ export default function VitalGuardDashboard() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className={`p-1.5 rounded-xl shadow-xs ${
-                      isFall ? 'bg-[#FE336A]/10 text-[#FE336A]' : 'bg-amber-50 text-amber-600'
-                    }`}>
+                    <div className={`p-1.5 rounded-xl shadow-xs ${isFall ? 'bg-[#FE336A]/10 text-[#FE336A]' : 'bg-amber-50 text-amber-600'
+                      }`}>
                       <PersonStanding className="w-4 h-4" />
                     </div>
                     <span className="font-extrabold text-xs sm:text-sm text-[#01373D]">Movement</span>
                   </div>
-                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase border ${
-                    isFall 
+                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase border ${isFall
                       ? 'bg-[#FE336A]/10 text-[#FE336A] border-[#FE336A]/30 animate-pulse'
                       : isMoving
-                      ? 'bg-amber-50 text-amber-700 border-amber-200'
-                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  }`}>
+                        ? 'bg-amber-50 text-amber-700 border-amber-200'
+                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    }`}>
                     {isFall ? 'Alert' : isMoving ? 'Moving' : 'Safe'}
                   </span>
                 </div>
 
                 <div className="mt-2">
-                  <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${
-                    isFall ? 'text-[#FE336A]' : 'text-[#01373D]'
-                  }`}>
+                  <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${isFall ? 'text-[#FE336A]' : 'text-[#01373D]'
+                    }`}>
                     {isFall ? 'FALL!' : isMoving ? 'Walking' : 'Resting'}
                   </span>
                 </div>
 
                 <div className="text-xs font-bold text-[#44706A] flex items-center gap-1.5">
-                  <span className={`w-2 h-2 rounded-full ${
-                    isFall ? 'bg-[#FE336A]' : isMoving ? 'bg-amber-500' : 'bg-emerald-500'
-                  }`}></span>
+                  <span className={`w-2 h-2 rounded-full ${isFall ? 'bg-[#FE336A]' : isMoving ? 'bg-amber-500' : 'bg-emerald-500'
+                    }`}></span>
                   <span>{isFall ? 'Fall Detected' : isMoving ? 'Active Body' : 'Calm & Still'}</span>
                 </div>
               </div>
@@ -395,26 +396,23 @@ export default function VitalGuardDashboard() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className={`p-1.5 rounded-xl shadow-xs ${
-                      isFall ? 'bg-[#FE336A]/10 text-[#FE336A]' : 'bg-emerald-50 text-emerald-600'
-                    }`}>
+                    <div className={`p-1.5 rounded-xl shadow-xs ${isFall ? 'bg-[#FE336A]/10 text-[#FE336A]' : 'bg-emerald-50 text-emerald-600'
+                      }`}>
                       <ShieldCheck className="w-4 h-4" />
                     </div>
                     <span className="font-extrabold text-xs sm:text-sm text-[#01373D]">Status</span>
                   </div>
-                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase border ${
-                    isFall
+                  <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase border ${isFall
                       ? 'bg-[#FE336A]/10 text-[#FE336A] border-[#FE336A]/30 animate-pulse'
                       : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  }`}>
+                    }`}>
                     {isFall ? 'Danger' : 'Safe'}
                   </span>
                 </div>
 
                 <div className="mt-2">
-                  <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${
-                    isFall ? 'text-[#FE336A]' : 'text-[#01373D]'
-                  }`}>
+                  <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${isFall ? 'text-[#FE336A]' : 'text-[#01373D]'
+                    }`}>
                     {isFall ? 'HELP NEEDED' : 'SAFE & OKAY'}
                   </span>
                 </div>
@@ -429,7 +427,7 @@ export default function VitalGuardDashboard() {
 
             {/* Split Command Layout: Responsive across Laptop, iPad Landscape, and Phones */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start transition-all duration-300">
-              
+
               {/* Left Column: Live Waveform & Test Alarm Controls */}
               <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-4 sm:gap-6">
                 {/* Live Movement Waveform */}
@@ -472,7 +470,7 @@ export default function VitalGuardDashboard() {
         ) : (
           /* Past Records View: Responsive Split Layout */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start transition-all duration-300">
-            
+
             {/* Left Column: Safety Score & Clinical Baseline */}
             <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-4 sm:gap-6">
               <RiskScoreCard />
@@ -541,7 +539,7 @@ export default function VitalGuardDashboard() {
 
       {/* Emergency Full-Screen Fall Dialog */}
       {isAlertActive && (
-        <div 
+        <div
           role="alertdialog"
           aria-modal="true"
           className="fixed inset-0 z-50 bg-[#01373D]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-6 animate-emergency-light"
@@ -565,16 +563,27 @@ export default function VitalGuardDashboard() {
             <div className="space-y-3 pt-8 w-full">
               <button
                 onClick={() => {
-                  playHaptic('heavy');
-                  alert("SOS Triggered! Emergency contacts and dispatch have been notified.");
-                  resetMockFall();
+                  playHaptic('emergency');
+                  setSosSent(true);
+                  setTimeout(() => {
+                    resetMockFall();
+                  }, 1800);
                 }}
-                className="spring-btn w-full py-4 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl font-extrabold text-lg active:scale-95 shadow-2xl transition-all"
+                disabled={sosSent}
+                className="spring-btn w-full py-4 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl font-extrabold text-lg active:scale-95 shadow-2xl transition-all flex items-center justify-center gap-2"
               >
-                🚨 SOS - SEND HELP NOW
+                {sosSent ? (
+                  <>
+                    <CheckCircle2 className="w-6 h-6 animate-bounce" />
+                    <span>DISPATCH SENT! HELP ON THE WAY</span>
+                  </>
+                ) : (
+                  <span> SOS - SEND HELP NOW</span>
+                )}
               </button>
               <button
                 onClick={resetMockFall}
+                disabled={sosSent}
                 className="spring-btn w-full py-4 bg-white hover:bg-[#F9F8FF] text-[#01373D] rounded-2xl font-extrabold text-lg border-2 border-transparent active:border-[#01373D]/20 active:scale-95 shadow-xl transition-all"
               >
                 I AM OKAY (FALSE ALARM)

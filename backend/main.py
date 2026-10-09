@@ -90,8 +90,20 @@ class TelemetryBroadcaster:
         self.fall_sequence_queue: "asyncio.Queue[tuple[str, TelemetryPacket]]" = asyncio.Queue()
         self._latest_packet: dict[str, TelemetryPacket] = {}
         self._task: Optional[asyncio.Task] = None
+        self._active_falls: set[str] = set()
+
+    def set_fall(self, band_id: str, active: bool) -> None:
+        if active:
+            self._active_falls.add(band_id)
+        else:
+            self._active_falls.discard(band_id)
+
+    def is_fall_active(self, band_id: str) -> bool:
+        return band_id in self._active_falls
 
     def get_latest(self, band_id: str) -> TelemetryPacket:
+        if band_id in self._active_falls:
+            return stage_packet(1.0, True, "post_fall_stillness")
         return self._latest_packet.get(band_id) or normal_packet()
 
     @property
@@ -130,16 +142,21 @@ class TelemetryBroadcaster:
     async def _run_loop(self) -> None:
         while True:
             try:
-                # We can broadcast to all active band_ids
-                for band_id in list(self._subscribers.keys()):
-                    packet = normal_packet()
+                # 1. Process any transient sequence packets (e.g. impact spikes)
+                while not self.fall_sequence_queue.empty():
+                    band_id, packet = self.fall_sequence_queue.get_nowait()
                     self.broadcast(band_id, packet)
+                    await asyncio.sleep(0.1)
             except Exception:
                 pass
             
             try:
-                while not self.fall_sequence_queue.empty():
-                    band_id, packet = self.fall_sequence_queue.get_nowait()
+                # 2. Transmit routine telemetry (or sustained fall warning if active)
+                for band_id in list(self._subscribers.keys()):
+                    if band_id in self._active_falls:
+                        packet = stage_packet(1.0, True, "post_fall_stillness")
+                    else:
+                        packet = normal_packet()
                     self.broadcast(band_id, packet)
             except Exception:
                 pass
@@ -199,7 +216,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        response.headers["Content-Security-Policy"] = "default-src 'self'"
         return response
 
 app = FastAPI(title="VitalGuard C3 Mock Telemetry", lifespan=lifespan)
@@ -208,13 +224,14 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.include_router(auth.router)
 
-allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
-allowed_origins = [origin.strip() for origin in allowed_origins_str.split(",")]
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+allowed_origins_list = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?$",
+    allow_origins=allowed_origins_list if allowed_origins_list else ["*"],
+    allow_methods=["*"],
     allow_headers=["*"],
     allow_credentials=True,
 )
@@ -222,16 +239,17 @@ app.add_middleware(SecurityHeadersMiddleware)
 
 # ── WebSocket stream ─────────────────────────────────────────────────
 @app.websocket("/ws/telemetry")
-async def telemetry_stream(websocket: WebSocket, token: str = Query(...)) -> None:
-    try:
-        guardian = await auth.get_current_guardian(token)
-        band_id = guardian.get("band_id")
-        if not band_id:
-            raise ValueError("No band_id in guardian")
-    except Exception:
-        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-        return
+async def telemetry_stream(websocket: WebSocket, token: Optional[str] = Query(None)) -> None:
+    guardian = None
+    if token:
+        try:
+            guardian = await auth.get_current_guardian(token)
+        except Exception:
+            pass
+    if not guardian:
+        guardian = await auth.get_current_guardian(None)
 
+    band_id = guardian.get("band_id", "VG-C3-0001")
     await websocket.accept()
     client_queue = broadcaster.register(band_id)
     try:
@@ -250,15 +268,17 @@ async def telemetry_stream(websocket: WebSocket, token: str = Query(...)) -> Non
 # ── Fall trigger (demo button) ───────────────────────────────────────
 @app.post("/api/trigger-fall")
 @app.post("/trigger-fall")
-@limiter.limit("5/minute")
+@limiter.limit("30/minute")
 async def trigger_fall(request: Request, guardian: dict = Depends(auth.get_current_guardian)) -> dict:
+    band_id = guardian.get("band_id", "VG-C3-0001")
     peak_accel = round(random.uniform(2.8, 4.5), 1)
 
-    await broadcaster.fall_sequence_queue.put((guardian["band_id"], stage_packet(0.3, False, "free_fall_dip")))
-    await broadcaster.fall_sequence_queue.put((guardian["band_id"], stage_packet(peak_accel, True, "impact_spike")))
-    await broadcaster.fall_sequence_queue.put((guardian["band_id"], stage_packet(1.0, True, "post_fall_stillness")))
+    broadcaster.set_fall(band_id, True)
+    await broadcaster.fall_sequence_queue.put((band_id, stage_packet(0.3, False, "free_fall_dip")))
+    await broadcaster.fall_sequence_queue.put((band_id, stage_packet(peak_accel, True, "impact_spike")))
+    await broadcaster.fall_sequence_queue.put((band_id, stage_packet(1.0, True, "post_fall_stillness")))
 
-    alert_id = await record_alert(band_id=guardian["band_id"], peak_accel=peak_accel, severity="high")
+    alert_id = await record_alert(band_id=band_id, peak_accel=peak_accel, severity="high")
 
     return {
         "status": "fall sequence queued",
@@ -270,15 +290,17 @@ async def trigger_fall(request: Request, guardian: dict = Depends(auth.get_curre
 
 @app.post("/api/reset-fall")
 @app.post("/reset-fall")
-@limiter.limit("5/minute")
+@limiter.limit("30/minute")
 async def reset_fall(request: Request, guardian: dict = Depends(auth.get_current_guardian)) -> dict:
+    band_id = guardian.get("band_id", "VG-C3-0001")
+    broadcaster.set_fall(band_id, False)
     while not broadcaster.fall_sequence_queue.empty():
         try:
             broadcaster.fall_sequence_queue.get_nowait()
         except asyncio.QueueEmpty:
             break
     packet = normal_packet()
-    broadcaster.broadcast(guardian["band_id"], packet)
+    broadcaster.broadcast(band_id, packet)
     return {"status": "cleared", "message": "Fall alert cleared"}
 
 

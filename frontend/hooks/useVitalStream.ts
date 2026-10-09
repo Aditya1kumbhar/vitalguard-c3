@@ -42,9 +42,20 @@ export function useVitalStream(defaultWsUrl?: string) {
   const isSilencedRef = useRef(false);
   const wsRef = useRef<WebSocket | null>(null);
   const bleDeviceRef = useRef<any>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMountedRef = useRef(true);
 
   const connectWebSocket = async () => {
-    if (wsRef.current) wsRef.current.close();
+    if (!isMountedRef.current) return;
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+
     let wsUrl = getDynamicWsUrl();
     try {
       const session = await getSession();
@@ -55,26 +66,52 @@ export function useVitalStream(defaultWsUrl?: string) {
     } catch (e) {
       console.warn('Could not retrieve session for WebSocket:', e);
     }
-    const ws = new WebSocket(wsUrl);
-    ws.onopen = () => setMode('WEBSOCKET');
-    ws.onmessage = (event) => {
-      try {
-        const parsed: TelemetryData = JSON.parse(event.data);
-        setData(parsed);
-        if (parsed.fall_detected) {
-          if (!isSilencedRef.current) {
-            setIsAlertActive(true);
+
+    try {
+      const ws = new WebSocket(wsUrl);
+      ws.onopen = () => {
+        if (!isMountedRef.current) return;
+        setMode('WEBSOCKET');
+      };
+
+      ws.onmessage = (event) => {
+        if (!isMountedRef.current) return;
+        try {
+          const parsed: TelemetryData = JSON.parse(event.data);
+          setData(parsed);
+          if (parsed.fall_detected || parsed.status === 'CRITICAL_FALL') {
+            if (!isSilencedRef.current) {
+              setIsAlertActive(true);
+            }
+          } else {
+            // Normal vitals packet received: re-arm silence guard for future falls.
+            // Emergency alerts must latch on screen until user explicitly dismisses!
+            isSilencedRef.current = false;
           }
-        } else {
-          isSilencedRef.current = false;
-          setIsAlertActive(false);
+        } catch (err) {
+          console.error('Failed to parse telemetry', err);
         }
-      } catch (err) {
-        console.error('Failed to parse telemetry', err);
+      };
+
+      ws.onclose = () => {
+        if (!isMountedRef.current) return;
+        setMode('DISCONNECTED');
+        if (!reconnectTimerRef.current) {
+          reconnectTimerRef.current = setTimeout(connectWebSocket, 3000);
+        }
+      };
+
+      ws.onerror = () => {
+        try { ws.close(); } catch {}
+      };
+
+      wsRef.current = ws;
+    } catch (e) {
+      setMode('DISCONNECTED');
+      if (!reconnectTimerRef.current) {
+        reconnectTimerRef.current = setTimeout(connectWebSocket, 3000);
       }
-    };
-    ws.onclose = () => setMode('DISCONNECTED');
-    wsRef.current = ws;
+    }
   };
 
   const connectBLE = async () => {
@@ -129,13 +166,12 @@ export function useVitalStream(defaultWsUrl?: string) {
         try {
           const parsed: TelemetryData = JSON.parse(rawText);
           setData(parsed);
-          if (parsed.fall_detected) {
+          if (parsed.fall_detected || parsed.status === 'CRITICAL_FALL') {
             if (!isSilencedRef.current) {
               setIsAlertActive(true);
             }
           } else {
             isSilencedRef.current = false;
-            setIsAlertActive(false);
           }
         } catch (err) {
           console.error('BLE Decode error:', err);
@@ -152,6 +188,20 @@ export function useVitalStream(defaultWsUrl?: string) {
     }
   };
 
+  const triggerFallAlert = () => {
+    isSilencedRef.current = false;
+    setIsAlertActive(true);
+    setData((prev) => ({
+      ...prev,
+      heart_rate: 118,
+      accel_magnitude: 38.2,
+      svm: 3.9,
+      fall_detected: true,
+      status: 'CRITICAL_FALL',
+      timestamp: Date.now(),
+    }));
+  };
+
   const dismissAlert = () => {
     isSilencedRef.current = true;
     setIsAlertActive(false);
@@ -161,6 +211,7 @@ export function useVitalStream(defaultWsUrl?: string) {
       status: 'NORMAL',
       accel_magnitude: 9.81,
       svm: 1.0,
+      timestamp: Date.now(),
     }));
     const apiUrl = process.env.NEXT_PUBLIC_API_URL 
       ? process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '') 
@@ -172,12 +223,15 @@ export function useVitalStream(defaultWsUrl?: string) {
   };
 
   useEffect(() => {
+    isMountedRef.current = true;
     connectWebSocket();
     return () => {
+      isMountedRef.current = false;
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
       if (wsRef.current) wsRef.current.close();
       if (bleDeviceRef.current?.gatt?.connected) bleDeviceRef.current.gatt.disconnect();
     };
   }, []);
 
-  return { data, mode, isAlertActive, connectBLE, connectWebSocket, dismissAlert };
+  return { data, mode, isAlertActive, connectBLE, connectWebSocket, dismissAlert, triggerFallAlert };
 }

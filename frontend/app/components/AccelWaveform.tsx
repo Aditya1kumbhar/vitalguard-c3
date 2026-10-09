@@ -51,7 +51,7 @@ export default function AccelWaveform({ latest }: AccelWaveformProps) {
   }, [latest]);
 
   const svmValue = latest?.svm ?? 1.0;
-  const isFall = svmValue >= 2.5;
+  const isFall = Boolean(latest?.fall_detected) || latest?.stage === "CRITICAL_FALL" || svmValue >= 2.5;
   const isMoving = svmValue >= 1.4 && !isFall;
 
   return (
