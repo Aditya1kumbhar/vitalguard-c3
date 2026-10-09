@@ -32,33 +32,48 @@ export function useTelemetrySocket() {
     if (!mountedRef.current) return;
     setConnectionState("connecting");
 
-    const socket = new WebSocket(getWsUrl());
-    socketRef.current = socket;
-
-    socket.onopen = () => {
-      if (!mountedRef.current) return;
-      setConnectionState("connected");
-    };
-
-    socket.onmessage = (event: MessageEvent<string>) => {
-      if (!mountedRef.current) return;
+    const initSocket = async () => {
+      let url = getWsUrl();
       try {
-        const packet: TelemetryPacket = JSON.parse(event.data);
-        setLatest(packet);
-      } catch {
-        // Malformed packet - ignore, don't crash the dashboard.
+        const { getSession } = await import("../context/authDatabase");
+        const session = await getSession();
+        if (session && session.token) {
+          url += `?token=${session.token}`;
+        }
+      } catch (e) {
+        console.warn("Failed to attach token to websocket", e);
       }
+
+      const socket = new WebSocket(url);
+      socketRef.current = socket;
+
+      socket.onopen = () => {
+        if (!mountedRef.current) return;
+        setConnectionState("connected");
+      };
+
+      socket.onmessage = (event: MessageEvent<string>) => {
+        if (!mountedRef.current) return;
+        try {
+          const packet: TelemetryPacket = JSON.parse(event.data);
+          setLatest(packet);
+        } catch {
+          // Malformed packet - ignore, don't crash the dashboard.
+        }
+      };
+
+      socket.onclose = () => {
+        if (!mountedRef.current) return;
+        setConnectionState("disconnected");
+        reconnectTimerRef.current = setTimeout(connect, RECONNECT_DELAY_MS);
+      };
+
+      socket.onerror = () => {
+        socket.close();
+      };
     };
 
-    socket.onclose = () => {
-      if (!mountedRef.current) return;
-      setConnectionState("disconnected");
-      reconnectTimerRef.current = setTimeout(connect, RECONNECT_DELAY_MS);
-    };
-
-    socket.onerror = () => {
-      socket.close();
-    };
+    initSocket();
   }, []);
 
   useEffect(() => {
