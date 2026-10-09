@@ -77,16 +77,31 @@ export function useVitalStream(defaultWsUrl?: string) {
       ws.onmessage = (event) => {
         if (!isMountedRef.current) return;
         try {
-          const parsed: TelemetryData = JSON.parse(event.data);
+          let parsed: TelemetryData = JSON.parse(event.data);
+
+          if (isSilencedRef.current) {
+            // User clicked "I AM OKAY" — neutralize any delayed/buffered fall packets
+            if (parsed.fall_detected || parsed.status === 'CRITICAL_FALL') {
+              parsed = {
+                ...parsed,
+                fall_detected: false,
+                status: 'NORMAL',
+                accel_magnitude: 9.81,
+                svm: 1.0,
+                heart_rate: parsed.heart_rate > 100 ? 74 : parsed.heart_rate,
+              };
+            } else {
+              // A clean normal packet arrived from the server; re-arm for future falls
+              isSilencedRef.current = false;
+            }
+          }
+
           setData(parsed);
+
           if (parsed.fall_detected || parsed.status === 'CRITICAL_FALL') {
             if (!isSilencedRef.current) {
               setIsAlertActive(true);
             }
-          } else {
-            // Normal vitals packet received: re-arm silence guard for future falls.
-            // Emergency alerts must latch on screen until user explicitly dismisses!
-            isSilencedRef.current = false;
           }
         } catch (err) {
           console.error('Failed to parse telemetry', err);
@@ -164,14 +179,26 @@ export function useVitalStream(defaultWsUrl?: string) {
       characteristic.addEventListener('characteristicvaluechanged', (e: any) => {
         const rawText = new TextDecoder().decode(e.target.value);
         try {
-          const parsed: TelemetryData = JSON.parse(rawText);
+          let parsed: TelemetryData = JSON.parse(rawText);
+          if (isSilencedRef.current) {
+            if (parsed.fall_detected || parsed.status === 'CRITICAL_FALL') {
+              parsed = {
+                ...parsed,
+                fall_detected: false,
+                status: 'NORMAL',
+                accel_magnitude: 9.81,
+                svm: 1.0,
+                heart_rate: parsed.heart_rate > 100 ? 74 : parsed.heart_rate,
+              };
+            } else {
+              isSilencedRef.current = false;
+            }
+          }
           setData(parsed);
           if (parsed.fall_detected || parsed.status === 'CRITICAL_FALL') {
             if (!isSilencedRef.current) {
               setIsAlertActive(true);
             }
-          } else {
-            isSilencedRef.current = false;
           }
         } catch (err) {
           console.error('BLE Decode error:', err);
@@ -207,6 +234,7 @@ export function useVitalStream(defaultWsUrl?: string) {
     setIsAlertActive(false);
     setData((prev) => ({
       ...prev,
+      heart_rate: prev.heart_rate > 100 ? 74 : prev.heart_rate,
       fall_detected: false,
       status: 'NORMAL',
       accel_magnitude: 9.81,

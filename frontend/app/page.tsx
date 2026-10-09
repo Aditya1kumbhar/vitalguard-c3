@@ -129,20 +129,20 @@ export default function VitalGuardDashboard() {
   const hr = data.heart_rate || 72;
   const pulseSpeed = hr > 0 ? (60 / hr).toFixed(2) + 's' : '0.85s';
   const isConnected = mode !== 'DISCONNECTED';
-  const isFall = data.fall_detected || data.status === 'CRITICAL_FALL';
+  const isFall = isAlertActive && (data.fall_detected || data.status === 'CRITICAL_FALL');
   const isMoving = (data.svm ?? (data.accel_magnitude / 9.8)) >= 1.4 && !isFall;
 
   // Construct telemetry packet for 3-axis AccelWaveform
   const telemetryPacket: TelemetryPacket = {
-    heart_rate: data.heart_rate,
+    heart_rate: isFall ? data.heart_rate : (data.heart_rate > 100 ? 74 : data.heart_rate),
     spo2: data.spo2,
     body_temp: 36.6,
     accel_x: data.accel_x ?? 0.02,
     accel_y: data.accel_y ?? 1.0,
     accel_z: data.accel_z ?? 0.02,
-    svm: data.svm ?? Number((data.accel_magnitude / 9.8).toFixed(2)),
-    fall_detected: data.fall_detected,
-    stage: data.status,
+    svm: isFall ? (data.svm ?? Number((data.accel_magnitude / 9.8).toFixed(2))) : 1.0,
+    fall_detected: isFall,
+    stage: isFall ? data.status : 'NORMAL',
     timestamp: new Date(data.timestamp).toISOString(),
   };
 

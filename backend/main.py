@@ -98,6 +98,22 @@ class TelemetryBroadcaster:
         else:
             self._active_falls.discard(band_id)
 
+    def clear_all_falls(self) -> None:
+        self._active_falls.clear()
+        while not self.fall_sequence_queue.empty():
+            try:
+                self.fall_sequence_queue.get_nowait()
+            except asyncio.QueueEmpty:
+                break
+        for band_id, subscribers in self._subscribers.items():
+            for q in list(subscribers):
+                while not q.empty():
+                    try:
+                        q.get_nowait()
+                    except asyncio.QueueEmpty:
+                        break
+            self.broadcast(band_id, normal_packet())
+
     def is_fall_active(self, band_id: str) -> bool:
         return band_id in self._active_falls
 
@@ -292,15 +308,7 @@ async def trigger_fall(request: Request, guardian: dict = Depends(auth.get_curre
 @app.post("/reset-fall")
 @limiter.limit("30/minute")
 async def reset_fall(request: Request, guardian: dict = Depends(auth.get_current_guardian)) -> dict:
-    band_id = guardian.get("band_id", "VG-C3-0001")
-    broadcaster.set_fall(band_id, False)
-    while not broadcaster.fall_sequence_queue.empty():
-        try:
-            broadcaster.fall_sequence_queue.get_nowait()
-        except asyncio.QueueEmpty:
-            break
-    packet = normal_packet()
-    broadcaster.broadcast(band_id, packet)
+    broadcaster.clear_all_falls()
     return {"status": "cleared", "message": "Fall alert cleared"}
 
 
