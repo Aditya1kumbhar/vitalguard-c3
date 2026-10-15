@@ -19,11 +19,6 @@ const nextConfig = withPWA({
       urlPattern: /\/_next\/data\/.*/,
       handler: 'NetworkFirst',
       options: { cacheName: 'next-data-cache', networkTimeoutSeconds: 3 }
-    },
-    {
-      urlPattern: /\/api\/.*/,
-      handler: 'NetworkFirst',
-      options: { cacheName: 'api-cache', networkTimeoutSeconds: 5 }
     }
   ]
 })({});

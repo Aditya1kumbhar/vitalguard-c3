@@ -74,6 +74,9 @@ function clearSessionFromLS(): void {
 function backupCredToLS(cred: CredentialData): void {
   try {
     localStorage.setItem(LS_CRED_KEY, JSON.stringify(cred));
+    if (cred.identifier) {
+      localStorage.setItem(`vg_c3_cred_${cred.identifier}`, JSON.stringify(cred));
+    }
   } catch {
     // ignore
   }
@@ -81,6 +84,9 @@ function backupCredToLS(cred: CredentialData): void {
 
 function getCredFromLS(identifier: string): CredentialData | null {
   try {
+    const specificRaw = localStorage.getItem(`vg_c3_cred_${identifier}`);
+    if (specificRaw) return JSON.parse(specificRaw) as CredentialData;
+
     const raw = localStorage.getItem(LS_CRED_KEY);
     if (raw) {
       const cred = JSON.parse(raw) as CredentialData;

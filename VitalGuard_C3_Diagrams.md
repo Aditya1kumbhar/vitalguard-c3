@@ -906,7 +906,7 @@ graph LR
 
 ## 9. Component Diagram (Black Book Section 4.7)
 
-In accordance with **SPPU (Savitribai Phule Pune University) System Design standards**, the Component Diagram documents the **high-level modular software architecture, physical boundaries, and interface contracts** among the subsystems of **VitalGuard C3**.
+In strict accordance with academic System Design guidelines and the provided structural reference, the **Component Diagram** models the high-level distributed execution environment, modular component boundaries, communication protocols, and external hardware/service dependencies of the **VitalGuard C3** platform.
 
 ![VitalGuard C3 Component Diagram](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Component_Diagram.png)
 
@@ -914,52 +914,52 @@ In accordance with **SPPU (Savitribai Phule Pune University) System Design stand
 
 ---
 
-### Component Breakdown Across 3 Tiers
+### Component Architecture & Structural Breakdown
 
-#### Tier 1: Embedded IoT Wearable Package (`ESP32-C3 Firmware`)
-* **`Sensor Acquisition Module`**:
-  * Directly queries the I2C bus registers of the **MAX30102** optical pulse oximeter and **MPU6050** 6-axis IMU.
-  * *Provides*: `ISensorData` interface (raw acceleration vectors and photoplethysmogram samples).
-* **`Edge Fall Detection Engine`**:
-  * Implements the 3-stage SVM state machine (free-fall dip, dynamic impact, post-fall stillness filter).
-  * *Requires*: `ISensorData`.
-  * *Provides*: `IFallAlert` interface with incident confidence metrics.
-* **`Local Actuation Module`**:
-  * Directly interfaces with the onboard GPIO hardware pins to trigger the 85dB piezo buzzer and flashing emergency LED with **zero network dependency**. Monitors the local reset button for false-alarm cancellation.
-  * *Requires*: `IFallAlert` (autonomous link) and `IRemoteSilence` (from Guardian web client).
+The diagram is organized into three hierarchical tiers connected via standardized UML dependency relationships:
 
-#### Tier 2: Backend Relay & Database Package (`FastAPI / SQLite`)
-* **`Telemetry Ingestion & BLE Relay Service`**:
-  * Serves as the real-time bridge receiving data streams via BLE GATT notifications or WiFi HTTP/WebSocket packets.
-  * *Provides*: `ITelemetryRelay` interface for real-time subscribers.
-* **`Time-Series Data Store`**:
-  * Handles asynchronous persistence of historical heart rates, blood oxygen levels, and motion events in a local SQLite / TimescaleDB database.
-  * *Provides*: `IDataPersistence` interface.
-* **`Alert Escalation Service`**:
-  * Maintains state machine for active emergencies, logs triage response times, and dispatches automated SMS alerts via Twilio if unacknowledged.
-  * *Provides*: `IAlertState` interface.
+#### Tier 1: Core System Flow (Top Row)
+1. **Actor (`Resident / Patient / Caregiver / Doctor / Guardian / Admin`)**:
+   - Represents all system human stakeholders interacting with the platform via client terminals.
+2. **`«device» Web Browser / PWA`**:
+   - Client runtime environment (Google Chrome, Mozilla Firefox, Apple Safari, Microsoft Edge).
+   - Executes HTML5, CSS3, ES6+ JavaScript, Web Audio API (for browser alarm sirens), and Service Worker cache for offline PWA installation.
+   - Connects to the Frontend via **HTTPS** (Port 443).
+3. **`«component» Frontend (Dashboard)`**:
+   - Built with **Next.js 14 (App Router)**, React 18, and TypeScript.
+   - Employs TailwindCSS for responsive glassmorphism UI widgets.
+   - Integrates native WebSocket client for real-time telemetry streaming and emergency alarm triage modals with audible siren playback.
+   - Communicates with the Backend API via dashed dependency labeled **`«uses»`**.
+4. **`«component» Backend (API Hub)`**:
+   - Asynchronous Python 3.10+ application powered by **FastAPI** and Uvicorn.
+   - Exposes RESTful endpoints (`/api/v1/auth`, `/api/v1/residents`, `/api/v1/telemetry`, `/api/v1/alerts`).
+   - Houses the real-time WebSocket ingestion hub (`/ws/telemetry`) and state manager.
+   - Communicates with the Database via dashed dependency labeled **`«uses»`**.
+5. **`«component» Database Store`**:
+   - Local transactional database running **SQLite in WAL (Write-Ahead Logging) Mode** with high-throughput concurrent reads.
+   - Persists patient profiles, raw sensor telemetry time-series, SVM classification events, and critical alert audit trails.
 
-#### Tier 3: Guardian Client Application Package (`Next.js / TypeScript`)
-* **`Live Vitals Charting Engine`**:
-  * High-performance canvas-based visualization rendering continuous heart rate, SpO2, and acceleration SVM waveforms.
-  * *Requires*: `ITelemetryRelay`.
-* **`Guardian Web Dashboard UI`**:
-  * Responsive clinical interface for patient administration, status overview, device pairing, and historical report exports.
-* **`Emergency Alarm Modal & Triage Service`**:
-  * High-priority browser modal triggering audible alarm sirens and visual red alerts; allows the Guardian to send a remote silence command back to the wristband hardware.
+#### Tier 2: Specialized Backend Sub-Services (Middle Row)
+Directly orchestrated by the Backend API Hub via modular interfaces:
+1. **`«component» Authentication Service`**:
+   - Handles biometric Passkeys (FIDO2 / WebAuthn), JWT session token generation, emergency PIN overrides, and Role-Based Access Control (RBAC).
+2. **`«component» Fall Detection & SVM Engine`**:
+   - Processes 50Hz 3-axis accelerometer vectors from MPU6050, executes 3-stage SVM classification (free-fall threshold $<0.4g$, impact spike $>2.5g$, and post-impact stillness verification), and manages the 15-second auto-cancel countdown timer.
+3. **`«component» Telemetry Stream Service`**:
+   - Ingests MAX30102 PPG red/IR samples, computes real-time Heart Rate (BPM) and Blood Oxygen Saturation (SpO2 %), evaluates sleep efficiency, and broadcasts to active dashboard WebSocket subscribers.
+4. **`«component» Notification & Alert Service`**:
+   - Dispatches emergency siren triggers, broadcasts high-priority browser alerts, logs triage acknowledgments, and invokes emergency escalation protocols.
 
----
-
-### Interface Contracts Table
-
-| Interface Name | Provided By | Required By | Protocol / Data Contract |
-|:---|:---|:---|:---|
-| **`ISensorData`** | Sensor Acquisition Module | Edge Fall Detection Engine | I2C Bus (`0x57`, `0x68`) / Raw 16-bit register structs |
-| **`IFallAlert`** | Edge Fall Detection Engine | Local Actuation Module | Internal FreeRTOS EventQueue (`CONFIRMED`, confidence `float`) |
-| **`IBLEStream` / `IWiFiStream`** | Embedded Firmware Tier | Telemetry Ingestion Service | BLE GATT Characteristic / HTTP POST (`JSON`) |
-| **`ITelemetryRelay`** | Telemetry Ingestion Service | Web Dashboard & Charting | WebSocket Full-Duplex Stream (`ws://...`) |
-| **`IDataPersistence`** | Time-Series Data Store | Alert Escalation Service | SQL ORM / ACID SQLite Transaction |
-| **`IRemoteSilence`** | Emergency Alarm Modal | Local Actuation Module | WebSocket / BLE Write Command (`SILENCE_ALARM`) |
+#### Tier 3: External Services & Physical Hardware (Bottom Row)
+Underlying hardware peripherals and external platform services:
+1. **`«hardware device» Wearable Sensor Band`**:
+   - **Seeed Studio XIAO ESP32-C3** (RISC-V 32-bit core, 160MHz).
+   - I2C Bus peripherals: **MAX30102** optical pulse oximeter (`0x57`) and **MPU6050** 6-DoF accelerometer (`0x68`).
+   - GPIO Actuators: Piezo buzzer (85dB), high-luminosity emergency LED, and tactile false-alarm cancel button.
+2. **`«external service» Notification Gateway`**:
+   - Third-party telecommunication gateway (Twilio SMS / Phone Call Dispatch, SMTP Email reports, and Webhook receivers) for off-site caregiver alert escalation.
+3. **`«external service» Deployment & Cloud Edge`**:
+   - Local Edge Gateway (Raspberry Pi 4 / Local Hospital Server) or Cloud PaaS (Docker, Vercel, Render) providing secure HTTPS tunneling and remote access.
 
 ---
 
@@ -967,35 +967,142 @@ In accordance with **SPPU (Savitribai Phule Pune University) System Design stand
 
 ```mermaid
 graph TD
-    subgraph Firmware["Package: Embedded IoT Wearable (ESP32-C3)"]
-        C_Sensor["<<component>><br/><b>Sensor Acquisition Module</b><br/>(MAX30102 & MPU6050)"]
-        C_SVM["<<component>><br/><b>Edge Fall Detection Engine</b><br/>(3-Stage SVM Classifier)"]
-        C_Act["<<component>><br/><b>Local Actuation Module</b><br/>(Buzzer, LED & Reset Button)"]
+    classDef compBox fill:#FFFFFF,stroke:#000000,stroke-width:2px,color:#000000;
+    classDef actorStyle fill:#F1F5F9,stroke:#000000,stroke-width:1.5px,color:#000000;
+
+    Actor["👤 Resident / Patient / Caregiver /<br/>Doctor / Guardian / Admin"]:::actorStyle
+
+    subgraph TopTier["Top Tier: Core System & Data Flow"]
+        Dev_Browser["&laquo;device&raquo;<br/><b>Web Browser / PWA</b><br/>• Chrome / Safari / Edge<br/>• HTML5, CSS3, ES6+ JS<br/>• Web Audio Siren Engine<br/>• Service Worker Push Cache"]:::compBox
+        Comp_Frontend["&laquo;component&raquo;<br/><b>Frontend (Dashboard)</b><br/>• Next.js 14 (App Router)<br/>• React 18 & TypeScript<br/>• Tailwind Glassmorphic UI<br/>• Real-time WebSocket Client<br/>• Emergency Modal & Triage"]:::compBox
+        Comp_Backend["&laquo;component&raquo;<br/><b>Backend (API Hub)</b><br/>• Python 3.10+ / FastAPI<br/>• REST Endpoints (/api/v1)<br/>• WebSocket Telemetry Stream<br/>• State Manager & Fall Evaluator<br/>• Asynchronous Event Dispatcher"]:::compBox
+        Comp_Database["&laquo;component&raquo;<br/><b>Database Store</b><br/>• SQLite (WAL Mode)<br/>• Stores Vitals & Telemetry<br/>• Fall Events & Audit Logs<br/>• Patient & Caregiver Profiles"]:::compBox
     end
 
-    subgraph Backend["Package: Backend Relay & Database (FastAPI / SQLite)"]
-        C_Comm["<<component>><br/><b>Telemetry Ingestion Service</b><br/>(WebSocket & BLE Relay)"]
-        C_DB["<<component>><br/><b>Time-Series Data Store</b><br/>(SQLite Database)"]
-        C_Triage["<<component>><br/><b>Alert Escalation Service</b><br/>(Triage & Status Manager)"]
+    subgraph MidTier["Middle Tier: Specialized Backend Sub-Services"]
+        Comp_Auth["&laquo;component&raquo;<br/><b>Authentication Service</b><br/>• Passkey / WebAuthn Sign-In<br/>• JWT Session Validation<br/>• Role Access (Admin/Doctor)<br/>• Emergency Override PIN"]:::compBox
+        Comp_Fall["&laquo;component&raquo;<br/><b>Fall Detection Engine</b><br/>• MPU6050 3-Axis Accel Stream<br/>• 3-Stage SVM Classifier<br/>• Freefall & Impact Spike Test<br/>• Auto-Cancel Countdown Timer"]:::compBox
+        Comp_Telem["&laquo;component&raquo;<br/><b>Telemetry Stream Service</b><br/>• MAX30102 PPG Sampling<br/>• Heart Rate & SpO2<br/>• WebSocket Live Broadcast<br/>• Sleep & Inactivity Tracker"]:::compBox
+        Comp_Notif["&laquo;component&raquo;<br/><b>Notification Service</b><br/>• Web Siren Audio Trigger<br/>• Emergency Modal Broadcast<br/>• High-Priority Caregiver Ping<br/>• Alert Acknowledgment Sync"]:::compBox
     end
 
-    subgraph Frontend["Package: Guardian Client Application (Next.js / React)"]
-        C_Chart["<<component>><br/><b>Live Vitals Charting Engine</b><br/>(Real-time Canvas / Recharts)"]
-        C_UI["<<component>><br/><b>Guardian Web Dashboard</b><br/>(Next.js App Router UI)"]
-        C_Modal["<<component>><br/><b>Emergency Alarm Modal</b><br/>(Audio Siren & Triage UI)"]
+    subgraph BottomTier["Bottom Tier: External Services & Physical Hardware"]
+        Ext_Hardware["&laquo;hardware device&raquo;<br/><b>Wearable Band (ESP32-C3)</b><br/>• Seeed Studio XIAO ESP32-C3<br/>• MAX30102 (I2C 0x57) PPG<br/>• MPU6050 (I2C 0x68) Accel<br/>• Hardware Buzzer, LED & Btn"]:::compBox
+        Ext_Gateway["&laquo;external service&raquo;<br/><b>Notification Gateway</b><br/>• Twilio SMS Emergency Alerts<br/>• Local Audio Siren Transducer<br/>• Emergency Contact Dispatch<br/>• SMTP Email Summary Reports"]:::compBox
+        Ext_Cloud["&laquo;external service&raquo;<br/><b>Deployment & Cloud Edge</b><br/>• Local Edge Gateway Server<br/>• Docker Container Hosting<br/>• Vercel / Cloudflare Platform<br/>• Remote Caregiver HTTPS Tunnel"]:::compBox
     end
 
-    C_Sensor -. "ISensorData" .-> C_SVM
-    C_SVM -. "IFallAlert (Autonomous)" .-> C_Act
+    Actor -->|HTTPS| Dev_Browser
+    Dev_Browser -->|HTTPS| Comp_Frontend
+    Comp_Frontend -.->|&laquo;uses&raquo;| Comp_Backend
+    Comp_Backend -.->|&laquo;uses&raquo;| Comp_Database
 
-    C_SVM -. "BLE / WiFi Telemetry" .-> C_Comm
-    C_Comm -. "IDataPersistence" .-> C_DB
-    C_DB -. "IAlertState" .-> C_Triage
+    Comp_Backend -.->|&laquo;uses&raquo;| Comp_Auth
+    Comp_Backend -.->|&laquo;uses&raquo;| Comp_Fall
+    Comp_Backend -.->|&laquo;uses&raquo;| Comp_Telem
+    Comp_Backend -.->|&laquo;uses&raquo;| Comp_Notif
 
-    C_Comm -. "WebSocket Live Stream" .-> C_Chart
-    C_Chart -. "IVitalsProps" .-> C_UI
-    C_Triage -. "WebSocket Emergency Push" .-> C_Modal
-    C_UI -. "IModalState" .-> C_Modal
-
-    C_Modal -. "Remote Alarm Silence Command" .-> C_Act
+    MidTier -.->|&laquo;uses&raquo;| Ext_Hardware
+    MidTier -.->|&laquo;uses&raquo;| Ext_Gateway
+    MidTier -.->|&laquo;uses&raquo;| Ext_Cloud
 ```
+
+---
+
+## 10. Object Diagram (Black Book Section 4.3)
+
+In accordance with academic standards and the provided reference design (**Section 4.3 Object Diagram**), this diagram models a **concrete runtime snapshot** of the **VitalGuard C3** system during an active emergency state. It instantiates the domain model classes with specific attribute values, operational states, and active link relationships.
+
+![VitalGuard C3 Object Diagram](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Object_Diagram.png)
+
+> **Vector Asset:** Vector SVG source available at [VitalGuard_Object_Diagram.svg](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Object_Diagram.svg). Ultra-high resolution 300 DPI raster available at [VitalGuard_Object_Diagram.png](file:///c:/Users/hp/Desktop/NXT/Vital-C3/VitalGuard_Object_Diagram.png).
+
+---
+
+### Concrete Runtime Objects Specification
+
+| Object Instance Name | Class Type | Attribute Names & Concrete Runtime Values | Real-World Operational Context |
+|:---|:---|:---|:---|
+| **`guardianAdmin1`** | `Guardian` | `guardian_id = 1`<br/>`username = "priya_admin"`<br/>`full_name = "Priya Sharma"`<br/>`auth_method = "passkey"`<br/>`role = "Primary Guardian"`<br/>`created_at = 2026-01-10` | Primary family caregiver logged in via FIDO2 passkey, supervising resident care. |
+| **`resident1`** | `Resident` | `resident_id = 101`<br/>`name = "Ramesh Kumar"`<br/>`age = 78`<br/>`room_number = "A-204"`<br/>`medical_history = "Hypertension"`<br/>`band_id = "VG-C3-0001"`<br/>`status = "MONITORED"`<br/>`admitted_at = 2026-02-15` | Elderly monitored subject wearing the IoT wristband in Room A-204. |
+| **`doctor1`** | `Doctor` | `doctor_id = 201`<br/>`name = "Dr. Sneha Patil"`<br/>`email = "sneha@vitalguard.in"`<br/>`phone = "+91-9876543210"`<br/>`department = "Geriatric Care"`<br/>`qualification = "MD Medicine"`<br/>`assigned_ward = "Ward-A"` | Supervising physician responsible for reviewing clinical vitals and treatment plans. |
+| **`device1`** | `Device` | `device_id = "VG-C3-0001"`<br/>`model = "XIAO ESP32-C3"`<br/>`mac = "E4:65:B8:1A:2F:3C"`<br/>`battery_pct = 92`<br/>`firmware_ver = "v1.4.2"`<br/>`status = "ONLINE"` | Physical wristband hardware currently streaming sensor telemetry. |
+| **`motion1`** | `MotionEvent` | `event_id = 401`<br/>`sensor = "MPU6050"`<br/>`accel_magnitude = 3.92`<br/>`svm = 3.92`<br/>`event_type = "FALL_DETECTED"`<br/>`confidence = 0.96`<br/>`timestamp = 14:10:02.320` | Real-time motion anomaly captured when acceleration exceeded the 2.5g impact threshold. |
+| **`alert1`** | `Alert` | `alert_id = 701`<br/>`resident_id = 101`<br/>`band_id = "VG-C3-0001"`<br/>`alert_type = "CRITICAL_FALL"`<br/>`peak_accel = 3.92`<br/>`severity = "HIGH"`<br/>`siren_state = "ACTIVE"`<br/>`dispatch_status = "NOTIFIED"` | High-severity emergency alert generated following the confirmed fall event. |
+| **`vitals1`** | `VitalReading` | `reading_id = 801`<br/>`sensor = "MAX30102"`<br/>`heart_rate = 118`<br/>`spo2 = 96`<br/>`body_temp = 36.8`<br/>`status = "TACHYCARDIA"`<br/>`recorded_at = 14:10:02` | Vital signs reading showing elevated heart rate (tachycardia) during fall distress. |
+| **`clinicalPlan1`** | `ClinicalPlan` | `plan_id = 301`<br/>`doctor_id = 201`<br/>`patient_id = 101`<br/>`diagnosis = "High Fall Risk"`<br/>`target_hr = "60-90 BPM"`<br/>`target_spo2 = ">95%"`<br/>`review_date = 2026-10-30` | Clinical protocol created by Dr. Patil specifying target ranges and emergency response rules. |
+| **`actuator1`** | `LocalActuator` | `actuator_id = 501`<br/>`buzzer_pin = "GPIO 2"`<br/>`sound_db = 85`<br/>`led_indicator = "FLASHING"`<br/>`hardware_state = "RINGING"`<br/>`cancel_btn = "ACTIVE"` | On-wrist hardware buzzer and LED actively sounding to alert nearby caregivers. |
+| **`sleepLog1`** | `SleepLog` | `log_id = 601`<br/>`resident_id = 101`<br/>`date = "2026-10-14"`<br/>`sleep_state = "DEEP_SLEEP"`<br/>`duration_hrs = 7.4`<br/>`efficiency_pct = 91.2`<br/>`algorithm = "HRV+Stillness"` | Daily physiological rest record tracking nocturnal sleep quality and recovery. |
+| **`resident2`** | `Resident` | `resident_id = 102`<br/>`name = "Shanti Devi"`<br/>`age = 82`<br/>`room_number = "B-108"`<br/>`medical_history = "Osteoporosis"`<br/>`band_id = "VG-C3-0002"`<br/>`status = "RESTING"` | Secondary resident instance demonstrating multi-tenant facility monitoring. |
+| **`summary1`** | `DailySummary` | `summary_id = 901`<br/>`resident_id = 101`<br/>`avg_heart_rate = 74`<br/>`avg_spo2 = 98`<br/>`fall_incidents = 1`<br/>`risk_score = 42`<br/>`retention = "30-Day FIFO"` | Aggregated daily health metrics and safety risk score for resident 101. |
+
+---
+
+### Object Links, Associations & Multiplicities
+
+```
+[guardianAdmin1 : Guardian]  ───(1 : 0..*) manages ────>  [resident1 : Resident]
+[resident1 : Resident]       ───(0..* : 1) consults ───>  [doctor1 : Doctor]
+[doctor1 : Doctor]           ───(1 : 0..*) creates ────>  [clinicalPlan1 : ClinicalPlan]
+[resident1 : Resident]       ───(1 : 1) wears ─────────>  [device1 : Device]
+[guardianAdmin1 : Guardian]  ───(1 : 0..*) monitors ───>  [motion1 : MotionEvent]
+[motion1 : MotionEvent]      ───(1 : 0..*) triggers ───>  [alert1 : Alert]
+[motion1 : MotionEvent]      ───(1 : 0..*) rings ──────>  [actuator1 : LocalActuator]
+[resident1 : Resident]       ───(1 : 0..*) originates ─>  [alert1 : Alert]
+[vitals1 : VitalReading]     ───(0..* : 1) visualizes ─>  [alert1 : Alert]
+[device1 : Device]           ───(1 : 0..*) records ────>  [vitals1 : VitalReading]
+[resident1 : Resident]       ───(1 : 0..*) logs ───────>  [sleepLog1 : SleepLog]
+[doctor1 : Doctor]           ───(1 : 0..*) attends ────>  [resident2 : Resident]
+[alert1 : Alert]             ───(1 : 0..*) aggregates ─>  [summary1 : DailySummary]
+```
+
+---
+
+### Object Diagram (Mermaid Representation)
+
+```mermaid
+graph TD
+    classDef objBox fill:#FFFFFF,stroke:#000000,stroke-width:2px,color:#000000;
+
+    Admin["<u>guardianAdmin1 : Guardian</u><br/>guardian_id = 1<br/>username = &quot;priya_admin&quot;<br/>full_name = &quot;Priya Sharma&quot;<br/>auth_method = &quot;passkey&quot;<br/>role = &quot;Primary Guardian&quot;<br/>created_at = 2026-01-10"]:::objBox
+
+    Resident1["<u>resident1 : Resident</u><br/>resident_id = 101<br/>name = &quot;Ramesh Kumar&quot;<br/>age = 78<br/>room_number = &quot;A-204&quot;<br/>medical_history = &quot;Hypertension&quot;<br/>band_id = &quot;VG-C3-0001&quot;<br/>status = &quot;MONITORED&quot;<br/>admitted_at = 2026-02-15"]:::objBox
+
+    Doctor1["<u>doctor1 : Doctor</u><br/>doctor_id = 201<br/>name = &quot;Dr. Sneha Patil&quot;<br/>email = &quot;sneha@vitalguard.in&quot;<br/>phone = &quot;+91-9876543210&quot;<br/>department = &quot;Geriatric Care&quot;<br/>qualification = &quot;MD Medicine&quot;<br/>assigned_ward = &quot;Ward-A&quot;"]:::objBox
+
+    Device1["<u>device1 : Device</u><br/>device_id = &quot;VG-C3-0001&quot;<br/>model = &quot;XIAO ESP32-C3&quot;<br/>mac = &quot;E4:65:B8:1A:2F:3C&quot;<br/>battery_pct = 92<br/>firmware_ver = &quot;v1.4.2&quot;<br/>status = &quot;ONLINE&quot;"]:::objBox
+
+    Motion1["<u>motion1 : MotionEvent</u><br/>event_id = 401<br/>sensor = &quot;MPU6050&quot;<br/>accel_magnitude = 3.92<br/>svm = 3.92<br/>event_type = &quot;FALL_DETECTED&quot;<br/>confidence = 0.96<br/>timestamp = 14:10:02.320"]:::objBox
+
+    Alert1["<u>alert1 : Alert</u><br/>alert_id = 701<br/>resident_id = 101<br/>band_id = &quot;VG-C3-0001&quot;<br/>alert_type = &quot;CRITICAL_FALL&quot;<br/>peak_accel = 3.92<br/>severity = &quot;HIGH&quot;<br/>siren_state = &quot;ACTIVE&quot;<br/>dispatch_status = &quot;NOTIFIED&quot;"]:::objBox
+
+    Vitals1["<u>vitals1 : VitalReading</u><br/>reading_id = 801<br/>sensor = &quot;MAX30102&quot;<br/>heart_rate = 118<br/>spo2 = 96<br/>body_temp = 36.8<br/>status = &quot;TACHYCARDIA&quot;<br/>recorded_at = 14:10:02"]:::objBox
+
+    Plan1["<u>clinicalPlan1 : ClinicalPlan</u><br/>plan_id = 301<br/>doctor_id = 201<br/>patient_id = 101<br/>diagnosis = &quot;High Fall Risk&quot;<br/>target_hr = &quot;60-90 BPM&quot;<br/>target_spo2 = &quot;>95%&quot;<br/>review_date = 2026-10-30"]:::objBox
+
+    Actuator1["<u>actuator1 : LocalActuator</u><br/>actuator_id = 501<br/>buzzer_pin = &quot;GPIO 2&quot;<br/>sound_db = 85<br/>led_indicator = &quot;FLASHING&quot;<br/>hardware_state = &quot;RINGING&quot;<br/>cancel_btn = &quot;ACTIVE&quot;"]:::objBox
+
+    Sleep1["<u>sleepLog1 : SleepLog</u><br/>log_id = 601<br/>resident_id = 101<br/>date = &quot;2026-10-14&quot;<br/>sleep_state = &quot;DEEP_SLEEP&quot;<br/>duration_hrs = 7.4<br/>efficiency_pct = 91.2<br/>algorithm = &quot;HRV+Stillness&quot;"]:::objBox
+
+    Resident2["<u>resident2 : Resident</u><br/>resident_id = 102<br/>name = &quot;Shanti Devi&quot;<br/>age = 82<br/>room_number = &quot;B-108&quot;<br/>medical_history = &quot;Osteoporosis&quot;<br/>band_id = &quot;VG-C3-0002&quot;<br/>status = &quot;RESTING&quot;"]:::objBox
+
+    Summary1["<u>summary1 : DailySummary</u><br/>summary_id = 901<br/>resident_id = 101<br/>avg_heart_rate = 74<br/>avg_spo2 = 98<br/>fall_incidents = 1<br/>risk_score = 42<br/>retention = &quot;30-Day FIFO&quot;"]:::objBox
+
+    Admin ---|manages 1 : 0..*| Resident1
+    Resident1 ---|consults 0..* : 1| Doctor1
+    Doctor1 ---|creates 1 : 0..*| Plan1
+    Resident1 ---|wears 1 : 1| Device1
+
+    Admin ---|monitors 1 : 0..*| Motion1
+    Motion1 ---|triggers 1 : 0..*| Alert1
+    Motion1 ---|rings 1 : 0..*| Actuator1
+
+    Resident1 ---|originates 1 : 0..*| Alert1
+    Vitals1 ---|escalates 0..* : 1| Alert1
+    Device1 ---|records 1 : 0..*| Vitals1
+
+    Resident1 ---|logs 1 : 0..*| Sleep1
+    Doctor1 ---|attends 1 : 0..*| Resident2
+    Alert1 ---|aggregates 1 : 0..*| Summary1
+```
+

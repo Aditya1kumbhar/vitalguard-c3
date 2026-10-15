@@ -3,7 +3,7 @@ import re
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 import bcrypt
@@ -88,19 +88,26 @@ def normalize_identifier(raw: str) -> str:
     return ident.lower()
 
 @router.get("/check-identifier")
-@limiter.limit("10/minute")
-async def check_identifier(request: Request, identifier: str):
+@limiter.limit("20/minute")
+async def check_identifier(request: Request, identifier: str, response: Response):
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
     clean_id = normalize_identifier(identifier)
     async with get_db_connection() as db:
-        cursor = await db.execute("SELECT credential_id FROM guardians WHERE identifier = ?", (clean_id,))
+        cursor = await db.execute("SELECT credential_id, guardian_name, band_id FROM guardians WHERE identifier = ?", (clean_id,))
         row = await cursor.fetchone()
         if row:
-            return {"exists": True, "credential_id": row["credential_id"]}
+            return {
+                "exists": True, 
+                "credential_id": row["credential_id"],
+                "guardian_name": row["guardian_name"],
+                "band_id": row["band_id"]
+            }
         return {"exists": False}
 
 @router.post("/register")
-@limiter.limit("5/minute")
-async def register(request: Request, req: RegisterRequest):
+@limiter.limit("10/minute")
+async def register(request: Request, req: RegisterRequest, response: Response):
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
     # Security & Trust Validation: Enforce 10-digit phone number or valid email format
     if req.auth_type == "phone":
         clean_digits = re.sub(r'\D', '', req.identifier)
@@ -123,31 +130,31 @@ async def register(request: Request, req: RegisterRequest):
     if not req.band_id.strip():
         raise HTTPException(status_code=400, detail="Please provide a valid Wristband ID.")
 
+    ts = datetime.now(timezone.utc).isoformat()
+    server_pin_hash = bcrypt.hashpw(req.pin_hash.encode(), bcrypt.gensalt()).decode() if req.pin_hash else None
+
     async with get_db_connection() as db:
-        # Check if identifier or band_id exists
-        cursor = await db.execute("SELECT id FROM guardians WHERE identifier = ? OR band_id = ?", (req.identifier, req.band_id))
+        # Identity Anchor: Look up strictly by the user's primary identifier
+        cursor = await db.execute("SELECT id, credential_id, pin_hash FROM guardians WHERE identifier = ?", (req.identifier,))
         existing = await cursor.fetchone()
-        if existing:
-            # Upsert/update credential if already exists
-            ts = datetime.now(timezone.utc).isoformat()
-            if req.credential_id:
-                await db.execute("UPDATE guardians SET credential_id = ?, last_login_at = ? WHERE id = ?", (req.credential_id, ts, existing["id"]))
-                await db.commit()
-            access_token = create_access_token(
-                data={"sub": str(existing["id"]), "name": req.guardian_name, "identifier": req.identifier, "band_id": req.band_id},
-                expires_delta=timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
-            )
-            return {"access_token": access_token, "token_type": "bearer", "guardian_name": req.guardian_name, "band_id": req.band_id}
-            
-        ts = datetime.now(timezone.utc).isoformat()
-        server_pin_hash = bcrypt.hashpw(req.pin_hash.encode(), bcrypt.gensalt()).decode() if req.pin_hash else None
         
-        cursor = await db.execute("""
-            INSERT INTO guardians (auth_type, identifier, guardian_name, band_id, pin_hash, credential_id, created_at, last_login_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (req.auth_type, req.identifier, req.guardian_name, req.band_id, server_pin_hash, req.credential_id, ts, ts))
-        await db.commit()
-        guardian_id = cursor.lastrowid
+        if existing:
+            guardian_id = existing["id"]
+            cred_to_save = req.credential_id or existing["credential_id"]
+            pin_to_save = server_pin_hash or existing["pin_hash"]
+            await db.execute("""
+                UPDATE guardians 
+                SET auth_type = ?, guardian_name = ?, band_id = ?, credential_id = ?, pin_hash = ?, last_login_at = ?
+                WHERE id = ?
+            """, (req.auth_type, req.guardian_name, req.band_id, cred_to_save, pin_to_save, ts, guardian_id))
+            await db.commit()
+        else:
+            cursor = await db.execute("""
+                INSERT INTO guardians (auth_type, identifier, guardian_name, band_id, pin_hash, credential_id, created_at, last_login_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (req.auth_type, req.identifier, req.guardian_name, req.band_id, server_pin_hash, req.credential_id, ts, ts))
+            await db.commit()
+            guardian_id = cursor.lastrowid
         
     access_token = create_access_token(
         data={"sub": str(guardian_id), "name": req.guardian_name, "identifier": req.identifier, "band_id": req.band_id},
@@ -156,8 +163,9 @@ async def register(request: Request, req: RegisterRequest):
     return {"access_token": access_token, "token_type": "bearer", "guardian_name": req.guardian_name, "band_id": req.band_id}
 
 @router.post("/login")
-@limiter.limit("10/minute")
-async def login(request: Request, req: LoginRequest):
+@limiter.limit("15/minute")
+async def login(request: Request, req: LoginRequest, response: Response):
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
     # Normalize identifier for login
     ident = req.identifier.strip()
     clean_digits = re.sub(r'\D', '', ident)
@@ -200,13 +208,14 @@ async def login(request: Request, req: LoginRequest):
         else:
             raise HTTPException(status_code=404, detail="Account not found. Please sign up or check your credentials.")
         
-    # Verify Passkey if provided
+    # Verify or update Passkey credential if provided
     if req.credential_id:
-        if guardian.get("credential_id") and req.credential_id != guardian["credential_id"]:
+        if not guardian.get("credential_id") or guardian["credential_id"] != req.credential_id:
             # Update to latest credential from this authenticated device
             async with get_db_connection() as db:
                 await db.execute("UPDATE guardians SET credential_id = ? WHERE id = ?", (req.credential_id, guardian["id"]))
                 await db.commit()
+            guardian["credential_id"] = req.credential_id
     elif req.pin_hash:
         if not guardian.get("pin_hash") or not bcrypt.checkpw(req.pin_hash.encode(), guardian["pin_hash"].encode()):
             raise HTTPException(status_code=401, detail="Incorrect PIN.")

@@ -48,6 +48,11 @@ export default function LoginPage() {
   useEffect(() => {
     isPlatformAuthenticatorAvailable().then(supported => setHasPlatformBiometrics(supported));
     
+    // Purge any stale Workbox API caches from earlier service worker versions
+    if (typeof window !== 'undefined' && 'caches' in window) {
+      window.caches.delete('api-cache').catch(() => {});
+    }
+
     async function checkPreviousUser() {
       try {
         const remembered = getLastIdentifier();
@@ -67,6 +72,18 @@ export default function LoginPage() {
     }
     checkPreviousUser();
   }, []);
+
+  const normalizeIdent = (val: string): string => {
+    const trimmed = val.trim().toLowerCase();
+    const digits = trimmed.replace(/\D/g, '');
+    if (digits.length === 12 && digits.startsWith('91')) {
+      return digits.slice(2);
+    }
+    if (digits.length === 10 && !trimmed.includes('@')) {
+      return digits;
+    }
+    return trimmed;
+  };
 
   const isValid10DigitPhone = (val: string) => {
     const digits = val.replace(/\D/g, '');
@@ -200,14 +217,7 @@ export default function LoginPage() {
 
     try {
       const nameToUse = guardianName.trim();
-      let identToUse = identifier.trim().toLowerCase();
-      if (authType === 'phone') {
-        let digits = identToUse.replace(/\D/g, '');
-        if (digits.length === 12 && digits.startsWith('91')) {
-          digits = digits.slice(2);
-        }
-        identToUse = digits;
-      }
+      const identToUse = normalizeIdent(identifier);
       const bandToUse = bandId.trim();
       
       let credentialId = '';
@@ -295,14 +305,7 @@ export default function LoginPage() {
     setAuthenticating(true);
 
     try {
-      let identToUse = identifier.trim().toLowerCase();
-      if (isValid10DigitPhone(identToUse)) {
-        let digits = identToUse.replace(/\D/g, '');
-        if (digits.length === 12 && digits.startsWith('91')) {
-          digits = digits.slice(2);
-        }
-        identToUse = digits;
-      }
+      const identToUse = normalizeIdent(identifier);
       let cred = await getCredential(identToUse);
       let credentialId = cred?.credentialId;
 
@@ -313,12 +316,17 @@ export default function LoginPage() {
       const apiBase = getApiBase();
 
       try {
-        const checkRes = await fetch(`${apiBase}/api/auth/check-identifier?identifier=${encodeURIComponent(identToUse)}`);
+        const checkRes = await fetch(`${apiBase}/api/auth/check-identifier?identifier=${encodeURIComponent(identToUse)}`, {
+          cache: 'no-store'
+        });
         if (checkRes.ok) {
           const checkData = await checkRes.json();
           backendAccountExists = checkData.exists;
-          if (checkData.exists && checkData.credential_id) {
-            backendCredentialId = checkData.credential_id;
+          if (checkData.exists) {
+            backendGuardianData = checkData;
+            if (checkData.credential_id) {
+              backendCredentialId = checkData.credential_id;
+            }
           }
         }
       } catch {
@@ -330,10 +338,9 @@ export default function LoginPage() {
         credentialId = backendCredentialId;
       }
 
-      // If neither local nor backend know this user
+      // If neither local nor backend know this user, inform the user cleanly without abruptly flipping tabs
       if (!cred && !backendAccountExists) {
-        setTab('signup');
-        setError('Device not registered yet. Please enter your name to complete 1-tap biometric setup.');
+        setError('Account not recognized. Please verify your mobile number or email, or switch to Sign Up to register.');
         return;
       }
 
@@ -341,8 +348,8 @@ export default function LoginPage() {
 
       const verifyResult = await verifyPlatformBiometrics(credentialId);
 
-      const nameToUse = cred?.guardianName || 'Guardian';
-      const bandToUse = cred?.bandId || 'VG-C3-AD01';
+      const nameToUse = cred?.guardianName || backendGuardianData?.guardian_name || 'Guardian';
+      const bandToUse = cred?.bandId || backendGuardianData?.band_id || 'VG-C3-AD01';
 
       let jwtToken = '';
       let finalName = nameToUse;
@@ -433,14 +440,7 @@ export default function LoginPage() {
     setStatusMessage('');
 
     try {
-      let identToUse = identifier.trim().toLowerCase();
-      if ((tab === 'signup' && authType === 'phone') || isValid10DigitPhone(identToUse)) {
-        let digits = identToUse.replace(/\D/g, '');
-        if (digits.length === 12 && digits.startsWith('91')) {
-          digits = digits.slice(2);
-        }
-        identToUse = digits;
-      }
+      const identToUse = normalizeIdent(identifier);
       
       if (tab === 'signup') {
         const validationError = validateSignup();
@@ -528,6 +528,9 @@ export default function LoginPage() {
           jwtToken = data.access_token;
           finalBandId = data.band_id;
           finalName = data.guardian_name;
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail || 'PIN verification failed on server.');
         }
 
         await saveSession({

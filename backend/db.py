@@ -110,7 +110,7 @@ async def init_db() -> None:
                 auth_type       TEXT NOT NULL,        -- 'phone' or 'email'
                 identifier      TEXT UNIQUE NOT NULL, -- e.g., '+919876543210' or 'user@example.com'
                 guardian_name   TEXT NOT NULL,
-                band_id         TEXT UNIQUE NOT NULL, -- The unique wristband MAC/ID (e.g., 'VG-C3-AD01')
+                band_id         TEXT NOT NULL,        -- The wristband MAC/ID (e.g., 'VG-C3-AD01')
                 pin_hash        TEXT,
                 pin_salt        TEXT,
                 credential_id   TEXT,
@@ -121,7 +121,7 @@ async def init_db() -> None:
             )
         """)
         await db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_guardians_ident ON guardians(identifier)")
-        await db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_guardians_band ON guardians(band_id)")
+        await db.execute("CREATE INDEX IF NOT EXISTS idx_guardians_band ON guardians(band_id)")
 
         # --- Phase 1 Legacy Table for Backward Compatibility (Updated with band_id) ---
         await db.execute("""

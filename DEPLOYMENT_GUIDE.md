@@ -42,6 +42,7 @@ git push -u origin main
    - **Build Command:** `pip install -r requirements.txt`
    - **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
    - **Instance Type:** `Free` ($0/mo)
+   
 5. **Important (Environment Variables):**
    Click **Advanced** or **Environment Variables** and add:
    - **Key:** `PYTHON_VERSION`
