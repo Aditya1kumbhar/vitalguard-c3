@@ -388,20 +388,55 @@ async def get_daily_analytics(days: int = Query(default=30, ge=1, le=90), guardi
 
 @app.get("/analytics/risk-score", response_model=RiskAssessment)
 async def get_risk_score(guardian: dict = Depends(auth.get_current_guardian)):
-    """Computes a heuristic risk score based on the last 30 days of data."""
+    """Computes a clinical heuristic risk score based on active alerts, telemetry trends, and baseline."""
     async with get_db_connection() as db:
-        # Get raw vitals from the last day for the scoring engine (to simulate recent check)
+        # Get raw vitals from recent window for the scoring engine
         cursor = await db.execute(
             "SELECT heart_rate, spo2, body_temp, svm FROM vitals_raw WHERE patient_id = 1 ORDER BY id DESC LIMIT 1000"
         )
         vitals = [dict(r) for r in await cursor.fetchall()]
         
-        # Get fall count for this band
-        cursor = await db.execute("SELECT COUNT(*) FROM fall_alerts WHERE band_id = ?", (guardian["band_id"],))
-        fall_count = (await cursor.fetchone())[0]
+        # Get active unacknowledged falls vs resolved historical falls for this band
+        cursor = await db.execute(
+            "SELECT COUNT(*) FROM fall_alerts WHERE band_id = ? AND acknowledged = 0",
+            (guardian["band_id"],)
+        )
+        active_falls = (await cursor.fetchone())[0]
+
+        cursor = await db.execute(
+            "SELECT COUNT(*) FROM fall_alerts WHERE band_id = ? AND acknowledged = 1",
+            (guardian["band_id"],)
+        )
+        historical_falls = (await cursor.fetchone())[0]
         
-    score_data = calculate_risk_score(vitals, fall_count)
+    score_data = calculate_risk_score(vitals, active_falls=active_falls, historical_falls=historical_falls)
     is_sleeping, sleep_stage = detect_sleep_state(vitals)
     score_data["is_sleeping"] = is_sleeping
     score_data["sleep_stage"] = sleep_stage
+
+    # Compute summary metrics for dynamic UI indicators
+    avg_hr = round(sum(v["heart_rate"] for v in vitals) / len(vitals)) if vitals else 72
+    avg_spo2 = round(sum(v["spo2"] for v in vitals) / len(vitals)) if vitals else 98
+
+    hr_status = "Normal"
+    if avg_hr < 50:
+        hr_status = "Low (Brady)"
+    elif avg_hr > 110:
+        hr_status = "Elevated"
+
+    spo2_status = "Good"
+    if avg_spo2 < 92:
+        spo2_status = "Low SpO2"
+    elif avg_spo2 < 95:
+        spo2_status = "Fair"
+
+    score_data["summary_stats"] = {
+        "avg_hr": avg_hr,
+        "hr_status": hr_status,
+        "avg_spo2": avg_spo2,
+        "spo2_status": spo2_status,
+        "active_falls": active_falls,
+        "historical_falls": historical_falls
+    }
+
     return RiskAssessment(**score_data)

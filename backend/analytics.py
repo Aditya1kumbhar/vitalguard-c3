@@ -1,68 +1,84 @@
 from typing import List, Dict, Any, Tuple
 import math
 
-def calculate_risk_score(recent_vitals: List[Dict[str, Any]], recent_falls: int) -> dict:
+def calculate_risk_score(recent_vitals: List[Dict[str, Any]], active_falls: int, historical_falls: int = 0) -> dict:
     """
-    Computes a heuristic risk score (0-100) based on recent telemetry and events.
-    Follows Phase 2 blueprint scoring metrics.
+    Computes a clinical heuristic health risk score (0-100) based on active alerts,
+    telemetry vital trends, and historical baseline.
     """
     score = 0
     factors = []
     
-    # 1. Fall Recurrence (25 points per fall)
-    if recent_falls > 0:
-        pts = min(50, recent_falls * 25)
+    # 1. Active / Unacknowledged Falls (Critical Immediate Risk)
+    if active_falls > 0:
+        pts = min(60, active_falls * 30)
         score += pts
         factors.append({
-            "name": "Fall Recurrence",
+            "name": "Active Fall Alert",
             "impact": pts,
-            "description": f"{recent_falls} falls detected in the last 30 days."
+            "description": f"{active_falls} active unacknowledged fall alert(s) requiring immediate attention."
         })
-        
-    # 2. Nocturnal Bradycardia (HR < 50)
-    brady_events = sum(1 for v in recent_vitals if v.get('heart_rate', 60) < 50)
-    if brady_events >= 3:
-        score += 25
+    elif historical_falls > 0:
+        # 2. Resolved Historical Falls in 30-day baseline (Mild Fall Risk Awareness)
+        pts = min(10, historical_falls * 1)
+        score += pts
         factors.append({
-            "name": "Nocturnal Bradycardia",
-            "impact": 25,
-            "description": f"Heart rate dipped below 50 bpm {brady_events} times."
+            "name": "Resolved 30-Day Fall History",
+            "impact": pts,
+            "description": f"{historical_falls} past fall incident(s) resolved in 30-day baseline."
         })
         
-    # 3. Persistent SpO2 Dips (< 92%)
-    spo2_dips = sum(1 for v in recent_vitals if v.get('spo2', 98) < 92)
-    if spo2_dips >= 5:
+    # 3. Nocturnal Bradycardia (HR < 50 sustained)
+    brady_events = sum(1 for v in recent_vitals if v.get('heart_rate', 60) < 50)
+    if brady_events >= 10:
         score += 20
         factors.append({
-            "name": "SpO2 Dips",
+            "name": "Nocturnal Bradycardia",
             "impact": 20,
-            "description": f"Oxygen levels dropped below 92% {spo2_dips} times."
+            "description": f"Heart rate dipped below 50 bpm {brady_events} times in telemetry window."
         })
         
-    # 4. Agitation / High SVM
+    # 4. Persistent SpO2 Dips (< 92%)
+    spo2_dips = sum(1 for v in recent_vitals if v.get('spo2', 98) < 92)
+    if spo2_dips >= 10:
+        score += 20
+        factors.append({
+            "name": "SpO2 Oxygen Dips",
+            "impact": 20,
+            "description": f"Oxygen saturation dropped below 92% {spo2_dips} times."
+        })
+        
+    # 5. Agitation / Sustained High Motion
     high_svm_events = sum(1 for v in recent_vitals if v.get('svm', 1.0) > 2.5)
-    if high_svm_events > 10:
+    if high_svm_events >= 20:
         score += 15
         factors.append({
-            "name": "High Agitation (SVM)",
+            "name": "Elevated Agitation (SVM)",
             "impact": 15,
-            "description": "Frequent high-acceleration movements detected outside of falls."
+            "description": "Frequent high-acceleration motor movements detected."
+        })
+
+    if not factors:
+        factors.append({
+            "name": "Optimal Baseline",
+            "impact": 0,
+            "description": "Heart rate, oxygen saturation, and activity levels are all within healthy clinical parameters."
         })
         
     overall_score = min(100.0, float(score))
     
     if overall_score <= 20:
         risk_level = "low"
-        rec = "Routine monitoring."
+        rec = "Patient is stable. Continue routine continuous monitoring."
     elif overall_score <= 45:
         risk_level = "moderate"
         rec = "Schedule a routine check-up to review vital trends."
     elif overall_score <= 70:
         risk_level = "high"
-        rec = "Immediate review recommended. High risk of clinical deterioration."
+        rec = "Immediate caregiver check recommended. Review recent events."
     else:
         risk_level = "critical"
-        rec = "URGENT INTERVENTION REQUIRED."
+        rec = "URGENT INTERVENTION REQUIRED. Code Blue alert standby."
         
     return {
         "overall_score": overall_score,

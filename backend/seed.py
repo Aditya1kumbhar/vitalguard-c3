@@ -51,7 +51,7 @@ async def seed_data():
                 peak_g = round(random.uniform(2.8, 4.5), 2)
                 await db.execute("""
                     INSERT INTO fall_alerts (band_id, timestamp, peak_accel, severity, acknowledged)
-                    VALUES (?, ?, ?, 'high', 0)
+                    VALUES (?, ?, ?, 'high', 1)
                 """, ("VG-C3-AD01", ts, peak_g))
                 
         # Generate 1000 rows of raw 1Hz data for the risk engine to score (about 16 minutes)

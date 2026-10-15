@@ -47,3 +47,4 @@ class RiskAssessment(BaseModel):
     recommendation: str
     is_sleeping: Optional[bool] = False
     sleep_stage: Optional[str] = "unknown"
+    summary_stats: Optional[Dict[str, Any]] = None
