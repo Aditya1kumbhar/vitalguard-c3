@@ -58,6 +58,7 @@ import GlassIcon from './components/GlassIcon';
 import GlassLogo from './components/GlassLogo';
 import { useTheme } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
+import { playHaptic } from './utils/haptics';
 import {
   colors,
   dimensions,
@@ -837,12 +838,12 @@ export default function VitalGuardCompanionDashboard() {
         aria-label="Bottom Navigation Dock"
         style={{
           position: 'fixed',
-          bottom: 'max(16px, env(safe-area-inset-bottom))',
+          bottom: 'max(14px, env(safe-area-inset-bottom))',
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 50,
-          width: 'calc(100% - 32px)',
-          maxWidth: 440,
+          width: 'calc(100% - 24px)',
+          maxWidth: 420,
           pointerEvents: 'auto',
         }}
       >
@@ -850,87 +851,288 @@ export default function VitalGuardCompanionDashboard() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'space-around',
             backgroundColor: 'var(--dock-bg)',
-            backdropFilter: 'blur(32px)',
-            WebkitBackdropFilter: 'blur(32px)',
+            backdropFilter: 'blur(36px) saturate(190%)',
+            WebkitBackdropFilter: 'blur(36px) saturate(190%)',
             border: '1px solid var(--dock-border)',
-            borderRadius: 16,
-            padding: '6px 8px',
+            borderRadius: 24,
+            padding: '6px 10px 8px 10px',
             boxShadow: 'var(--dock-shadow)',
           }}
         >
           {/* Tab 1: Live Vitals */}
-          <motion.button
+          <button
             type="button"
-            onClick={() => setActiveTab('summary')}
-            whileTap={{ scale: 0.94 }}
+            onClick={() => {
+              setActiveTab('summary');
+              playHaptic('click');
+            }}
+            aria-label="Live Vitals"
+            aria-selected={activeTab === 'summary'}
+            role="tab"
             style={{
+              flex: 1,
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: 8,
-              padding: '8px 14px',
-              borderRadius: 12,
+              justifyContent: 'center',
+              gap: 3,
+              padding: '2px 0 0 0',
+              background: 'none',
               border: 'none',
-              backgroundColor: activeTab === 'summary' ? 'rgba(14, 165, 233, 0.22)' : 'transparent',
-              color: activeTab === 'summary' ? '#38BDF8' : isDark ? '#8E8E93' : '#64748B',
-              fontSize: 13,
-              fontWeight: 700,
               cursor: 'pointer',
-              transition: 'all 200ms ease',
+              position: 'relative',
+              WebkitTapHighlightColor: 'transparent',
+              outline: 'none',
             }}
           >
-            <GlassIcon name="pulse" size={19} variant={activeTab === 'summary' ? 'cyan' : 'slate'} interactive={false} glow={activeTab === 'summary'} />
-            <span>Live Vitals</span>
-          </motion.button>
+            <div
+              style={{
+                position: 'relative',
+                width: 62,
+                height: 34,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {activeTab === 'summary' && (
+                <motion.div
+                  layoutId="activeDockPill"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: 17,
+                    backgroundColor: isDark ? 'rgba(56, 189, 248, 0.20)' : 'rgba(14, 165, 233, 0.16)',
+                    border: isDark ? '1px solid rgba(56, 189, 248, 0.40)' : '1px solid rgba(14, 165, 233, 0.35)',
+                    boxShadow: isDark
+                      ? '0 2px 10px rgba(14, 165, 233, 0.30)'
+                      : '0 2px 8px rgba(14, 165, 233, 0.18)',
+                  }}
+                />
+              )}
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <GlassIcon
+                  name="pulse"
+                  size={32}
+                  variant={activeTab === 'summary' ? 'cyan' : 'slate'}
+                  interactive={false}
+                  glow={activeTab === 'summary'}
+                />
+              </div>
+              {/* Telemetry live status indicator */}
+              <span
+                style={{
+                  position: 'absolute',
+                  top: 2,
+                  right: 8,
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  backgroundColor: '#10B981',
+                  boxShadow: '0 0 6px #10B981',
+                  zIndex: 2,
+                }}
+              />
+            </div>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: activeTab === 'summary' ? 700 : 500,
+                letterSpacing: '0.01em',
+                color: activeTab === 'summary' ? (isDark ? '#38BDF8' : '#0284C7') : (isDark ? '#94A3B8' : '#64748B'),
+                transition: 'color 150ms ease',
+              }}
+            >
+              Vitals
+            </span>
+          </button>
 
           {/* Tab 2: Clinical Records */}
-          <motion.button
+          <button
             type="button"
-            onClick={() => setActiveTab('trends')}
-            whileTap={{ scale: 0.94 }}
+            onClick={() => {
+              setActiveTab('trends');
+              playHaptic('click');
+            }}
+            aria-label="Clinical Records and Trends"
+            aria-selected={activeTab === 'trends'}
+            role="tab"
             style={{
+              flex: 1,
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: 8,
-              padding: '8px 14px',
-              borderRadius: 12,
+              justifyContent: 'center',
+              gap: 3,
+              padding: '2px 0 0 0',
+              background: 'none',
               border: 'none',
-              backgroundColor: activeTab === 'trends' ? 'rgba(14, 165, 233, 0.22)' : 'transparent',
-              color: activeTab === 'trends' ? '#38BDF8' : isDark ? '#8E8E93' : '#64748B',
-              fontSize: 13,
-              fontWeight: 700,
               cursor: 'pointer',
-              transition: 'all 200ms ease',
+              position: 'relative',
+              WebkitTapHighlightColor: 'transparent',
+              outline: 'none',
             }}
           >
-            <GlassIcon name="records" size={19} variant={activeTab === 'trends' ? 'cyan' : 'slate'} interactive={false} glow={activeTab === 'trends'} />
-            <span>Clinical Records</span>
-          </motion.button>
+            <div
+              style={{
+                position: 'relative',
+                width: 62,
+                height: 34,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {activeTab === 'trends' && (
+                <motion.div
+                  layoutId="activeDockPill"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: 17,
+                    backgroundColor: isDark ? 'rgba(56, 189, 248, 0.20)' : 'rgba(14, 165, 233, 0.16)',
+                    border: isDark ? '1px solid rgba(56, 189, 248, 0.40)' : '1px solid rgba(14, 165, 233, 0.35)',
+                    boxShadow: isDark
+                      ? '0 2px 10px rgba(14, 165, 233, 0.30)'
+                      : '0 2px 8px rgba(14, 165, 233, 0.18)',
+                  }}
+                />
+              )}
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <GlassIcon
+                  name="records"
+                  size={32}
+                  variant={activeTab === 'trends' ? 'cyan' : 'slate'}
+                  interactive={false}
+                  glow={activeTab === 'trends'}
+                />
+              </div>
+            </div>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: activeTab === 'trends' ? 700 : 500,
+                letterSpacing: '0.01em',
+                color: activeTab === 'trends' ? (isDark ? '#38BDF8' : '#0284C7') : (isDark ? '#94A3B8' : '#64748B'),
+                transition: 'color 150ms ease',
+              }}
+            >
+              Records
+            </span>
+          </button>
 
           {/* Tab 3: Fall Safety */}
-          <motion.button
+          <button
             type="button"
-            onClick={() => setActiveTab('falls')}
-            whileTap={{ scale: 0.94 }}
+            onClick={() => {
+              setActiveTab('falls');
+              playHaptic('click');
+            }}
+            aria-label="Fall Safety and Dispatch"
+            aria-selected={activeTab === 'falls'}
+            role="tab"
             style={{
+              flex: 1,
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: 8,
-              padding: '8px 14px',
-              borderRadius: 12,
+              justifyContent: 'center',
+              gap: 3,
+              padding: '2px 0 0 0',
+              background: 'none',
               border: 'none',
-              backgroundColor: activeTab === 'falls' ? 'rgba(255, 69, 58, 0.22)' : 'transparent',
-              color: activeTab === 'falls' ? '#FF453A' : isDark ? '#8E8E93' : '#64748B',
-              fontSize: 13,
-              fontWeight: 700,
               cursor: 'pointer',
-              transition: 'all 200ms ease',
+              position: 'relative',
+              WebkitTapHighlightColor: 'transparent',
+              outline: 'none',
             }}
           >
-            <GlassIcon name="shield-alert" size={19} variant={activeTab === 'falls' ? 'rose' : 'slate'} interactive={false} glow={activeTab === 'falls'} />
-            <span>Fall Safety</span>
-          </motion.button>
+            <div
+              style={{
+                position: 'relative',
+                width: 62,
+                height: 34,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {activeTab === 'falls' && (
+                <motion.div
+                  layoutId="activeDockPill"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: 17,
+                    backgroundColor: isDark ? 'rgba(255, 69, 58, 0.22)' : 'rgba(239, 68, 68, 0.16)',
+                    border: isDark ? '1px solid rgba(255, 69, 58, 0.45)' : '1px solid rgba(239, 68, 68, 0.35)',
+                    boxShadow: isDark
+                      ? '0 2px 10px rgba(255, 69, 58, 0.30)'
+                      : '0 2px 8px rgba(239, 68, 68, 0.20)',
+                  }}
+                />
+              )}
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <GlassIcon
+                  name="shield-alert"
+                  size={32}
+                  variant={activeTab === 'falls' ? 'rose' : 'slate'}
+                  interactive={false}
+                  glow={activeTab === 'falls'}
+                />
+              </div>
+              {/* Alert or armed badge */}
+              {isCurrentlyFalling ? (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: -2,
+                    right: 4,
+                    padding: '1px 5px',
+                    borderRadius: 9999,
+                    fontSize: 9,
+                    fontWeight: 800,
+                    backgroundColor: '#FF453A',
+                    color: '#FFFFFF',
+                    boxShadow: '0 0 8px rgba(255, 69, 58, 0.8)',
+                    zIndex: 2,
+                  }}
+                >
+                  ALERT
+                </span>
+              ) : (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: 2,
+                    right: 8,
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    backgroundColor: '#10B981',
+                    boxShadow: '0 0 6px #10B981',
+                    zIndex: 2,
+                  }}
+                />
+              )}
+            </div>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: activeTab === 'falls' ? 700 : 500,
+                letterSpacing: '0.01em',
+                color: activeTab === 'falls' ? '#FF453A' : (isDark ? '#94A3B8' : '#64748B'),
+                transition: 'color 150ms ease',
+              }}
+            >
+              Safety
+            </span>
+          </button>
         </div>
       </nav>
 
