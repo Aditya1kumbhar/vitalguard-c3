@@ -28,7 +28,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#01373D",
+  themeColor: "#000000",
 };
 
 export default function RootLayout({
@@ -38,7 +38,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={dmSans.variable}>
-      <body className="font-sans antialiased text-[#01373D] selection:bg-[#FE336A] selection:text-white">
+      <body className="font-sans antialiased bg-black text-white selection:bg-[#FF375F] selection:text-white">
         <AmbientProvider>
           <AuthProvider>
             {children}
