@@ -67,7 +67,7 @@ export const Sheet: React.FC<SheetProps> = ({
               width: 36,
               height: 5,
               borderRadius: dimensions.pillRadius,
-              backgroundColor: 'rgba(255, 255, 255, 0.20)',
+              backgroundColor: 'var(--sheet-handle, rgba(255, 255, 255, 0.20))',
               margin: `${layout.gridUnit}px auto ${layout.gridUnit}px auto`,
               flexShrink: 0,
             }}

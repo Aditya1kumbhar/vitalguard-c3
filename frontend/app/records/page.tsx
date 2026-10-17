@@ -33,15 +33,15 @@ export default function RecordsPage() {
         </div>
 
         {/* Clean Clinical Footer */}
-        <footer className="text-center py-6 border-t border-white/8 text-xs text-slate-400 font-medium flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
+        <footer className="text-center py-6 border-t border-slate-200 dark:border-white/8 text-xs text-slate-500 dark:text-slate-400 font-medium flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-white">VitalGuard C3</span>
-            <span className="text-slate-600">|</span>
-            <span className="font-semibold text-slate-300">{guardianName || 'Guardian'}</span>
-            <span className="text-slate-600">|</span>
-            <span className="font-mono text-cyan-400">Band: {bandId || 'VG-C3-0001'}</span>
+            <span className="font-bold text-slate-900 dark:text-white">VitalGuard C3</span>
+            <span className="text-slate-400 dark:text-slate-600">|</span>
+            <span className="font-semibold text-slate-700 dark:text-slate-300">{guardianName || 'Guardian'}</span>
+            <span className="text-slate-400 dark:text-slate-600">|</span>
+            <span className="font-mono text-cyan-600 dark:text-cyan-400">Band: {bandId || 'VG-C3-0001'}</span>
           </div>
-          <div className="text-xs text-emerald-400 font-mono">
+          <div className="text-xs text-emerald-600 dark:text-emerald-400 font-mono">
             Clinical Records Stream Active
           </div>
         </footer>

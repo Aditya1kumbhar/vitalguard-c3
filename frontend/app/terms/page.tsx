@@ -46,8 +46,8 @@ export default function TermsAndConditionsPage() {
           <div className="flex items-start gap-3">
             <GlassIcon name="shield-alert" size="md" variant="rose" />
             <div className="flex flex-col gap-1">
-              <span className="text-sm font-bold text-rose-300">Non-Diagnostic Clinical Disclaimer</span>
-              <span className="text-xs text-rose-200/90 leading-relaxed">
+              <span className="text-sm font-bold text-rose-800 dark:text-rose-300">Non-Diagnostic Clinical Disclaimer</span>
+              <span className="text-xs text-rose-900/90 dark:text-rose-200/90 leading-relaxed">
                 VitalGuard C3 is a non-diagnostic physiological companion and assistive fall detection platform.
                 It is not an FDA-cleared Class II medical diagnostic instrument. In life-threatening emergencies or acute trauma, caregivers must contact emergency medical services (such as 911 or local emergency response) immediately.
               </span>
@@ -59,14 +59,14 @@ export default function TermsAndConditionsPage() {
         <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="pulse" size="sm" variant="cyan" />
-            <h2 className="text-base sm:text-lg font-bold text-white">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               1. Platform Scope &amp; Intended Use
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             VitalGuard C3 provides continuous pulse rate estimation (MAX30102 optical PPG), blood oxygen saturation approximation (SpO2), kinetic acceleration tracking (MPU6050 3-Axis SVM), and 30-day FIFO local audit logging for elderly individuals and assisted-living monitoring.
           </p>
-          <ul className="space-y-2 text-xs sm:text-sm text-slate-300 list-disc pl-5">
+          <ul className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-disc pl-5">
             <li>
               <strong>Assistive Companion:</strong> Readings represent physiological approximations and are intended for trend observation and caregiver reassurance.
             </li>
@@ -80,14 +80,14 @@ export default function TermsAndConditionsPage() {
         <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="gauge" size="sm" variant="emerald" />
-            <h2 className="text-base sm:text-lg font-bold text-white">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               2. Hardware Operating Conditions &amp; Maintenance
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             Accurate telemetry requires strict adherence to physical operating criteria:
           </p>
-          <ul className="space-y-2 text-xs sm:text-sm text-slate-300 list-disc pl-5">
+          <ul className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-disc pl-5">
             <li>
               <strong>Wearable Band Placement:</strong> The MAX30102 optical sensor must maintain steady skin contact on the dorsal or volar aspect of the wrist, approximately one finger width above the wrist joint.
             </li>
@@ -104,14 +104,14 @@ export default function TermsAndConditionsPage() {
         <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="shield-alert" size="sm" variant="rose" />
-            <h2 className="text-base sm:text-lg font-bold text-white">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               3. Algorithmic Fall Detection Boundaries
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             The MPU6050 algorithm flags high-G kinetic acceleration spikes followed by posture displacement. Users must acknowledge the following technical boundaries:
           </p>
-          <ul className="space-y-2 text-xs sm:text-sm text-slate-300 list-disc pl-5">
+          <ul className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-disc pl-5">
             <li>
               <strong>No Universal Fall Guarantee:</strong> No wearable accelerometer platform can capture 100% of all fall variations. Slow, cushioned slides, soft seated descents, or gradual ground contacts may not generate the necessary 3.0G threshold spike.
             </li>
@@ -128,31 +128,31 @@ export default function TermsAndConditionsPage() {
         <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="database" size="sm" variant="cyan" />
-            <h2 className="text-base sm:text-lg font-bold text-white">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               4. Data Sovereignty &amp; FIFO Storage
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             VitalGuard C3 operates on an on-device architecture. All daily records, fall timestamps, and telemetry summaries are retained for 30 rolling calendar days in the local browser IndexedDB cache. You retain complete ownership and can purge all cached records at any time through the application settings.
           </p>
         </section>
 
         {/* Section 5: Limitation of Liability */}
         <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
-          <h2 className="text-base sm:text-lg font-bold text-white">
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
             5. Limitation of Liability &amp; Warranty
           </h2>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             The software, firmware protocols, and clinical companion dashboards are provided on an &quot;as is&quot; and &quot;as available&quot; basis without warranties of any kind, whether express or implied. In no event shall the authors, hardware designers, or software engineers be held liable for any direct, indirect, incidental, or consequential damages resulting from hardware disconnection, sensor occlusion, or delayed emergency escalation.
           </p>
         </section>
 
         {/* Bottom Navigation */}
-        <div className="flex items-center justify-between pt-4 border-t border-white/8 text-xs text-slate-400">
-          <Link href="/" className="hover:text-cyan-400 transition-colors">
+        <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-white/8 text-xs text-slate-600 dark:text-slate-400">
+          <Link href="/" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
             Return to Dashboard
           </Link>
-          <Link href="/privacy" className="hover:text-cyan-400 transition-colors">
+          <Link href="/privacy" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
             View Privacy Policy
           </Link>
         </div>

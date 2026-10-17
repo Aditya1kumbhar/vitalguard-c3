@@ -2,23 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* ═══════════════════════════════════════════════════════════════════
+   SEMANTIC THEME TOKENS: DUAL-MODE ARCHITECTURE (DARK & LIGHT)
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root,
+html.dark,
+html[data-theme='dark'] {
   color-scheme: dark;
+
+  /* Surfaces & Backgrounds (100% Preserved Existing Dark Theme) */
+  --bg-primary: #0A0D12;
   --bg-app: #0A0D12;
+  --bg-surface: #12161D;
   --bg-card: #12161D;
-  --border-card: rgba(255, 255, 255, 0.08);
+  --bg-elevated: #161B22;
+  --bg-glass: rgba(18, 22, 29, 0.85);
+  --bg-input: #0D1117;
+  --bg-modal: #12161D;
+  --bg-subtle: rgba(255, 255, 255, 0.04);
+  --bg-subtle-hover: rgba(255, 255, 255, 0.08);
+
+  /* Typography */
   --text-primary: #FFFFFF;
   --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-dim: #475569;
+
+  /* Borders & Dividers */
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-card: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-focus: rgba(56, 189, 248, 0.6);
   --header-border: rgba(255, 255, 255, 0.08);
+
+  /* Shadows */
+  --shadow-color: rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(255, 255, 255, 0.05) inset;
+  --shadow-dock: 0 12px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(14, 165, 233, 0.15);
+
+  /* Accent & Interactive States */
+  --accent-primary: #38BDF8;
+  --accent-hover: #0EA5E9;
+  --accent-bg: rgba(14, 165, 233, 0.15);
+  --accent-border: rgba(56, 189, 248, 0.35);
+
+  /* Clinical Status Colors (Dark Mode) */
+  --status-nominal: #34D399;
+  --status-nominal-bg: rgba(16, 185, 129, 0.15);
+  --status-nominal-border: rgba(52, 211, 153, 0.35);
+
+  --status-warning: #FBBF24;
+  --status-warning-bg: rgba(245, 158, 11, 0.15);
+  --status-warning-border: rgba(251, 191, 36, 0.35);
+
+  --status-critical: #FF453A;
+  --status-critical-bg: rgba(255, 69, 58, 0.18);
+  --status-critical-border: rgba(255, 69, 58, 0.35);
+
+  --status-info: #38BDF8;
+  --status-info-bg: rgba(14, 165, 233, 0.15);
+  --status-info-border: rgba(56, 189, 248, 0.35);
+
+  /* Dock, Sheet, & Specialized Surfaces */
   --dock-bg: rgba(18, 22, 29, 0.94);
   --dock-border: rgba(56, 189, 248, 0.22);
   --dock-shadow: 0 12px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(14, 165, 233, 0.15);
-  --dock-item-active-bg: rgba(14, 165, 233, 0.22);
+  --dock-item-active-bg: rgba(14, 165, 233, 0.20);
+  --dock-item-active-border: rgba(56, 189, 248, 0.40);
   --dock-item-active-text: #38BDF8;
-  --dock-item-inactive-text: #8E8E93;
+  --dock-item-inactive-text: #94A3B8;
+
   --sheet-bg: #12161D;
   --sheet-card: #161B22;
   --sheet-border: rgba(255, 255, 255, 0.08);
+  --sheet-handle: rgba(255, 255, 255, 0.20);
+
   --sparkline-bg: rgba(0, 0, 0, 0.4);
   --inner-box-bg: rgba(0, 0, 0, 0.3);
   --subtle-card-hover: rgba(255, 255, 255, 0.06);
@@ -27,24 +86,77 @@
 html.light,
 html[data-theme='light'] {
   color-scheme: light;
-  --bg-app: #F1F5F9;
+
+  /* Surfaces & Backgrounds - High Contrast WCAG AAA Light Mode */
+  --bg-primary: #F8FAFC;
+  --bg-app: #F8FAFC;
+  --bg-surface: #FFFFFF;
   --bg-card: #FFFFFF;
-  --border-card: rgba(203, 213, 225, 0.85);
+  --bg-elevated: #F1F5F9;
+  --bg-glass: rgba(255, 255, 255, 0.88);
+  --bg-input: #FFFFFF;
+  --bg-modal: #FFFFFF;
+  --bg-subtle: #F1F5F9;
+  --bg-subtle-hover: #E2E8F0;
+
+  /* Typography - Clean Slate & Deep Graphite */
   --text-primary: #0F172A;
-  --text-secondary: #64748B;
-  --header-border: rgba(226, 232, 240, 0.9);
-  --dock-bg: rgba(255, 255, 255, 0.92);
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --text-dim: #94A3B8;
+
+  /* Borders & Dividers */
+  --border-color: #E2E8F0;
+  --border-card: #E2E8F0;
+  --border-subtle: #F1F5F9;
+  --border-focus: #0284C7;
+  --header-border: #E2E8F0;
+
+  /* Shadows */
+  --shadow-color: rgba(15, 23, 42, 0.08);
+  --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 0 1px 1px rgba(226, 232, 240, 0.8);
+  --shadow-dock: 0 12px 36px rgba(15, 23, 42, 0.12), 0 0 20px rgba(14, 165, 233, 0.12);
+
+  /* Accent & Interactive States - High Contrast for WCAG */
+  --accent-primary: #0284C7;
+  --accent-hover: #0369A1;
+  --accent-bg: rgba(2, 132, 199, 0.10);
+  --accent-border: rgba(2, 132, 199, 0.28);
+
+  /* Clinical Status Colors (Light Mode - Deeper, Accessible Tones) */
+  --status-nominal: #059669;
+  --status-nominal-bg: rgba(16, 185, 129, 0.12);
+  --status-nominal-border: rgba(5, 150, 105, 0.30);
+
+  --status-warning: #B45309;
+  --status-warning-bg: rgba(245, 158, 11, 0.12);
+  --status-warning-border: rgba(180, 83, 9, 0.30);
+
+  --status-critical: #DC2626;
+  --status-critical-bg: rgba(239, 68, 68, 0.12);
+  --status-critical-border: rgba(220, 38, 38, 0.30);
+
+  --status-info: #0284C7;
+  --status-info-bg: rgba(2, 132, 199, 0.12);
+  --status-info-border: rgba(2, 132, 199, 0.30);
+
+  /* Dock, Sheet, & Specialized Surfaces */
+  --dock-bg: rgba(255, 255, 255, 0.94);
   --dock-border: rgba(2, 132, 199, 0.35);
   --dock-shadow: 0 12px 36px rgba(15, 23, 42, 0.12), 0 0 20px rgba(14, 165, 233, 0.12);
-  --dock-item-active-bg: rgba(14, 165, 233, 0.15);
+  --dock-item-active-bg: rgba(14, 165, 233, 0.16);
+  --dock-item-active-border: rgba(14, 165, 233, 0.35);
   --dock-item-active-text: #0284C7;
   --dock-item-inactive-text: #64748B;
+
   --sheet-bg: #F8FAFC;
   --sheet-card: #FFFFFF;
-  --sheet-border: rgba(226, 232, 240, 0.9);
-  --sparkline-bg: rgba(241, 245, 249, 0.9);
-  --inner-box-bg: rgba(241, 245, 249, 0.95);
-  --subtle-card-hover: rgba(241, 245, 249, 0.8);
+  --sheet-border: #E2E8F0;
+  --sheet-handle: rgba(100, 116, 139, 0.35);
+
+  --sparkline-bg: #F1F5F9;
+  --inner-box-bg: #F8FAFC;
+  --subtle-card-hover: #F1F5F9;
 }
 
 html,
@@ -58,7 +170,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-  transition: background-color 300ms ease, color 300ms ease;
+  transition: background-color 250ms ease, color 250ms ease;
 }
 
 /* Custom scrollbars */
@@ -83,6 +195,6 @@ body {
 }
 
 ::selection {
-  background-color: #0EA5E9;
+  background-color: var(--accent-primary);
   color: #FFFFFF;
 }

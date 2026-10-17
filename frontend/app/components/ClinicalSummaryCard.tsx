@@ -44,7 +44,11 @@ export default function ClinicalSummaryCard() {
 
         <button
           onClick={handlePrint}
-          className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold text-xs border border-white/10 transition-all cursor-pointer"
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-bold text-xs border transition-all cursor-pointer ${
+            isDark
+              ? "bg-white/5 hover:bg-white/10 text-white border-white/10"
+              : "bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300"
+          }`}
           title="Print Summary Report"
           type="button"
         >
@@ -58,11 +62,13 @@ export default function ClinicalSummaryCard() {
         {/* Heart Rate */}
         <div className={`p-3.5 rounded-xl border flex flex-col items-center text-center gap-1.5 ${isDark ? "bg-white/4 border-white/6" : "bg-slate-50 border-slate-200"}`}>
           <GlassIcon name="heart" size="md" />
-          <span className="text-xs font-semibold text-slate-300">Heart</span>
-          <span className="text-xl sm:text-2xl font-black text-white font-mono">
+          <span className={`text-xs font-semibold ${isDark ? "text-slate-300" : "text-slate-600"}`}>Heart</span>
+          <span className={`text-xl sm:text-2xl font-black font-mono ${isDark ? "text-white" : "text-slate-900"}`}>
             {patient?.baseline_hr ?? 72}
           </span>
-          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+            isDark ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-emerald-700 bg-emerald-50 border-emerald-200"
+          }`}>
             Normal
           </span>
         </div>
@@ -70,11 +76,13 @@ export default function ClinicalSummaryCard() {
         {/* Oxygen */}
         <div className={`p-3.5 rounded-xl border flex flex-col items-center text-center gap-1.5 ${isDark ? "bg-white/4 border-white/6" : "bg-slate-50 border-slate-200"}`}>
           <GlassIcon name="oxygen" size="md" />
-          <span className="text-xs font-semibold text-slate-300">Oxygen</span>
-          <span className="text-xl sm:text-2xl font-black text-white font-mono">
+          <span className={`text-xs font-semibold ${isDark ? "text-slate-300" : "text-slate-600"}`}>Oxygen</span>
+          <span className={`text-xl sm:text-2xl font-black font-mono ${isDark ? "text-white" : "text-slate-900"}`}>
             {patient?.baseline_spo2 ?? 97}%
           </span>
-          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+            isDark ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-emerald-700 bg-emerald-50 border-emerald-200"
+          }`}>
             Optimal
           </span>
         </div>
@@ -82,11 +90,13 @@ export default function ClinicalSummaryCard() {
         {/* Temp */}
         <div className={`p-3.5 rounded-xl border flex flex-col items-center text-center gap-1.5 ${isDark ? "bg-white/4 border-white/6" : "bg-slate-50 border-slate-200"}`}>
           <GlassIcon name="temp" size="md" />
-          <span className="text-xs font-semibold text-slate-300">Temp</span>
-          <span className="text-xl sm:text-2xl font-black text-white font-mono">
+          <span className={`text-xs font-semibold ${isDark ? "text-slate-300" : "text-slate-600"}`}>Temp</span>
+          <span className={`text-xl sm:text-2xl font-black font-mono ${isDark ? "text-white" : "text-slate-900"}`}>
             {patient?.baseline_temp ?? 36.6}°C
           </span>
-          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+            isDark ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-emerald-700 bg-emerald-50 border-emerald-200"
+          }`}>
             Stable
           </span>
         </div>

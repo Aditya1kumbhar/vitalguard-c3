@@ -112,7 +112,7 @@ export default function RiskScoreCard() {
             Health Safety Index
           </span>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-4xl sm:text-5xl font-black text-white font-mono">
+            <span className={`text-4xl sm:text-5xl font-black font-mono ${isDark ? "text-white" : "text-slate-900"}`}>
               {score}
             </span>
             <span className="text-sm font-bold text-slate-400">/ 100</span>
@@ -123,15 +123,15 @@ export default function RiskScoreCard() {
           <span
             className={`px-3 py-1 rounded-lg font-extrabold text-xs tracking-wide ${
               isSafe
-                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                ? (isDark ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" : "bg-emerald-500/15 text-emerald-700 border border-emerald-500/30")
                 : isWatch
-                ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-                : "bg-rose-500/20 text-rose-300 border border-rose-500/40"
+                ? (isDark ? "bg-amber-500/20 text-amber-300 border border-amber-500/40" : "bg-amber-500/15 text-amber-800 border border-amber-500/30")
+                : (isDark ? "bg-rose-500/20 text-rose-300 border border-rose-500/40" : "bg-rose-500/15 text-rose-700 border border-rose-500/30")
             }`}
           >
             {isSafe ? "NOMINAL & SAFE" : isWatch ? "MONITORING ADVISORY" : "ELEVATED RISK"}
           </span>
-          <span className="text-[11px] text-slate-300 line-clamp-2">
+          <span className={`text-[11px] line-clamp-2 ${isDark ? "text-slate-300" : "text-slate-700 font-medium"}`}>
             {recommendation}
           </span>
         </div>
@@ -142,15 +142,15 @@ export default function RiskScoreCard() {
         {/* Heart */}
         <div className={`p-3 rounded-xl border text-center flex flex-col items-center gap-1.5 ${isDark ? "bg-white/4 border-white/6" : "bg-slate-50 border-slate-200"}`}>
           <GlassIcon name="heart" size="sm" />
-          <span className="text-xs font-bold text-slate-300">Heart</span>
-          <span className="text-base font-extrabold text-white font-mono">
+          <span className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-600"}`}>Heart</span>
+          <span className={`text-base font-extrabold font-mono ${isDark ? "text-white" : "text-slate-900"}`}>
             {stats.avg_hr ?? 72} <span className="text-[10px] font-normal text-slate-400">BPM</span>
           </span>
           <span
             className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
               stats.hr_status === "Normal"
-                ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
-                : "text-amber-400 bg-amber-500/10 border border-amber-500/20"
+                ? (isDark ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20" : "text-emerald-700 bg-emerald-50 border border-emerald-200")
+                : (isDark ? "text-amber-400 bg-amber-500/10 border border-amber-500/20" : "text-amber-800 bg-amber-50 border border-amber-200")
             }`}
           >
             {stats.hr_status ?? "Normal"}
@@ -160,15 +160,15 @@ export default function RiskScoreCard() {
         {/* Oxygen */}
         <div className={`p-3 rounded-xl border text-center flex flex-col items-center gap-1.5 ${isDark ? "bg-white/4 border-white/6" : "bg-slate-50 border-slate-200"}`}>
           <GlassIcon name="oxygen" size="sm" />
-          <span className="text-xs font-bold text-slate-300">Oxygen</span>
-          <span className="text-base font-extrabold text-white font-mono">
+          <span className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-600"}`}>Oxygen</span>
+          <span className={`text-base font-extrabold font-mono ${isDark ? "text-white" : "text-slate-900"}`}>
             {stats.avg_spo2 ?? 98}<span className="text-[10px] font-normal text-slate-400">%</span>
           </span>
           <span
             className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
               stats.spo2_status === "Good"
-                ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
-                : "text-amber-400 bg-amber-500/10 border border-amber-500/20"
+                ? (isDark ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20" : "text-emerald-700 bg-emerald-50 border border-emerald-200")
+                : (isDark ? "text-amber-400 bg-amber-500/10 border border-amber-500/20" : "text-amber-800 bg-amber-50 border border-amber-200")
             }`}
           >
             {stats.spo2_status ?? "Good"}
@@ -182,15 +182,15 @@ export default function RiskScoreCard() {
             variant={(stats.active_falls ?? 0) > 0 ? "rose" : "emerald"}
             size="sm"
           />
-          <span className="text-xs font-bold text-slate-300">Falls</span>
-          <span className="text-base font-extrabold text-white font-mono">
+          <span className={`text-xs font-bold ${isDark ? "text-slate-300" : "text-slate-600"}`}>Falls</span>
+          <span className={`text-base font-extrabold font-mono ${isDark ? "text-white" : "text-slate-900"}`}>
             {(stats.active_falls ?? 0) === 0 ? "0 Active" : `${stats.active_falls} Alert`}
           </span>
           <span
             className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
               (stats.active_falls ?? 0) === 0
-                ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
-                : "text-rose-400 bg-rose-500/10 border border-rose-500/20"
+                ? (isDark ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20" : "text-emerald-700 bg-emerald-50 border border-emerald-200")
+                : (isDark ? "text-rose-400 bg-rose-500/10 border border-rose-500/20" : "text-rose-700 bg-rose-50 border border-rose-200")
             }`}
           >
             {(stats.active_falls ?? 0) === 0 ? "Clear" : "Incident"}
@@ -200,7 +200,7 @@ export default function RiskScoreCard() {
 
       {/* Clinical Factor Breakdown */}
       {factors.length > 0 && (
-        <div className="pt-2 border-t border-white/8 flex flex-col gap-2">
+        <div className={`pt-2 border-t flex flex-col gap-2 ${isDark ? "border-white/8" : "border-slate-200"}`}>
           <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider">
             <span>Risk Factors</span>
             <span>{factors.length} {factors.length === 1 ? "factor" : "factors"}</span>
@@ -209,17 +209,19 @@ export default function RiskScoreCard() {
             {factors.map((f, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between text-xs bg-white/4 px-3 py-2 rounded-xl border border-white/6"
+                className={`flex items-center justify-between text-xs px-3 py-2 rounded-xl border ${
+                  isDark ? "bg-white/4 border-white/6" : "bg-slate-50 border-slate-200"
+                }`}
               >
                 <div className="flex flex-col">
-                  <span className="font-bold text-white text-xs">{f.name}</span>
-                  <span className="text-[11px] text-slate-400 leading-tight">{f.description}</span>
+                  <span className={`font-bold text-xs ${isDark ? "text-white" : "text-slate-900"}`}>{f.name}</span>
+                  <span className={`text-[11px] leading-tight ${isDark ? "text-slate-400" : "text-slate-500"}`}>{f.description}</span>
                 </div>
                 <span
                   className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md whitespace-nowrap ml-2 ${
                     f.impact > 0
-                      ? "text-amber-400 bg-amber-500/10 border border-amber-500/20"
-                      : "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
+                      ? (isDark ? "text-amber-400 bg-amber-500/10 border border-amber-500/20" : "text-amber-800 bg-amber-50 border border-amber-200")
+                      : (isDark ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20" : "text-emerald-700 bg-emerald-50 border border-emerald-200")
                   }`}
                 >
                   {f.impact > 0 ? `+${f.impact}% risk` : "Nominal"}

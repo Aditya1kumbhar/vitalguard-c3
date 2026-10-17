@@ -5,6 +5,7 @@ import { ShieldCheck, Fingerprint, Activity, AlertCircle, KeyRound, CheckCircle2
 import { useAuth } from '../context/AuthContext';
 import PinPad from '../components/PinPad';
 import GlassLogo from '../components/GlassLogo';
+import ThemeToggle from '../components/ThemeToggle';
 import { 
   isWebAuthnSupported, 
   isPlatformAuthenticatorAvailable, 
@@ -555,20 +556,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 relative">
-      <div className="w-full max-w-md sm:max-w-lg md:max-w-xl bg-white border border-slate-200 rounded-2xl shadow-xl relative z-10 flex flex-col items-center overflow-hidden">
+    <div className="min-h-screen bg-[var(--bg-app)] text-[var(--text-primary)] flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 relative transition-colors duration-300">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20">
+        <ThemeToggle size="sm" />
+      </div>
+      <div className="w-full max-w-md sm:max-w-lg md:max-w-xl bg-white dark:bg-[#12161D] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl relative z-10 flex flex-col items-center overflow-hidden transition-colors">
         
         {/* Header Tabs */}
-        <div className="w-full flex border-b border-slate-100 bg-slate-50">
+        <div className="w-full flex border-b border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-black/30">
           <button 
             onClick={() => { setTab('login'); setError(''); setStatusMessage(''); }}
-            className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${tab === 'login' ? 'text-[#01373D] border-b-2 border-[#FE336A] bg-white' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${tab === 'login' ? 'text-slate-900 dark:text-white border-b-2 border-[#FE336A] bg-white dark:bg-[#12161D]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
           >
             Login
           </button>
           <button 
             onClick={() => { setTab('signup'); setError(''); setStatusMessage(''); }}
-            className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${tab === 'signup' ? 'text-[#01373D] border-b-2 border-[#FE336A] bg-white' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${tab === 'signup' ? 'text-slate-900 dark:text-white border-b-2 border-[#FE336A] bg-white dark:bg-[#12161D]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
           >
             Sign Up
           </button>
@@ -579,7 +583,7 @@ export default function LoginPage() {
             <GlassLogo size={62} showStatusDot={false} />
           </div>
           
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 mb-6">
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-6">
             VitalGuard <span className="text-[#FE336A]">C3</span>
           </h1>
 
@@ -765,16 +769,16 @@ export default function LoginPage() {
               )}
             </div>
 
-            <div className="w-full bg-slate-100 p-1 rounded-xl flex mb-6 border border-slate-200">
+            <div className="w-full bg-slate-100 dark:bg-black/30 p-1 rounded-xl flex mb-6 border border-slate-200 dark:border-white/10">
               <button 
                 onClick={() => { setMode('passkey'); setError(''); }}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 ${mode === 'passkey' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-800'}`}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${mode === 'passkey' ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-white/10' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}
               >
                 <Fingerprint className="w-4 h-4" /> Device Biometrics
               </button>
               <button 
                 onClick={() => { setMode('pin'); setError(''); }}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 ${mode === 'pin' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-800'}`}
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${mode === 'pin' ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-white/10' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}
               >
                 <KeyRound className="w-4 h-4" /> Custom PIN
               </button>
@@ -786,18 +790,18 @@ export default function LoginPage() {
                   <button 
                     onClick={tab === 'signup' ? handleSignupAuth : handleLoginAuth}
                     disabled={authenticating}
-                    className={`relative group w-32 h-32 rounded-2xl flex flex-col items-center justify-center transition-colors border-2 ${
+                    className={`relative group w-32 h-32 rounded-2xl flex flex-col items-center justify-center transition-colors border-2 cursor-pointer ${
                       authenticating 
-                        ? 'bg-slate-100 border-[#01373D]' 
-                        : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-[#01373D] shadow-sm'
+                        ? 'bg-slate-100 dark:bg-white/5 border-cyan-500' 
+                        : 'bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 border-slate-200 dark:border-white/10 hover:border-cyan-500 dark:hover:border-cyan-400 shadow-sm'
                     }`}
                   >
-                    <Fingerprint className={`w-14 h-14 ${authenticating ? 'text-[#01373D]' : 'text-slate-700 group-hover:text-[#01373D]'}`} />
-                    <span className="text-[11px] font-bold uppercase tracking-wider mt-2 text-slate-600">
+                    <Fingerprint className={`w-14 h-14 ${authenticating ? 'text-cyan-500 animate-pulse' : 'text-slate-700 dark:text-slate-300 group-hover:text-cyan-500 dark:group-hover:text-cyan-400'}`} />
+                    <span className="text-[11px] font-bold uppercase tracking-wider mt-2 text-slate-600 dark:text-slate-300">
                       {authenticating ? 'Waiting...' : (tab === 'signup' ? 'Setup' : 'Verify')}
                     </span>
                   </button>
-                  <p className="text-xs text-slate-500 mt-4 max-w-xs text-center leading-relaxed">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-4 max-w-xs text-center leading-relaxed">
                     Triggers native <strong>Windows Hello</strong>, <strong>Fingerprint</strong>, or <strong>Device Screen Lock PIN</strong> directly to verify identity locally.
                   </p>
                 </div>
@@ -810,15 +814,15 @@ export default function LoginPage() {
               )}
               
               {statusMessage && (
-                <div className="mt-5 w-full px-3 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2 text-xs text-emerald-700 font-semibold animate-fadeIn">
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                <div className="mt-5 w-full px-3 py-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 rounded-xl flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-300 font-semibold animate-fadeIn">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                   <span>{statusMessage}</span>
                 </div>
               )}
               
               {error && mode === 'passkey' && (
-                <div className="mt-5 w-full px-3 py-2.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-xs text-rose-700 font-semibold animate-fadeIn text-left">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+                <div className="mt-5 w-full px-3 py-2.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 rounded-xl flex items-start gap-2 text-xs text-rose-700 dark:text-rose-300 font-semibold animate-fadeIn text-left">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400 mt-0.5" />
                   <span>{error}</span>
                 </div>
               )}
@@ -826,9 +830,9 @@ export default function LoginPage() {
             
           </div>
 
-          <div className="border-t border-slate-100 bg-slate-50 w-full py-4 flex flex-col items-center justify-center">
-            <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <div className="border-t border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-black/20 w-full py-4 flex flex-col items-center justify-center">
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>FIDO2 / WebAuthn Compliant Identity Isolation</span>
             </div>
           </div>

@@ -42,7 +42,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={dmSans.variable} data-theme="dark">
-      <body className="font-sans antialiased bg-[#0A0D12] text-white selection:bg-[#FF375F] selection:text-white transition-colors duration-300">
+      <body className="font-sans antialiased bg-[var(--bg-app)] text-[var(--text-primary)] transition-colors duration-300">
         <AuthProvider>
           <ThemeProvider>
             <AmbientProvider>

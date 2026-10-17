@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Radio, Calendar, Activity, LogOut } from "lucide-react";
 import { playHaptic } from "../utils/haptics";
 import { useAuth } from "../context/AuthContext";
+import ThemeToggle from "./ThemeToggle";
 
 export default function NavHeader() {
   const pathname = usePathname();
@@ -17,7 +18,7 @@ export default function NavHeader() {
   return (
     <header className="flex flex-col gap-3 pt-1">
       {/* iOS Floating Dynamic Island Header */}
-      <div className="dynamic-island rounded-3xl p-3.5 sm:p-4 flex items-center justify-between">
+      <div className="dynamic-island rounded-3xl p-3.5 sm:p-4 flex items-center justify-between bg-white/80 dark:bg-[#12161D]/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-md dark:shadow-lg transition-colors">
         <div className="flex items-center gap-3">
           <div className="relative shrink-0 flex items-center justify-center">
             <img
@@ -32,20 +33,22 @@ export default function NavHeader() {
           </div>
 
           <div>
-            <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-none">
-              VitalGuard <span className="text-sky-600 font-extrabold">C3</span>
+            <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+              VitalGuard <span className="text-sky-600 dark:text-cyan-400 font-extrabold">C3</span>
             </h1>
           </div>
         </div>
 
-        {/* Patient and Band Details + Logout */}
+        {/* Patient and Band Details + Theme Toggle + Logout */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-slate-800 bg-white border border-slate-200 px-2.5 py-1 rounded-lg shadow-xs">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 px-2.5 py-1 rounded-lg shadow-xs">
             {guardianName || 'Guardian'}
           </span>
-          <span className="text-xs font-mono font-bold text-sky-800 bg-sky-50 border border-sky-200 px-2.5 py-1 rounded-lg shadow-xs">
+          <span className="text-xs font-mono font-bold text-sky-800 dark:text-cyan-300 bg-sky-50 dark:bg-cyan-950/40 border border-sky-200 dark:border-cyan-800/40 px-2.5 py-1 rounded-lg shadow-xs">
             Band: {bandId || 'VG-C3-0001'}
           </span>
+
+          <ThemeToggle size="sm" />
 
           {isAuthenticated && (
             <button
@@ -53,11 +56,11 @@ export default function NavHeader() {
                 playHaptic("pop");
                 logout();
               }}
-              className="spring-btn flex items-center gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2 py-1 rounded-lg shadow-xs ml-1"
+              className="spring-btn flex items-center gap-1 text-[11px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800/40 px-2 py-1 rounded-lg shadow-xs ml-1 cursor-pointer"
               title="Logout"
               aria-label="Logout"
             >
-              <LogOut className="w-3 h-3 text-rose-500" />
+              <LogOut className="w-3 h-3 text-rose-500 dark:text-rose-400" />
               <span className="hidden sm:inline">Logout</span>
             </button>
           )}
@@ -65,32 +68,32 @@ export default function NavHeader() {
       </div>
 
       {/* iOS Fluid Segmented Control */}
-      <nav aria-label="Main Navigation" className="grid grid-cols-2 gap-1.5 p-1 bg-slate-200/60 backdrop-blur-xl rounded-2xl border border-slate-200 shadow-inner">
+      <nav aria-label="Main Navigation" className="grid grid-cols-2 gap-1.5 p-1 bg-slate-200/60 dark:bg-white/5 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-white/10 shadow-inner">
         <Link
           href="/"
           onClick={() => playHaptic("pop")}
-          className={`spring-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-sm sm:text-base ${
+          className={`spring-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-sm sm:text-base transition-all ${
             isLive
-              ? "bg-white text-slate-900 font-black shadow-sm border border-slate-200/80"
-              : "text-slate-600 hover:text-slate-900"
+              ? "bg-white dark:bg-white/10 text-slate-900 dark:text-white font-black shadow-sm border border-slate-200/80 dark:border-white/10"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
           }`}
           aria-current={isLive ? "page" : undefined}
         >
-          <Radio className={`w-4 h-4 ${isLive ? "text-sky-600 animate-pulse" : "text-slate-500"}`} aria-hidden="true" />
+          <Radio className={`w-4 h-4 ${isLive ? "text-sky-600 dark:text-cyan-400 animate-pulse" : "text-slate-500 dark:text-slate-400"}`} aria-hidden="true" />
           <span>Live Monitor</span>
         </Link>
 
         <Link
           href="/records"
           onClick={() => playHaptic("pop")}
-          className={`spring-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-sm sm:text-base ${
+          className={`spring-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-sm sm:text-base transition-all ${
             isRecords
-              ? "bg-white text-slate-900 font-black shadow-sm border border-slate-200/80"
-              : "text-slate-600 hover:text-slate-900"
+              ? "bg-white dark:bg-white/10 text-slate-900 dark:text-white font-black shadow-sm border border-slate-200/80 dark:border-white/10"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
           }`}
           aria-current={isRecords ? "page" : undefined}
         >
-          <Calendar className={`w-4 h-4 ${isRecords ? "text-sky-600" : "text-slate-500"}`} aria-hidden="true" />
+          <Calendar className={`w-4 h-4 ${isRecords ? "text-sky-600 dark:text-cyan-400" : "text-slate-500 dark:text-slate-400"}`} aria-hidden="true" />
           <span>Past Records</span>
         </Link>
       </nav>

@@ -35,7 +35,7 @@ export default function PinPad({ onPinComplete, title = "Enter your PIN", error,
 
   return (
     <div className="w-full max-w-sm mx-auto flex flex-col items-center">
-      <h2 className="text-xl font-medium text-white mb-6 text-center">{title}</h2>
+      <h2 className="text-xl font-medium text-slate-900 dark:text-white mb-6 text-center">{title}</h2>
       
       {/* PIN Dots */}
       <div className="flex gap-4 mb-8">
@@ -43,14 +43,14 @@ export default function PinPad({ onPinComplete, title = "Enter your PIN", error,
           <div 
             key={i} 
             className={`w-4 h-4 rounded-full transition-all duration-300 ${
-              i < pin.length ? 'bg-[#FE336A] scale-110 shadow-[0_0_10px_#FE336A]' : 'bg-slate-600'
+              i < pin.length ? 'bg-[#FE336A] scale-110 shadow-[0_0_10px_#FE336A]' : 'bg-slate-300 dark:bg-slate-600'
             }`}
           />
         ))}
       </div>
 
       {error && (
-        <div className="text-red-400 text-sm mb-4 animate-pulse">
+        <div className="text-red-500 dark:text-red-400 text-sm mb-4 animate-pulse">
           {error}
         </div>
       )}
@@ -64,9 +64,9 @@ export default function PinPad({ onPinComplete, title = "Enter your PIN", error,
             disabled={disabled}
             aria-label={key === 'backspace' ? 'Backspace' : key === 'submit' ? 'Submit' : `Digit ${key}`}
             className={`h-20 rounded-2xl text-2xl font-medium flex items-center justify-center transition-all duration-150 active:scale-95 select-none
-              ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-700/50 active:bg-slate-600'}
-              ${key === 'backspace' ? 'text-slate-400' : key === 'submit' ? 'text-cyan-400 font-bold' : 'text-white'}
-              bg-slate-800/50 backdrop-blur-md border border-slate-700/50 shadow-lg`}
+              ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-200 dark:hover:bg-slate-700/50 active:bg-slate-300 dark:active:bg-slate-600 cursor-pointer'}
+              ${key === 'backspace' ? 'text-slate-500 dark:text-slate-400' : key === 'submit' ? 'text-cyan-600 dark:text-cyan-400 font-bold' : 'text-slate-900 dark:text-white'}
+              bg-white/80 dark:bg-slate-800/50 backdrop-blur-md border border-slate-200 dark:border-slate-700/50 shadow-md dark:shadow-lg`}
           >
             {key === 'backspace' ? <Delete size={24} /> : key === 'submit' ? <Check size={24} /> : key}
           </button>

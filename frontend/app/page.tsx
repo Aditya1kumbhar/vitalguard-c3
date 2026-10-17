@@ -262,9 +262,9 @@ export default function VitalGuardCompanionDashboard() {
                 </span>
               </div>
               <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-400">
-                <span className="font-medium text-slate-300">{displayName}</span>
-                <span className="text-white/20">•</span>
-                <span className="font-mono text-[11px] text-cyan-400/90">
+                <span className="font-medium text-slate-700 dark:text-slate-300">{displayName}</span>
+                <span className="text-slate-400 dark:text-white/20">•</span>
+                <span className="font-mono text-[11px] text-cyan-600 dark:text-cyan-400/90">
                   {transportMode === 'mock' ? 'MOCK LOOP (90s)' : 'ESP32-C3 BLE'}
                 </span>
               </div>
@@ -698,7 +698,7 @@ export default function VitalGuardCompanionDashboard() {
                             dismissFall();
                             setManualFallActive(false);
                           }}
-                          className="w-full py-2.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/15 text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
+                          className="w-full py-2.5 rounded-xl text-xs font-bold bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 text-slate-800 dark:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
                         >
                           <GlassIcon name="refresh" size={16} variant="slate" interactive={false} glow={false} />
                           <span>Reset Sensor Alarm Baseline</span>
@@ -717,7 +717,7 @@ export default function VitalGuardCompanionDashboard() {
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-white/4 border border-slate-200 dark:border-white/6">
                       <GlassIcon name="users" size="md" variant="cyan" />
                       <div>
-                        <span className="text-xs font-bold text-white block">{displayName} (Guardian)</span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white block">{displayName} (Guardian)</span>
                         <span className="text-[11px] text-slate-400">Emergency Contact Priority 1</span>
                       </div>
                     </div>
@@ -791,7 +791,7 @@ export default function VitalGuardCompanionDashboard() {
                             className={`p-3 rounded-xl flex items-center justify-between text-xs transition-colors border ${
                               hasFall
                                 ? 'bg-rose-500/10 border-rose-500/30'
-                                : 'bg-white/3 border-white/6 hover:bg-white/6'
+                                : 'bg-slate-50 dark:bg-white/3 border-slate-200 dark:border-white/6 hover:bg-slate-100 dark:hover:bg-white/6'
                             }`}
                           >
                             <div className="flex items-center gap-3">
@@ -802,8 +802,8 @@ export default function VitalGuardCompanionDashboard() {
                               )}
                               <div>
                                 <span className="font-bold text-slate-900 dark:text-white block">{r.dateKey}</span>
-                                <span className="text-slate-400 text-[11px]">
-                                  Avg HR: <strong className="text-white">{r.avg_hr} BPM</strong> | SpO2: <strong className="text-white">{r.avg_spo2}%</strong>
+                                <span className="text-slate-500 dark:text-slate-400 text-[11px]">
+                                  Avg HR: <strong className="text-slate-900 dark:text-white">{r.avg_hr} BPM</strong> | SpO2: <strong className="text-slate-900 dark:text-white">{r.avg_spo2}%</strong>
                                 </span>
                               </div>
                             </div>
@@ -1172,7 +1172,7 @@ export default function VitalGuardCompanionDashboard() {
           </div>
           {/* Top Bar: Title & Done Button */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: '#FFFFFF' }}>VitalGuard Profile</span>
+            <span style={{ fontSize: 18, fontWeight: 700, color: isDark ? '#FFFFFF' : '#0F172A' }}>VitalGuard Profile</span>
             <button
               type="button"
               onClick={() => setIsAccountOpen(false)}
@@ -1209,8 +1209,8 @@ export default function VitalGuardCompanionDashboard() {
                 <span style={{ fontSize: 18, fontWeight: 800, color: '#FFFFFF' }}>{initials}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: 17, fontWeight: 700, color: '#FFFFFF' }}>{displayName}</span>
-                <span style={{ fontSize: 13, color: colors.textSecondary }}>
+                <span style={{ fontSize: 17, fontWeight: 700, color: isDark ? '#FFFFFF' : '#0F172A' }}>{displayName}</span>
+                <span style={{ fontSize: 13, color: isDark ? colors.textSecondary : '#64748B' }}>
                   Primary Guardian • Band: {displayBandId}
                 </span>
               </div>
@@ -1244,8 +1244,8 @@ export default function VitalGuardCompanionDashboard() {
                     padding: '12px 14px',
                     borderRadius: 14,
                     border: 'none',
-                    backgroundColor: transportMode === 'mock' ? 'rgba(14, 165, 233, 0.15)' : 'transparent',
-                    color: '#FFFFFF',
+                    backgroundColor: transportMode === 'mock' ? (isDark ? 'rgba(14, 165, 233, 0.15)' : 'rgba(14, 165, 233, 0.12)') : 'transparent',
+                    color: isDark ? '#FFFFFF' : '#0F172A',
                     cursor: 'pointer',
                     width: '100%',
                     textAlign: 'left',
@@ -1255,12 +1255,12 @@ export default function VitalGuardCompanionDashboard() {
                     <GlassIcon name="radio" size="sm" variant={transportMode === "mock" ? "cyan" : "slate"} />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: 14, fontWeight: 600 }}>Mock 90s Loop</span>
-                      <span style={{ fontSize: 12, color: colors.textSecondary }}>
+                      <span style={{ fontSize: 12, color: isDark ? colors.textSecondary : '#64748B' }}>
                         Deterministic scenarios: calm, tachycardia, fall at t=40s
                       </span>
                     </div>
                   </div>
-                  {transportMode === 'mock' && <Check size={18} color="#38BDF8" strokeWidth={2.5} />}
+                  {transportMode === 'mock' && <Check size={18} color={isDark ? "#38BDF8" : "#0284C7"} strokeWidth={2.5} />}
                 </button>
 
                 <button
@@ -1273,8 +1273,8 @@ export default function VitalGuardCompanionDashboard() {
                     padding: '12px 14px',
                     borderRadius: 14,
                     border: 'none',
-                    backgroundColor: transportMode === 'ble' ? 'rgba(14, 165, 233, 0.15)' : 'transparent',
-                    color: '#FFFFFF',
+                    backgroundColor: transportMode === 'ble' ? (isDark ? 'rgba(14, 165, 233, 0.15)' : 'rgba(14, 165, 233, 0.12)') : 'transparent',
+                    color: isDark ? '#FFFFFF' : '#0F172A',
                     cursor: 'pointer',
                     width: '100%',
                     textAlign: 'left',
@@ -1284,12 +1284,12 @@ export default function VitalGuardCompanionDashboard() {
                     <GlassIcon name="bluetooth" size="sm" variant={transportMode === "ble" ? "emerald" : "slate"} />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: 14, fontWeight: 600 }}>Web Bluetooth (ESP32-C3)</span>
-                      <span style={{ fontSize: 12, color: colors.textSecondary }}>
+                      <span style={{ fontSize: 12, color: isDark ? colors.textSecondary : '#64748B' }}>
                         Direct GATT pairing to Seeed Studio XIAO hardware
                       </span>
                     </div>
                   </div>
-                  {transportMode === 'ble' && <Check size={18} color="#38BDF8" strokeWidth={2.5} />}
+                  {transportMode === 'ble' && <Check size={18} color={isDark ? "#38BDF8" : "#0284C7"} strokeWidth={2.5} />}
                 </button>
               </div>
             </Card>
@@ -1334,8 +1334,8 @@ export default function VitalGuardCompanionDashboard() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '14px 4px',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-                    color: '#FFFFFF',
+                    borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid rgba(0, 0, 0, 0.06)',
+                    color: isDark ? '#FFFFFF' : '#0F172A',
                     textDecoration: 'none',
                   }}
                 >
@@ -1343,7 +1343,7 @@ export default function VitalGuardCompanionDashboard() {
                     <GlassIcon name="sliders" size="md" variant="cyan" />
                     <span style={{ fontSize: 14, fontWeight: 600 }}>Feel Lab Calibration</span>
                   </div>
-                  <ChevronRight size={18} color={colors.textSecondary} />
+                  <ChevronRight size={18} color={isDark ? colors.textSecondary : '#64748B'} />
                 </Link>
 
                 <button
@@ -1359,7 +1359,7 @@ export default function VitalGuardCompanionDashboard() {
                     padding: '14px 4px',
                     background: 'transparent',
                     border: 'none',
-                    color: '#FFFFFF',
+                    color: isDark ? '#FFFFFF' : '#0F172A',
                     cursor: 'pointer',
                     width: '100%',
                     textAlign: 'left',
@@ -1369,12 +1369,12 @@ export default function VitalGuardCompanionDashboard() {
                     <GlassIcon name="shield-alert" size="md" variant="rose" />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: 14, fontWeight: 600 }}>Test Fall Alarm (30s Countdown)</span>
-                      <span style={{ fontSize: 12, color: colors.textSecondary }}>
+                      <span style={{ fontSize: 12, color: isDark ? colors.textSecondary : '#64748B' }}>
                         Trigger emergency verification &amp; slide rail
                       </span>
                     </div>
                   </div>
-                  <ChevronRight size={18} color={colors.textSecondary} />
+                  <ChevronRight size={18} color={isDark ? colors.textSecondary : '#64748B'} />
                 </button>
               </div>
             </Card>
@@ -1398,20 +1398,20 @@ export default function VitalGuardCompanionDashboard() {
             <Card style={{ padding: '14px 16px', backgroundColor: isDark ? '#161B22' : '#FFFFFF', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(203,213,225,0.8)' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span style={{ color: colors.textSecondary }}>Microcontroller</span>
-                  <span style={{ fontWeight: 600 }}>Seeed Studio XIAO ESP32-C3</span>
+                  <span style={{ color: isDark ? colors.textSecondary : '#64748B' }}>Microcontroller</span>
+                  <span style={{ fontWeight: 600, color: isDark ? '#FFFFFF' : '#0F172A' }}>Seeed Studio XIAO ESP32-C3</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span style={{ color: colors.textSecondary }}>Biometric Sensor</span>
-                  <span style={{ fontWeight: 600 }}>MAX30102 (HR + SpO2)</span>
+                  <span style={{ color: isDark ? colors.textSecondary : '#64748B' }}>Biometric Sensor</span>
+                  <span style={{ fontWeight: 600, color: isDark ? '#FFFFFF' : '#0F172A' }}>MAX30102 (HR + SpO2)</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span style={{ color: colors.textSecondary }}>Motion Sensor</span>
-                  <span style={{ fontWeight: 600 }}>MPU6050 (3-Axis SVM @ 50Hz)</span>
+                  <span style={{ color: isDark ? colors.textSecondary : '#64748B' }}>Motion Sensor</span>
+                  <span style={{ fontWeight: 600, color: isDark ? '#FFFFFF' : '#0F172A' }}>MPU6050 (3-Axis SVM @ 50Hz)</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span style={{ color: colors.textSecondary }}>FIFO Retention</span>
-                  <span style={{ fontWeight: 600, color: '#38BDF8' }}>30 Days On-Device Buffer</span>
+                  <span style={{ color: isDark ? colors.textSecondary : '#64748B' }}>FIFO Retention</span>
+                  <span style={{ fontWeight: 600, color: isDark ? '#38BDF8' : '#0284C7' }}>30 Days On-Device Buffer</span>
                 </div>
               </div>
             </Card>
@@ -1442,8 +1442,8 @@ export default function VitalGuardCompanionDashboard() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '14px 4px',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-                    color: '#FFFFFF',
+                    borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid rgba(0, 0, 0, 0.06)',
+                    color: isDark ? '#FFFFFF' : '#0F172A',
                     textDecoration: 'none',
                   }}
                 >
@@ -1451,12 +1451,12 @@ export default function VitalGuardCompanionDashboard() {
                     <GlassIcon name="shield-check" size="sm" variant="cyan" />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: 14, fontWeight: 600 }}>Privacy Policy</span>
-                      <span style={{ fontSize: 12, color: colors.textSecondary }}>
+                      <span style={{ fontSize: 12, color: isDark ? colors.textSecondary : '#64748B' }}>
                         On-device IndexedDB, zero third-party cloud tracking
                       </span>
                     </div>
                   </div>
-                  <ChevronRight size={18} color={colors.textSecondary} />
+                  <ChevronRight size={18} color={isDark ? colors.textSecondary : '#64748B'} />
                 </Link>
 
                 <Link
@@ -1467,7 +1467,7 @@ export default function VitalGuardCompanionDashboard() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '14px 4px',
-                    color: '#FFFFFF',
+                    color: isDark ? '#FFFFFF' : '#0F172A',
                     textDecoration: 'none',
                   }}
                 >
@@ -1475,12 +1475,12 @@ export default function VitalGuardCompanionDashboard() {
                     <GlassIcon name="medical" size="sm" variant="emerald" />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: 14, fontWeight: 600 }}>Terms &amp; Conditions</span>
-                      <span style={{ fontSize: 12, color: colors.textSecondary }}>
+                      <span style={{ fontSize: 12, color: isDark ? colors.textSecondary : '#64748B' }}>
                         Non-diagnostic clinical companion disclaimer
                       </span>
                     </div>
                   </div>
-                  <ChevronRight size={18} color={colors.textSecondary} />
+                  <ChevronRight size={18} color={isDark ? colors.textSecondary : '#64748B'} />
                 </Link>
               </div>
             </Card>
@@ -1504,16 +1504,16 @@ export default function VitalGuardCompanionDashboard() {
             <Card style={{ padding: '14px 16px', backgroundColor: isDark ? '#161B22' : '#FFFFFF', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(203,213,225,0.8)' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span style={{ color: colors.textSecondary }}>Custom Domain Status</span>
-                  <span style={{ fontWeight: 600, color: '#30D158' }}>Connected &amp; Verified</span>
+                  <span style={{ color: isDark ? colors.textSecondary : '#64748B' }}>Custom Domain Status</span>
+                  <span style={{ fontWeight: 600, color: isDark ? '#30D158' : '#16A34A' }}>Connected &amp; Verified</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span style={{ color: colors.textSecondary }}>Web Bluetooth Security</span>
-                  <span style={{ fontWeight: 600 }}>HTTPS / Secure Context Enforced</span>
+                  <span style={{ color: isDark ? colors.textSecondary : '#64748B' }}>Web Bluetooth Security</span>
+                  <span style={{ fontWeight: 600, color: isDark ? '#FFFFFF' : '#0F172A' }}>HTTPS / Secure Context Enforced</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span style={{ color: colors.textSecondary }}>Local Favicon Manifest</span>
-                  <span style={{ fontWeight: 600, color: '#38BDF8' }}>Active (SVG + ICO)</span>
+                  <span style={{ color: isDark ? colors.textSecondary : '#64748B' }}>Local Favicon Manifest</span>
+                  <span style={{ fontWeight: 600, color: isDark ? '#38BDF8' : '#0284C7' }}>Active (SVG + ICO)</span>
                 </div>
               </div>
             </Card>

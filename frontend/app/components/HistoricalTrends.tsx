@@ -152,7 +152,9 @@ export default function HistoricalTrends() {
               className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 daysRange === days
                   ? "bg-cyan-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
+                  : isDark
+                  ? "text-slate-400 hover:text-white hover:bg-white/5"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200"
               }`}
             >
               {days}D
@@ -168,8 +170,8 @@ export default function HistoricalTrends() {
           onClick={() => setActiveTab("hr")}
           className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
             activeTab === "hr"
-              ? "bg-rose-500/15 text-rose-300 border-rose-500/40 shadow-sm"
-              : "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white"
+              ? (isDark ? "bg-rose-500/15 text-rose-300 border-rose-500/40 shadow-sm" : "bg-rose-50 text-rose-700 border-rose-300 shadow-xs")
+              : (isDark ? "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white" : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900")
           }`}
         >
           <GlassIcon name="heart" size={20} interactive={false} glow={false} />
@@ -181,8 +183,8 @@ export default function HistoricalTrends() {
           onClick={() => setActiveTab("spo2")}
           className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
             activeTab === "spo2"
-              ? "bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm"
-              : "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white"
+              ? (isDark ? "bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm" : "bg-sky-50 text-sky-700 border-sky-300 shadow-xs")
+              : (isDark ? "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white" : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900")
           }`}
         >
           <GlassIcon name="oxygen" size={20} interactive={false} glow={false} />
@@ -194,8 +196,8 @@ export default function HistoricalTrends() {
           onClick={() => setActiveTab("temp")}
           className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
             activeTab === "temp"
-              ? "bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-sm"
-              : "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white"
+              ? (isDark ? "bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-sm" : "bg-amber-50 text-amber-800 border-amber-300 shadow-xs")
+              : (isDark ? "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white" : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900")
           }`}
         >
           <GlassIcon name="temp" size={20} interactive={false} glow={false} />
@@ -207,8 +209,8 @@ export default function HistoricalTrends() {
           onClick={() => setActiveTab("anomalies")}
           className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
             activeTab === "anomalies"
-              ? "bg-rose-500/15 text-rose-300 border-rose-500/40 shadow-sm"
-              : "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white"
+              ? (isDark ? "bg-rose-500/15 text-rose-300 border-rose-500/40 shadow-sm" : "bg-rose-50 text-rose-700 border-rose-300 shadow-xs")
+              : (isDark ? "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white" : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900")
           }`}
         >
           <GlassIcon name="shield-alert" size={20} interactive={false} glow={false} />
@@ -217,7 +219,9 @@ export default function HistoricalTrends() {
       </div>
 
       {/* Chart Canvas */}
-      <div className="w-full h-64 sm:h-72 rounded-xl border border-white/8 bg-black/40 p-2 sm:p-3 relative overflow-hidden">
+      <div className={`w-full h-64 sm:h-72 rounded-xl border p-2 sm:p-3 relative overflow-hidden ${
+        isDark ? "border-white/8 bg-black/40" : "border-slate-200 bg-slate-50/80"
+      }`}>
         {loading ? (
           <div className="w-full h-full flex items-center justify-center gap-2 text-slate-400">
             <RefreshCw className="w-4 h-4 animate-spin text-cyan-400" />
@@ -239,22 +243,22 @@ export default function HistoricalTrends() {
                 </defs>
                 <XAxis
                   dataKey="displayDate"
-                  stroke="rgba(255, 255, 255, 0.15)"
-                  tick={{ fontSize: 10, fill: "#94a3b8" }}
+                  stroke={isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(100, 116, 139, 0.25)"}
+                  tick={{ fontSize: 10, fill: isDark ? "#94a3b8" : "#64748b" }}
                 />
                 <YAxis
                   domain={[40, 120]}
-                  stroke="rgba(255, 255, 255, 0.15)"
-                  tick={{ fontSize: 10, fill: "#94a3b8" }}
+                  stroke={isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(100, 116, 139, 0.25)"}
+                  tick={{ fontSize: 10, fill: isDark ? "#94a3b8" : "#64748b" }}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#12161D",
-                    borderColor: "rgba(255, 255, 255, 0.15)",
+                    backgroundColor: isDark ? "#12161D" : "#FFFFFF",
+                    borderColor: isDark ? "rgba(255, 255, 255, 0.15)" : "#E2E8F0",
                     borderRadius: "10px",
                     fontSize: "11px",
-                    color: "#FFFFFF",
-                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6)",
+                    color: isDark ? "#FFFFFF" : "#0F172A",
+                    boxShadow: isDark ? "0 8px 24px rgba(0, 0, 0, 0.6)" : "0 8px 24px rgba(15, 23, 42, 0.08)",
                   }}
                   formatter={(val: number) => [`${val} BPM`, "Heart Rate"]}
                 />
@@ -286,22 +290,22 @@ export default function HistoricalTrends() {
                 </defs>
                 <XAxis
                   dataKey="displayDate"
-                  stroke="rgba(255, 255, 255, 0.15)"
-                  tick={{ fontSize: 10, fill: "#94a3b8" }}
+                  stroke={isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(100, 116, 139, 0.25)"}
+                  tick={{ fontSize: 10, fill: isDark ? "#94a3b8" : "#64748b" }}
                 />
                 <YAxis
                   domain={[88, 100]}
-                  stroke="rgba(255, 255, 255, 0.15)"
-                  tick={{ fontSize: 10, fill: "#94a3b8" }}
+                  stroke={isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(100, 116, 139, 0.25)"}
+                  tick={{ fontSize: 10, fill: isDark ? "#94a3b8" : "#64748b" }}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#12161D",
-                    borderColor: "rgba(255, 255, 255, 0.15)",
+                    backgroundColor: isDark ? "#12161D" : "#FFFFFF",
+                    borderColor: isDark ? "rgba(255, 255, 255, 0.15)" : "#E2E8F0",
                     borderRadius: "10px",
                     fontSize: "11px",
-                    color: "#FFFFFF",
-                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6)",
+                    color: isDark ? "#FFFFFF" : "#0F172A",
+                    boxShadow: isDark ? "0 8px 24px rgba(0, 0, 0, 0.6)" : "0 8px 24px rgba(15, 23, 42, 0.08)",
                   }}
                   formatter={(val: number) => [`${val}%`, "Oxygen Saturation"]}
                 />
@@ -331,22 +335,22 @@ export default function HistoricalTrends() {
                 </defs>
                 <XAxis
                   dataKey="displayDate"
-                  stroke="rgba(255, 255, 255, 0.15)"
-                  tick={{ fontSize: 10, fill: "#94a3b8" }}
+                  stroke={isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(100, 116, 139, 0.25)"}
+                  tick={{ fontSize: 10, fill: isDark ? "#94a3b8" : "#64748b" }}
                 />
                 <YAxis
                   domain={[35.5, 38.5]}
-                  stroke="rgba(255, 255, 255, 0.15)"
-                  tick={{ fontSize: 10, fill: "#94a3b8" }}
+                  stroke={isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(100, 116, 139, 0.25)"}
+                  tick={{ fontSize: 10, fill: isDark ? "#94a3b8" : "#64748b" }}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#12161D",
-                    borderColor: "rgba(255, 255, 255, 0.15)",
+                    backgroundColor: isDark ? "#12161D" : "#FFFFFF",
+                    borderColor: isDark ? "rgba(255, 255, 255, 0.15)" : "#E2E8F0",
                     borderRadius: "10px",
                     fontSize: "11px",
-                    color: "#FFFFFF",
-                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6)",
+                    color: isDark ? "#FFFFFF" : "#0F172A",
+                    boxShadow: isDark ? "0 8px 24px rgba(0, 0, 0, 0.6)" : "0 8px 24px rgba(15, 23, 42, 0.08)",
                   }}
                   formatter={(val: number) => [`${val} °C`, "Body Temp"]}
                 />
@@ -370,22 +374,22 @@ export default function HistoricalTrends() {
               <BarChart data={formattedData} margin={{ top: 12, right: 12, left: -20, bottom: 0 }}>
                 <XAxis
                   dataKey="displayDate"
-                  stroke="rgba(255, 255, 255, 0.15)"
-                  tick={{ fontSize: 10, fill: "#94a3b8" }}
+                  stroke={isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(100, 116, 139, 0.25)"}
+                  tick={{ fontSize: 10, fill: isDark ? "#94a3b8" : "#64748b" }}
                 />
                 <YAxis
-                  stroke="rgba(255, 255, 255, 0.15)"
-                  tick={{ fontSize: 10, fill: "#94a3b8" }}
+                  stroke={isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(100, 116, 139, 0.25)"}
+                  tick={{ fontSize: 10, fill: isDark ? "#94a3b8" : "#64748b" }}
                   allowDecimals={false}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#12161D",
-                    borderColor: "rgba(255, 255, 255, 0.15)",
+                    backgroundColor: isDark ? "#12161D" : "#FFFFFF",
+                    borderColor: isDark ? "rgba(255, 255, 255, 0.15)" : "#E2E8F0",
                     borderRadius: "10px",
                     fontSize: "11px",
-                    color: "#FFFFFF",
-                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6)",
+                    color: isDark ? "#FFFFFF" : "#0F172A",
+                    boxShadow: isDark ? "0 8px 24px rgba(0, 0, 0, 0.6)" : "0 8px 24px rgba(15, 23, 42, 0.08)",
                   }}
                   formatter={(val: number) => [`${val} Incident(s)`, "Fall Alerts"]}
                 />

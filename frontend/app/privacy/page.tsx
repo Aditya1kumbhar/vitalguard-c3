@@ -59,14 +59,14 @@ export default function PrivacyPolicyPage() {
         <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="database" size="sm" variant="cyan" />
-            <h2 className="text-base sm:text-lg font-bold text-white">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               1. Local On-Device Storage &amp; 30-Day FIFO Engine
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             All continuous physiological frames streamed from the Seeed Studio XIAO ESP32-C3 hardware band are stored exclusively inside your browser local IndexedDB storage layer.
           </p>
-          <ul className="space-y-2 text-xs sm:text-sm text-slate-300 list-disc pl-5">
+          <ul className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-disc pl-5">
             <li>
               <strong>Rolling First-In, First-Out (FIFO) Algorithm:</strong> Daily health summaries are maintained for exactly 30 calendar days. Records that exceed 30 days are automatically purged from local storage on each telemetry cycle.
             </li>
@@ -83,14 +83,14 @@ export default function PrivacyPolicyPage() {
         <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="radio" size="sm" variant="emerald" />
-            <h2 className="text-base sm:text-lg font-bold text-white">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               2. Web Bluetooth GATT Communications
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             Telemetry is exchanged directly between the wearable microcontroller and your personal web browser using the standard Web Bluetooth Low Energy (BLE) GATT API:
           </p>
-          <ul className="space-y-2 text-xs sm:text-sm text-slate-300 list-disc pl-5">
+          <ul className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-disc pl-5">
             <li>
               <strong>Direct Local Link:</strong> No external cloud proxy or central telemetry broker mediates the Bluetooth link between the wristband and your device.
             </li>
@@ -107,14 +107,14 @@ export default function PrivacyPolicyPage() {
         <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="shield-alert" size="sm" variant="rose" />
-            <h2 className="text-base sm:text-lg font-bold text-white">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               3. Emergency Fall Detection Escalation
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             The MPU6050 sensor evaluates rapid Signal Vector Magnitude (SVM) transitions for fall impacts exceeding 3.0G. When a verified impact event occurs:
           </p>
-          <ul className="space-y-2 text-xs sm:text-sm text-slate-300 list-disc pl-5">
+          <ul className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 list-disc pl-5">
             <li>
               <strong>30-Second Local Verification Window:</strong> A 30-second localized visual and audio countdown appears on screen. The wearer or guardian can dismiss the event immediately if unhurt.
             </li>
@@ -131,11 +131,11 @@ export default function PrivacyPolicyPage() {
         <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="shield-check" size="sm" variant="cyan" />
-            <h2 className="text-base sm:text-lg font-bold text-white">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               4. Authentication &amp; Hardware Identity
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             Guardian access uses native WebAuthn (Passkeys, Windows Hello, Touch ID, device PIN) with local cryptographic salt verification. Session data remains bound to the authorized hardware and browser instance.
           </p>
         </section>
@@ -144,21 +144,21 @@ export default function PrivacyPolicyPage() {
         <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="medical" size="sm" variant="slate" />
-            <h2 className="text-base sm:text-lg font-bold text-white">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               5. Non-Diagnostic Notice &amp; Inquiries
             </h2>
           </div>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             VitalGuard C3 is an investigational health companion and fall safety monitor. It is not an FDA-cleared diagnostic device. For privacy questions, firmware inquiries, or data export assistance, consult your local administrative portal or contact your systems engineer.
           </p>
         </section>
 
         {/* Bottom Navigation */}
-        <div className="flex items-center justify-between pt-4 border-t border-white/8 text-xs text-slate-400">
-          <Link href="/" className="hover:text-cyan-400 transition-colors">
+        <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-white/8 text-xs text-slate-600 dark:text-slate-400">
+          <Link href="/" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
             Return to Dashboard
           </Link>
-          <Link href="/terms" className="hover:text-cyan-400 transition-colors">
+          <Link href="/terms" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
             View Terms &amp; Conditions
           </Link>
         </div>
