@@ -472,9 +472,6 @@ export default function VitalGuardCompanionDashboard() {
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
                   Live Vitals Summary
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                  Continuous wearable telemetry streamed over Web Bluetooth GATT
-                </p>
               </div>
 
               <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
@@ -529,11 +526,6 @@ export default function VitalGuardCompanionDashboard() {
                           <span className="text-lg font-bold font-mono text-rose-400">118 BPM</span>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-white/6 flex items-center justify-between text-xs text-slate-400">
-                      <span>Sampling: 100 Hz MAX30102</span>
-                      <span className="text-emerald-400 font-medium">99.8% Signal Quality</span>
                     </div>
                   </div>
                 </Card>
@@ -677,45 +669,6 @@ export default function VitalGuardCompanionDashboard() {
                   </div>
                 </Card>
 
-                {/* Notifications & Rhythm Flag Card */}
-                {!dismissedCards['notifications'] && (
-                  <Card style={{ backgroundColor: '#12161D', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Bell size={16} color="#0EA5E9" />
-                          <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                            Clinical Rhythm Notification
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setDismissedCards((prev) => ({ ...prev, notifications: true }))}
-                          className="text-slate-400 hover:text-white p-1 rounded"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-
-                      <div className="flex items-start gap-3 p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
-                        <Activity className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
-                        <div className="flex flex-col gap-1">
-                          <span className="text-sm font-semibold text-white">
-                            {status === 'irregular'
-                              ? 'Irregular Rhythm Pattern Noticed'
-                              : 'Nominal Cardiac Rhythm Active'}
-                          </span>
-                          <span className="text-xs text-slate-300 leading-relaxed">
-                            {status === 'irregular'
-                              ? 'The wristband noticed an elevated pulse variation during the last evaluation epoch. No diagnostic claim is made.'
-                              : 'Continuous pulse checks show steady beat-to-beat intervals within normal baseline.'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                )}
-
                 {/* Autonomic Nervous System & HRV Balance */}
                 <Card style={{ backgroundColor: '#12161D', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -738,40 +691,6 @@ export default function VitalGuardCompanionDashboard() {
                       <Sliders size={14} />
                       <span>Calibrate Feel Lab</span>
                     </Link>
-                  </div>
-                </Card>
-
-                {/* Daily Checklist */}
-                <Card style={{ backgroundColor: '#12161D', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
-                  <div className="flex flex-col gap-3">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                      Companion Safety Checklist
-                    </span>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/4 border border-white/6 text-xs">
-                        <div className="flex items-center gap-2.5">
-                          <CheckCircle2 size={16} className="text-emerald-400" />
-                          <span className="text-slate-300 font-medium">Wearable Wristband Contact Verified</span>
-                        </div>
-                        <span className="text-emerald-400 font-mono font-bold">ACTIVE</span>
-                      </div>
-
-                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/4 border border-white/6 text-xs">
-                        <div className="flex items-center gap-2.5">
-                          <CheckCircle2 size={16} className="text-emerald-400" />
-                          <span className="text-slate-300 font-medium">Automated Fall Dispatch Escalation</span>
-                        </div>
-                        <span className="text-emerald-400 font-mono font-bold">ARMED (30s)</span>
-                      </div>
-
-                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/4 border border-white/6 text-xs">
-                        <div className="flex items-center gap-2.5">
-                          <CheckCircle2 size={16} className="text-cyan-400" />
-                          <span className="text-slate-300 font-medium">30-Day FIFO Local Rolling Buffer</span>
-                        </div>
-                        <span className="text-cyan-400 font-mono font-bold">30/30 DAYS</span>
-                      </div>
-                    </div>
                   </div>
                 </Card>
               </div>
@@ -985,9 +904,6 @@ export default function VitalGuardCompanionDashboard() {
                         <span className="text-[11px] text-slate-400">Emergency Contact Priority 1</span>
                       </div>
                     </div>
-                    <p className="text-xs text-slate-400 leading-relaxed m-0">
-                      If impact exceeds 3.0G and the slide rail is not verified within 30 seconds, an automated SMS alert and GPS coordinates will be dispatched.
-                    </p>
                   </div>
                 </Card>
               </div>
@@ -1006,10 +922,6 @@ export default function VitalGuardCompanionDashboard() {
                       </div>
                       <span className="text-[11px] font-mono text-slate-400">IndexedDB Engine</span>
                     </div>
-
-                    <p className="text-xs text-slate-300 leading-relaxed m-0">
-                      VitalGuard C3 operates an on-device First-In, First-Out (FIFO) retention window. As daily telemetry frames arrive, records older than 30 days are automatically pruned from local IndexedDB storage.
-                    </p>
 
                     {/* KPI Scoreboard */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
@@ -1051,7 +963,6 @@ export default function VitalGuardCompanionDashboard() {
                       <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
                         Past 30 Days Audit Log ({thirtyDayRecords.length} Days Retained)
                       </span>
-                      <span className="text-[11px] font-mono text-slate-500">Chronological (Newest First)</span>
                     </div>
 
                     <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
@@ -1103,31 +1014,6 @@ export default function VitalGuardCompanionDashboard() {
             </div>
           </motion.div>
         )}
-
-        {/* ═════════════════════════════════════════════════════════════
-            CLINICAL COMPANION FOOTER & REGULATORY STANDARDS
-           ═════════════════════════════════════════════════════════════ */}
-        <footer className="mt-12 mb-28 pt-6 border-t border-white/8 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex flex-col sm:flex-row items-center gap-2.5 text-center sm:text-left">
-            <span className="font-bold text-slate-300">VitalGuard C3</span>
-            <span className="hidden sm:inline text-slate-700">|</span>
-            <span className="text-slate-400">Clinical Companion Telemetry</span>
-            <span className="hidden sm:inline text-slate-700">|</span>
-            <span className="font-mono text-cyan-400/90 font-medium">30-Day FIFO Local Storage</span>
-          </div>
-
-          <div className="flex items-center gap-4 text-xs font-medium">
-            <Link href="/privacy" className="text-slate-400 hover:text-cyan-400 transition-colors">
-              Privacy Policy
-            </Link>
-            <span className="text-slate-700">•</span>
-            <Link href="/terms" className="text-slate-400 hover:text-cyan-400 transition-colors">
-              Terms &amp; Conditions
-            </Link>
-            <span className="text-slate-700">•</span>
-            <span className="text-emerald-400 font-mono">Custom Domain Active</span>
-          </div>
-        </footer>
       </div>
 
       {/* ═════════════════════════════════════════════════════════════
