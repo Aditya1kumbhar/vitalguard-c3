@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: ["class", '[data-theme="dark"]'],
+  darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,6 +9,13 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      opacity: {
+        '3': '0.03',
+        '4': '0.04',
+        '5': '0.05',
+        '6': '0.06',
+        '8': '0.08',
+      },
       colors: {
         app: "var(--bg-app)",
         surface: "var(--bg-surface)",

@@ -714,10 +714,12 @@ export default function VitalGuardCompanionDashboard() {
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                       Automated Fall Escalation
                     </span>
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-white/4 border border-slate-200 dark:border-white/6">
+                    <div className={`flex items-center gap-3 p-3 rounded-xl border ${
+                      isDark ? 'bg-white/[0.04] border-white/[0.06]' : 'bg-slate-50 border-slate-200'
+                    }`}>
                       <GlassIcon name="users" size="md" variant="cyan" />
                       <div>
-                        <span className="text-xs font-bold text-slate-900 dark:text-white block">{displayName} (Guardian)</span>
+                        <span className={`text-xs font-bold block ${isDark ? 'text-white' : 'text-slate-900'}`}>{displayName} (Guardian)</span>
                         <span className="text-[11px] text-slate-400">Emergency Contact Priority 1</span>
                       </div>
                     </div>
@@ -791,7 +793,9 @@ export default function VitalGuardCompanionDashboard() {
                             className={`p-3 rounded-xl flex items-center justify-between text-xs transition-colors border ${
                               hasFall
                                 ? 'bg-rose-500/10 border-rose-500/30'
-                                : 'bg-slate-50 dark:bg-white/3 border-slate-200 dark:border-white/6 hover:bg-slate-100 dark:hover:bg-white/6'
+                                : (isDark
+                                    ? 'bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.06]'
+                                    : 'bg-slate-50 border-slate-200 hover:bg-slate-100')
                             }`}
                           >
                             <div className="flex items-center gap-3">
@@ -801,9 +805,9 @@ export default function VitalGuardCompanionDashboard() {
                                 <GlassIcon name="shield-check" size="sm" variant="emerald" />
                               )}
                               <div>
-                                <span className="font-bold text-slate-900 dark:text-white block">{r.dateKey}</span>
-                                <span className="text-slate-500 dark:text-slate-400 text-[11px]">
-                                  Avg HR: <strong className="text-slate-900 dark:text-white">{r.avg_hr} BPM</strong> | SpO2: <strong className="text-slate-900 dark:text-white">{r.avg_spo2}%</strong>
+                                <span className={`font-bold block ${isDark ? 'text-white' : 'text-slate-900'}`}>{r.dateKey}</span>
+                                <span className="text-slate-400 text-[11px]">
+                                  Avg HR: <strong className={isDark ? 'text-white' : 'text-slate-900'}>{r.avg_hr} BPM</strong> | SpO2: <strong className={isDark ? 'text-white' : 'text-slate-900'}>{r.avg_spo2}%</strong>
                                 </span>
                               </div>
                             </div>
