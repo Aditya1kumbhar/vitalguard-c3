@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────
-// app/data/BandFrame.ts — Data Layer Contracts
+// app/data/BandFrame.ts: Data Layer Contracts
 // ─────────────────────────────────────────────
 
 export type BandStatus =
@@ -14,7 +14,7 @@ export type BandStatus =
 export interface BandFrame {
   hr: number;            // BPM, 0 = no reading
   spo2: number;          // %, 0 = no reading
-  battery: number;       // 0–100
+  battery: number;       // 0-100
   rhythmFlag: boolean;   // true = irregular pattern noticed
   fall: boolean;         // true = fall detected by SVM
   ts: number;            // Date.now() epoch ms

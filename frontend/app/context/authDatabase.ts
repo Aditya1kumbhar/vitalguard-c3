@@ -8,7 +8,7 @@
  *   1. Primary store: IndexedDB (survives page reloads, app restarts)
  *   2. Backup store: localStorage (survives IndexedDB eviction under storage pressure)
  *   3. Sessions use a FIXED key ("current") so they overwrite instead of piling up
- *   4. No expiration — session is permanent until explicit logout
+ *   4. No expiration: session is permanent until explicit logout
  */
 
 const DB_NAME = "VitalGuardAuthDB";
@@ -20,7 +20,7 @@ const DB_VERSION = 2;
 const LS_SESSION_KEY = "vg_c3_session";
 const LS_CRED_KEY = "vg_c3_credential";
 
-// Fixed session ID — we always overwrite instead of accumulating sessions
+// Fixed session ID: we always overwrite instead of accumulating sessions
 const FIXED_SESSION_ID = "current";
 
 export interface SessionData {
@@ -49,7 +49,7 @@ function backupSessionToLS(session: SessionData): void {
   try {
     localStorage.setItem(LS_SESSION_KEY, JSON.stringify(session));
   } catch {
-    // localStorage full or unavailable — ignore
+    // localStorage full or unavailable: ignore
   }
 }
 
@@ -58,7 +58,7 @@ function getSessionFromLS(): SessionData | null {
     const raw = localStorage.getItem(LS_SESSION_KEY);
     if (raw) return JSON.parse(raw) as SessionData;
   } catch {
-    // corrupt data — ignore
+    // corrupt data: ignore
   }
   return null;
 }
@@ -181,7 +181,7 @@ export async function getSession(): Promise<SessionData | null> {
 
     if (session) return session;
   } catch {
-    // IndexedDB failed — fall through to localStorage
+    // IndexedDB failed: fall through to localStorage
   }
 
   // Fallback: try reading ALL sessions from IndexedDB (backward compat with old multi-session data)

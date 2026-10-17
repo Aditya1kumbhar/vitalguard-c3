@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Delete, Check } from 'lucide-react';
 import { playHaptic } from '../utils/haptics';
 
 interface PinPadProps {
@@ -14,9 +15,9 @@ export default function PinPad({ onPinComplete, title = "Enter your PIN", error,
   const handleKeyPress = (digit: string) => {
     if (disabled) return;
     playHaptic('soft');
-    if (digit === '⌫') {
+    if (digit === 'backspace') {
       setPin(prev => prev.slice(0, -1));
-    } else if (digit === '✓') {
+    } else if (digit === 'submit') {
       if (pin.length === 6) {
         onPinComplete(pin);
       }
@@ -56,17 +57,18 @@ export default function PinPad({ onPinComplete, title = "Enter your PIN", error,
 
       {/* Numpad Grid */}
       <div className="grid grid-cols-3 gap-4 w-full">
-        {['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '✓'].map((key) => (
+        {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'backspace', '0', 'submit'].map((key) => (
           <button
             key={key}
             onClick={() => handleKeyPress(key)}
             disabled={disabled}
+            aria-label={key === 'backspace' ? 'Backspace' : key === 'submit' ? 'Submit' : `Digit ${key}`}
             className={`h-20 rounded-2xl text-2xl font-medium flex items-center justify-center transition-all duration-150 active:scale-95 select-none
               ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-700/50 active:bg-slate-600'}
-              ${key === '⌫' ? 'text-slate-400' : key === '✓' ? 'text-[#FE336A] font-bold' : 'text-white'}
+              ${key === 'backspace' ? 'text-slate-400' : key === 'submit' ? 'text-cyan-400 font-bold' : 'text-white'}
               bg-slate-800/50 backdrop-blur-md border border-slate-700/50 shadow-lg`}
           >
-            {key}
+            {key === 'backspace' ? <Delete size={24} /> : key === 'submit' ? <Check size={24} /> : key}
           </button>
         ))}
       </div>

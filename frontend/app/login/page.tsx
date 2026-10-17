@@ -309,7 +309,7 @@ export default function LoginPage() {
       let cred = await getCredential(identToUse);
       let credentialId = cred?.credentialId;
 
-      // Always check backend — even if local cred exists, backend is the source of truth
+      // Always check backend: even if local cred exists, backend is the source of truth
       let backendAccountExists = false;
       let backendCredentialId: string | undefined;
       let backendGuardianData: any = null;
@@ -330,7 +330,7 @@ export default function LoginPage() {
           }
         }
       } catch {
-        // Offline — rely on local credentials only
+        // Offline: rely on local credentials only
       }
 
       // Use backend credential if local is missing
@@ -574,9 +574,11 @@ export default function LoginPage() {
         </div>
 
         <div className="p-6 sm:p-8 md:p-10 w-full flex flex-col items-center">
-          <div className="w-14 h-14 bg-[#01373D] rounded-2xl flex items-center justify-center shadow-md mb-4">
-            <Activity className="w-7 h-7 text-white stroke-[2.5]" />
-          </div>
+          <img
+            src="/logo-tight.png"
+            alt="VitalGuard Logo"
+            className="h-16 w-auto object-contain mb-4 select-none drop-shadow-md"
+          />
           
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 mb-6">
             VitalGuard <span className="text-[#FE336A]">C3</span>
@@ -692,7 +694,7 @@ export default function LoginPage() {
                 {tab === 'signup' && authType === 'phone' && (
                   <p className="text-[11px] text-slate-400 mt-1 pl-1 font-medium">
                     {identifier.length === 10 
-                      ? '✓ 10-digit mobile number ready for passkey pairing' 
+                      ? '10-digit mobile number ready for passkey pairing' 
                       : `Enter a 10-digit mobile number (${10 - identifier.length} digits remaining)`
                     }
                   </p>
@@ -700,7 +702,7 @@ export default function LoginPage() {
                 {tab === 'signup' && authType === 'email' && (
                   <p className="text-[11px] text-slate-400 mt-1 pl-1 font-medium">
                     {isValidEmail(identifier)
-                      ? '✓ Valid email address ready for passkey registration'
+                      ? 'Valid email address ready for passkey registration'
                       : 'Valid email (e.g. name@gmail.com or official domain) is compulsory for security'
                     }
                   </p>
@@ -785,7 +787,7 @@ export default function LoginPage() {
                   <button 
                     onClick={tab === 'signup' ? handleSignupAuth : handleLoginAuth}
                     disabled={authenticating}
-                    className={`relative group w-32 h-32 rounded-full flex flex-col items-center justify-center transition-colors border-2 ${
+                    className={`relative group w-32 h-32 rounded-2xl flex flex-col items-center justify-center transition-colors border-2 ${
                       authenticating 
                         ? 'bg-slate-100 border-[#01373D]' 
                         : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-[#01373D] shadow-sm'

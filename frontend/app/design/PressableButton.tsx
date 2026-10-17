@@ -102,7 +102,7 @@ export const PressableButton: React.FC<PressableButtonProps> = ({
       }}
       style={{
         ...variantStyle,
-        borderRadius: radius.full,
+        borderRadius: 10,
         padding: `${space.sm}px ${space.lg}px`,
         fontSize: type.bodyBold.size,
         fontWeight: type.bodyBold.weight,

@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { dimensions, spring, colors } from './motion.tokens';
 
 export interface RingProps {
-  value: number;          // 0–100 or actual HR reading
+  value: number;          // 0-100 or actual HR reading
   max?: number;           // default 100
   colour: string;         // e.g. colors.heart (#FF375F)
   bgColour: string;       // e.g. colors.heartTrack

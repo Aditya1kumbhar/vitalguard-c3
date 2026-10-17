@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-// motion.tokens.ts — Pure Apple Dark Health Dashboard Token System
+// motion.tokens.ts: Pure Apple Dark Health Dashboard Token System
 // ─────────────────────────────────────────────────────────────
 // ZERO literal numbers in component files. Everything references this token sheet.
 
@@ -62,7 +62,7 @@ export const ambientOverlay = {
   fall:         'radial-gradient(600px circle at 50% 0%, rgba(255, 69, 58, 0.40) 0%, transparent 100%)',
   disconnected: 'radial-gradient(600px circle at 50% 0%, rgba(142, 142, 147, 0.15) 0%, transparent 100%)',
   normalStale:  'radial-gradient(600px circle at 50% 0%, rgba(142, 142, 147, 0.15) 0%, transparent 100%)',
-  reconnecting: 'radial-gradient(600px circle at 50% 0%, rgba(175, 82, 222, 0.25) 0%, transparent 100%)',
+  reconnecting: 'radial-gradient(600px circle at 50% 0%, rgba(14, 165, 233, 0.25) 0%, transparent 100%)',
   lowBattery:   'radial-gradient(600px circle at 50% 0%, rgba(255, 214, 10, 0.25) 0%, transparent 100%)',
   transition:   '1200ms ease',
 } as const;
@@ -70,8 +70,8 @@ export const ambientOverlay = {
 // ── Component Sizing & Radii ──────────────────────────────────
 export const dimensions = {
   cardRadius: 24,
-  pillRadius: 9999,
-  barRadius: 9999,
+  pillRadius: 12,
+  barRadius: 4,
   phoneRadius: 44,
 
   heroRingSize: 200,
@@ -209,9 +209,9 @@ export const palette = {
     irregular: colors.irregular,
     irregularBg: 'rgba(255, 159, 10, 0.20)',
     disconnect: colors.disconnect,
-    reconnecting: '#AF52DE',
-    activity: '#5E5CE6',
-    activityBg: 'rgba(94, 92, 230, 0.20)',
+    reconnecting: '#0EA5E9',
+    activity: '#06B6D4',
+    activityBg: 'rgba(6, 182, 212, 0.20)',
     sheetOverlay: colors.sheetOverlay,
   },
   dark: {
@@ -232,9 +232,9 @@ export const palette = {
     irregular: colors.irregular,
     irregularBg: 'rgba(255, 159, 10, 0.20)',
     disconnect: colors.disconnect,
-    reconnecting: '#AF52DE',
-    activity: '#5E5CE6',
-    activityBg: 'rgba(94, 92, 230, 0.20)',
+    reconnecting: '#0EA5E9',
+    activity: '#06B6D4',
+    activityBg: 'rgba(6, 182, 212, 0.20)',
     sheetOverlay: colors.sheetOverlay,
   },
 } as const;

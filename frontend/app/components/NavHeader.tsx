@@ -19,9 +19,13 @@ export default function NavHeader() {
       {/* iOS Floating Dynamic Island Header */}
       <div className="dynamic-island rounded-3xl p-3.5 sm:p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10 rounded-2xl bg-sky-50 border border-sky-200/80 flex items-center justify-center text-sky-600 shadow-sm">
-            <Activity className="w-5 h-5" aria-hidden="true" />
-            <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+          <div className="relative shrink-0 flex items-center justify-center">
+            <img
+              src="/logo-tight.png"
+              alt="VitalGuard Logo"
+              className="h-9 w-auto object-contain select-none"
+            />
+            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </span>

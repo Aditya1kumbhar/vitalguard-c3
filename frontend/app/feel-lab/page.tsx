@@ -271,26 +271,26 @@ export default function FeelLabPage() {
             >
               <div>
                 <span style={{ fontSize: type.caption.size, color: palette.light.textSecondary }}>HEART RATE</span>
-                <p style={{ fontSize: type.title3.size, fontWeight: type.title3.weight }}>{frame ? `${frame.hr} bpm` : '—'}</p>
+                <p style={{ fontSize: type.title3.size, fontWeight: type.title3.weight }}>{frame ? `${frame.hr} bpm` : '--'}</p>
               </div>
               <div>
                 <span style={{ fontSize: type.caption.size, color: palette.light.textSecondary }}>BLOOD OXYGEN</span>
-                <p style={{ fontSize: type.title3.size, fontWeight: type.title3.weight }}>{frame ? `${frame.spo2} %` : '—'}</p>
+                <p style={{ fontSize: type.title3.size, fontWeight: type.title3.weight }}>{frame ? `${frame.spo2} %` : '--'}</p>
               </div>
               <div>
                 <span style={{ fontSize: type.caption.size, color: palette.light.textSecondary }}>BATTERY</span>
-                <p style={{ fontSize: type.title3.size, fontWeight: type.title3.weight }}>{frame ? `${frame.battery} %` : '—'}</p>
+                <p style={{ fontSize: type.title3.size, fontWeight: type.title3.weight }}>{frame ? `${frame.battery} %` : '--'}</p>
               </div>
               <div>
                 <span style={{ fontSize: type.caption.size, color: palette.light.textSecondary }}>IRREGULAR FLAG</span>
                 <p style={{ fontSize: type.title3.size, fontWeight: type.title3.weight, color: frame?.rhythmFlag ? palette.light.irregular : palette.light.text }}>
-                  {frame ? (frame.rhythmFlag ? 'NOTICE' : 'Clear') : '—'}
+                  {frame ? (frame.rhythmFlag ? 'NOTICE' : 'Clear') : '--'}
                 </p>
               </div>
               <div>
                 <span style={{ fontSize: type.caption.size, color: palette.light.textSecondary }}>FALL FLAG</span>
                 <p style={{ fontSize: type.title3.size, fontWeight: type.title3.weight, color: frame?.fall ? palette.light.fall : palette.light.text }}>
-                  {frame ? (frame.fall ? 'FALL ACTIVE' : 'Clear') : '—'}
+                  {frame ? (frame.fall ? 'FALL ACTIVE' : 'Clear') : '--'}
                 </p>
               </div>
             </div>

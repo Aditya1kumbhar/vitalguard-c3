@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const session = await getSession();
         // PERMANENT SESSION: If a session exists with a valid identifier,
         // the user is authenticated FOREVER until they explicitly log out.
-        // No expiry check — "once registered, always logged in".
+        // No expiry check: "once registered, always logged in".
         if (session && session.identifier) {
           setIsAuthenticated(true);
           setGuardianName(session.guardianName);

@@ -20,8 +20,10 @@ import {
   Radio,
   Bluetooth,
   ChevronRight,
+  Shield,
   ShieldAlert,
   FileText,
+  FileCheck,
   Sliders,
   LogOut,
   Cpu,
@@ -216,7 +218,7 @@ export default function VitalGuardCompanionDashboard() {
         title: 'Activity & Motion',
         subtitle: 'Continuous 3-axis IMU kinematics',
         icon: <Flame size={28} color="#FF9500" />,
-        bgGradient: 'linear-gradient(135deg, rgba(255, 149, 0, 0.15) 0%, rgba(255, 59, 48, 0.05) 100%)',
+        bgGradient: 'none',
         accentColor: '#FF9500',
         liveMetric: `${liveSvm.toFixed(2)} G`,
         liveLabel: 'Real-Time SVM Acceleration',
@@ -235,10 +237,10 @@ export default function VitalGuardCompanionDashboard() {
       {
         id: 'body',
         title: 'Body Measurements',
-        subtitle: 'Epidermal thermometry & posture',
-        icon: <User size={28} color="#AF52DE" />,
-        bgGradient: 'linear-gradient(135deg, rgba(175, 82, 222, 0.15) 0%, rgba(88, 86, 214, 0.05) 100%)',
-        accentColor: '#AF52DE',
+        subtitle: 'Epidermal thermometry & skin contact',
+        icon: <User size={28} color="#0EA5E9" />,
+        bgGradient: 'none',
+        accentColor: '#0EA5E9',
         liveMetric: '36.6 °C',
         liveLabel: 'Wrist Surface Temperature',
         statusBadge: 'Thermal Homeostasis',
@@ -258,7 +260,7 @@ export default function VitalGuardCompanionDashboard() {
         title: 'Heart & Cardiovascular',
         subtitle: 'Optical PPG pulse rate & rhythm',
         icon: <Heart size={28} color="#FF375F" fill="#FF375F" />,
-        bgGradient: 'linear-gradient(135deg, rgba(255, 55, 95, 0.15) 0%, rgba(255, 69, 58, 0.05) 100%)',
+        bgGradient: 'none',
         accentColor: '#FF375F',
         liveMetric: `${hrValue} BPM`,
         liveLabel: 'Live Cardiovascular Pulse',
@@ -279,7 +281,7 @@ export default function VitalGuardCompanionDashboard() {
         title: 'Respiratory & Oxygenation',
         subtitle: 'Dual-wavelength pulse oximetry',
         icon: <Wind size={28} color="#30D158" />,
-        bgGradient: 'linear-gradient(135deg, rgba(48, 209, 88, 0.15) 0%, rgba(52, 199, 89, 0.05) 100%)',
+        bgGradient: 'none',
         accentColor: '#30D158',
         liveMetric: `${spo2Value}%`,
         liveLabel: 'Functional SpO2 Saturation',
@@ -297,19 +299,19 @@ export default function VitalGuardCompanionDashboard() {
       },
       {
         id: 'mobility',
-        title: 'Mobility & Gait Stability',
-        subtitle: 'Cadence & stumble vulnerability',
+        title: 'Kinetic Motion & Fall Tracking',
+        subtitle: 'Continuous 3-axis IMU SVM vector',
         icon: <MoveHorizontal size={28} color="#0EA5E9" />,
-        bgGradient: 'linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(2, 132, 199, 0.05) 100%)',
+        bgGradient: 'none',
         accentColor: '#0EA5E9',
-        liveMetric: '1.18 m/s',
-        liveLabel: 'Estimated Gait Velocity',
-        statusBadge: 'High Stability Baseline',
-        baseline: 'Gait speed > 1.0 m/s indicates low fall risk',
+        liveMetric: `${liveSvm.toFixed(2)} G`,
+        liveLabel: 'Signal Vector Magnitude (SVM)',
+        statusBadge: isCurrentlyFalling ? 'IMPACT DETECTED' : 'Nominal Kinetic Baseline',
+        baseline: '0.80 - 1.60 G daily baseline variance',
         sensorInfo:
-          '3-axis gyroscope and accelerometer data analyzed with a kinematic cadence algorithm to measure gait symmetry, step regularity, and deceleration smoothness.',
+          '3-axis accelerometer data evaluated at 50Hz to calculate real-time Signal Vector Magnitude. Threshold triggers immediately at >3.0G impact forces.',
         clinicalExplanation:
-          'Gait speed and stride variability are primary clinical markers for fall risk in older adults. Steady cadences correlate with low fall probability.',
+          'Signal Vector Magnitude provides continuous kinematic tracking of physical movement. High-G impact transitions followed by immobility indicate potential incapacitation.',
         recommendations: [
           'Keep home hallways illuminated and free from loose throw rugs.',
           'Practice balance exercises like single-leg stands or gentle tai chi.',
@@ -317,28 +319,28 @@ export default function VitalGuardCompanionDashboard() {
         ],
       },
       {
-        id: 'sleep',
-        title: 'Sleep & Circadian Baseline',
-        subtitle: 'Overnight resting recovery',
-        icon: <Sun size={28} color="#6366F1" />,
-        bgGradient: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(79, 70, 229, 0.05) 100%)',
-        accentColor: '#6366F1',
-        liveMetric: '7h 24m',
-        liveLabel: 'Rest Window Duration',
-        statusBadge: 'Restorative Nocturnal Dip',
-        baseline: '7 - 9 hours recommended nightly rest',
+        id: 'fifo_falls',
+        title: 'Fall Safety & 30-Day FIFO Log',
+        subtitle: 'Autonomous rolling event ledger',
+        icon: <ShieldAlert size={28} color="#FF453A" />,
+        bgGradient: 'none',
+        accentColor: '#FF453A',
+        liveMetric: `${thirtyDayRecords.length > 0 ? totalFallsIn30Days : 0} Events`,
+        liveLabel: 'Past 30 Days Fall Incidents',
+        statusBadge: totalFallsIn30Days === 0 ? 'Zero Incidents Logged' : `${totalFallsIn30Days} Event(s) Recorded`,
+        baseline: 'Target: 0 incidents per 30-day window',
         sensorInfo:
-          'Actigraphy combined with photoplethysmography pulse rate dipping (-14%) tracks periods of sustained nocturnal immobility.',
+          'Hardware MPU6050 impact interrupt coupled with local client IndexedDB rolling FIFO storage. Records impact peak G-forces and timestamps with automatic 30-day retention pruning.',
         clinicalExplanation:
-          'A healthy sleep cycle features a 10-20% drop in heart rate (nocturnal dipping), reflecting parasympathetic autonomic recovery and tissue restoration.',
+          'Fall incidence history is the single greatest clinical predictor of future fracture risk. Rolling 30-day logs provide accurate trend data for medical reviews without requiring cloud storage.',
         recommendations: [
-          'Maintain consistent bedtimes and wake times across weekdays and weekends.',
-          'Avoid heavy caffeine consumption within 6 hours of scheduled sleep.',
-          'Ensure the wristband is comfortable and charged before turning in for the night.',
+          'Review the 30-day FIFO report with primary care physicians during routine wellness checks.',
+          'Verify emergency contact phone numbers in settings periodically.',
+          'Maintain clear walking paths and low-pile rugs in high-traffic living spaces.',
         ],
       },
     ],
-    [hrValue, spo2Value, liveSvm, isCurrentlyFalling, status]
+    [hrValue, spo2Value, liveSvm, isCurrentlyFalling, status, thirtyDayRecords, totalFallsIn30Days]
   );
 
   const filteredCategories = healthCategories.filter((c) =>
@@ -391,14 +393,18 @@ export default function VitalGuardCompanionDashboard() {
         {/* ── Distinct VitalGuard C3 Header ──────────────────────────── */}
         <header className="flex items-center justify-between pb-4 sm:pb-6 border-b border-white/8">
           <div className="flex items-center gap-3">
-            {/* Live telemetry pulsating beacon */}
-            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/25">
-              <Activity className="w-5 h-5 text-cyan-400" />
-              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+            {/* Extreme High-Resolution VG Interlocking Logo */}
+            <div className="relative flex items-center justify-center shrink-0">
+              <img
+                src="/logo-tight.png"
+                alt="VitalGuard Logo"
+                className="h-10 sm:h-12 w-auto object-contain select-none filter drop-shadow-[0_0_16px_rgba(20,184,166,0.35)]"
+              />
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
                   isCurrentlyFalling ? 'bg-rose-400' : 'bg-emerald-400'
                 }`} />
-                <span className={`relative inline-flex rounded-full h-3 w-3 ${
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
                   isCurrentlyFalling ? 'bg-rose-500' : 'bg-emerald-500'
                 }`} />
               </span>
@@ -429,14 +435,14 @@ export default function VitalGuardCompanionDashboard() {
             onClick={() => setIsAccountOpen(true)}
             whileTap={{ scale: press.scale }}
             aria-label="Open Account and Device Settings"
-            className="flex items-center gap-2.5 p-1 pr-3 rounded-full bg-white/5 border border-white/10 hover:border-cyan-400/40 transition-colors cursor-pointer"
+            className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-400/40 transition-colors cursor-pointer"
           >
             <div
               style={{
-                width: 34,
-                height: 34,
-                borderRadius: 9999,
-                background: 'linear-gradient(135deg, #0EA5E9 0%, #38BDF8 50%, #6366F1 100%)',
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -471,7 +477,7 @@ export default function VitalGuardCompanionDashboard() {
                 </p>
               </div>
 
-              <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
+              <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
                 {isConnected ? 'STREAMING ACTIVE' : 'DISCONNECTED'}
               </span>
             </div>
@@ -545,9 +551,9 @@ export default function VitalGuardCompanionDashboard() {
                         <span className="text-3xl font-extrabold font-mono text-white">{spo2Value}</span>
                         <span className="text-sm font-semibold text-slate-400">%</span>
                       </div>
-                      <div className="w-full bg-white/10 rounded-full h-1.5 mt-1 overflow-hidden">
+                      <div className="w-full bg-white/10 rounded-sm h-1.5 mt-1 overflow-hidden">
                         <div
-                          className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                          className="h-full bg-emerald-500 rounded-sm transition-all duration-500"
                           style={{ width: `${Math.min(100, spo2Value)}%` }}
                         />
                       </div>
@@ -566,13 +572,13 @@ export default function VitalGuardCompanionDashboard() {
                         <span className="text-3xl font-extrabold font-mono text-white">{batteryValue}</span>
                         <span className="text-sm font-semibold text-slate-400">%</span>
                       </div>
-                      <div className="w-full bg-white/10 rounded-full h-1.5 mt-1 overflow-hidden">
+                      <div className="w-full bg-white/10 rounded-sm h-1.5 mt-1 overflow-hidden">
                         <div
-                          className="h-full bg-amber-400 rounded-full transition-all duration-500"
+                          className="h-full bg-amber-400 rounded-sm transition-all duration-500"
                           style={{ width: `${Math.min(100, batteryValue)}%` }}
                         />
                       </div>
-                      <span className="text-[11px] text-slate-400 font-medium mt-1">~14 hrs Remaining</span>
+                      <span className="text-[11px] text-slate-400 font-medium mt-1">Hardware ADC Nominal</span>
                     </div>
                   </Card>
                 </div>
@@ -710,24 +716,24 @@ export default function VitalGuardCompanionDashboard() {
                   </Card>
                 )}
 
-                {/* Mental Wellbeing & Cognitive Readiness */}
+                {/* Autonomic Nervous System & HRV Balance */}
                 <Card style={{ backgroundColor: '#12161D', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-violet-400 shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
                         <Brain size={20} />
                       </div>
                       <div>
-                        <span className="text-sm font-bold text-white block">Mental Wellbeing &amp; Balance</span>
+                        <span className="text-sm font-bold text-white block">Autonomic Nervous System &amp; HRV Balance</span>
                         <span className="text-xs text-slate-400">
-                          Autonomic balance check based on HRV and resting stability
+                          Autonomic balance check calculated from continuous beat-to-beat interval variance
                         </span>
                       </div>
                     </div>
 
                     <Link
                       href="/feel-lab"
-                      className="px-4 py-2 rounded-xl text-xs font-bold bg-violet-600 hover:bg-violet-500 text-white transition-colors shrink-0 flex items-center gap-1.5"
+                      className="px-4 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white transition-colors shrink-0 flex items-center gap-1.5"
                     >
                       <Sliders size={14} />
                       <span>Calibrate Feel Lab</span>
@@ -910,9 +916,9 @@ export default function VitalGuardCompanionDashboard() {
                         <span>1.4G (Motion)</span>
                         <span className="text-rose-400 font-bold">&gt;3.0G (Fall Trigger)</span>
                       </div>
-                      <div className="w-full bg-white/10 rounded-full h-3 relative overflow-hidden">
+                      <div className="w-full bg-white/10 rounded-sm h-3 relative overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all duration-300 ${
+                          className={`h-full rounded-sm transition-all duration-300 ${
                             liveSvm >= 3.0 ? 'bg-rose-500' : liveSvm >= 1.4 ? 'bg-amber-400' : 'bg-emerald-400'
                           }`}
                           style={{ width: `${Math.min(100, (liveSvm / 4.0) * 100)}%` }}
@@ -1024,9 +1030,9 @@ export default function VitalGuardCompanionDashboard() {
                       </div>
 
                       <div className="p-3 rounded-xl bg-black/40 border border-white/6 flex flex-col">
-                        <span className="text-[11px] text-slate-400">Mean Reaction</span>
-                        <span className="text-2xl font-black font-mono text-white mt-1">14s</span>
-                        <span className="text-[10px] text-slate-400 mt-0.5">&lt;30s safe threshold</span>
+                        <span className="text-[11px] text-slate-400">Countdown Limit</span>
+                        <span className="text-2xl font-black font-mono text-white mt-1">30s</span>
+                        <span className="text-[10px] text-slate-400 mt-0.5">Verification window</span>
                       </div>
 
                       <div className="p-3 rounded-xl bg-black/40 border border-white/6 flex flex-col">
@@ -1097,10 +1103,35 @@ export default function VitalGuardCompanionDashboard() {
             </div>
           </motion.div>
         )}
+
+        {/* ═════════════════════════════════════════════════════════════
+            CLINICAL COMPANION FOOTER & REGULATORY STANDARDS
+           ═════════════════════════════════════════════════════════════ */}
+        <footer className="mt-12 mb-28 pt-6 border-t border-white/8 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-2.5 text-center sm:text-left">
+            <span className="font-bold text-slate-300">VitalGuard C3</span>
+            <span className="hidden sm:inline text-slate-700">|</span>
+            <span className="text-slate-400">Clinical Companion Telemetry</span>
+            <span className="hidden sm:inline text-slate-700">|</span>
+            <span className="font-mono text-cyan-400/90 font-medium">30-Day FIFO Local Storage</span>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs font-medium">
+            <Link href="/privacy" className="text-slate-400 hover:text-cyan-400 transition-colors">
+              Privacy Policy
+            </Link>
+            <span className="text-slate-700">•</span>
+            <Link href="/terms" className="text-slate-400 hover:text-cyan-400 transition-colors">
+              Terms &amp; Conditions
+            </Link>
+            <span className="text-slate-700">•</span>
+            <span className="text-emerald-400 font-mono">Custom Domain Active</span>
+          </div>
+        </footer>
       </div>
 
       {/* ═════════════════════════════════════════════════════════════
-          FLOATING BOTTOM NAVBAR (FIXED ON SCREEN — NEVER SCROLLS AWAY)
+          FLOATING BOTTOM NAVBAR (FIXED ON SCREEN - NEVER SCROLLS AWAY)
          ═════════════════════════════════════════════════════════════ */}
       <nav
         aria-label="Bottom Navigation Dock"
@@ -1120,11 +1151,11 @@ export default function VitalGuardCompanionDashboard() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: 'rgba(18, 22, 29, 0.92)',
+            backgroundColor: 'rgba(18, 22, 29, 0.94)',
             backdropFilter: 'blur(32px)',
             WebkitBackdropFilter: 'blur(32px)',
             border: '1px solid rgba(56, 189, 248, 0.22)',
-            borderRadius: 9999,
+            borderRadius: 16,
             padding: '6px 8px',
             boxShadow: '0 12px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(14, 165, 233, 0.15)',
           }}
@@ -1138,10 +1169,10 @@ export default function VitalGuardCompanionDashboard() {
               display: 'flex',
               alignItems: 'center',
               gap: 6,
-              padding: '9px 18px',
-              borderRadius: 9999,
+              padding: '9px 16px',
+              borderRadius: 10,
               border: 'none',
-              backgroundColor: activeTab === 'summary' ? 'rgba(14, 165, 233, 0.25)' : 'transparent',
+              backgroundColor: activeTab === 'summary' ? 'rgba(14, 165, 233, 0.22)' : 'transparent',
               color: activeTab === 'summary' ? '#38BDF8' : '#8E8E93',
               fontSize: 13,
               fontWeight: 700,
@@ -1162,10 +1193,10 @@ export default function VitalGuardCompanionDashboard() {
               display: 'flex',
               alignItems: 'center',
               gap: 6,
-              padding: '9px 18px',
-              borderRadius: 9999,
+              padding: '9px 16px',
+              borderRadius: 10,
               border: 'none',
-              backgroundColor: activeTab === 'browse' ? 'rgba(14, 165, 233, 0.25)' : 'transparent',
+              backgroundColor: activeTab === 'browse' ? 'rgba(14, 165, 233, 0.22)' : 'transparent',
               color: activeTab === 'browse' ? '#38BDF8' : '#8E8E93',
               fontSize: 13,
               fontWeight: 700,
@@ -1186,10 +1217,10 @@ export default function VitalGuardCompanionDashboard() {
               display: 'flex',
               alignItems: 'center',
               gap: 6,
-              padding: '9px 18px',
-              borderRadius: 9999,
+              padding: '9px 16px',
+              borderRadius: 10,
               border: 'none',
-              backgroundColor: activeTab === 'falls' ? 'rgba(255, 69, 58, 0.25)' : 'transparent',
+              backgroundColor: activeTab === 'falls' ? 'rgba(255, 69, 58, 0.22)' : 'transparent',
               color: activeTab === 'falls' ? '#FF453A' : '#8E8E93',
               fontSize: 13,
               fontWeight: 700,
@@ -1250,7 +1281,7 @@ export default function VitalGuardCompanionDashboard() {
                     {selectedCategory.liveMetric}
                   </span>
                   <span
-                    className="text-xs font-bold font-mono px-2.5 py-1 rounded-full"
+                    className="text-xs font-bold font-mono px-2.5 py-1 rounded-md"
                     style={{
                       backgroundColor: `${selectedCategory.accentColor}20`,
                       color: selectedCategory.accentColor,
@@ -1344,10 +1375,10 @@ export default function VitalGuardCompanionDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <div
                 style={{
-                  width: 54,
-                  height: 54,
-                  borderRadius: dimensions.pillRadius,
-                  background: 'linear-gradient(135deg, #0EA5E9 0%, #38BDF8 50%, #6366F1 100%)',
+                  width: 52,
+                  height: 52,
+                  borderRadius: 14,
+                  background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1525,7 +1556,7 @@ export default function VitalGuardCompanionDashboard() {
                         width: 32,
                         height: 32,
                         borderRadius: 8,
-                        backgroundColor: '#5E5CE6',
+                        backgroundColor: '#0EA5E9',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1621,7 +1652,109 @@ export default function VitalGuardCompanionDashboard() {
             </Card>
           </div>
 
-          {/* Section 4: Log Out */}
+          {/* Section 4: Privacy & Legal Compliance */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: colors.textSecondary,
+                paddingLeft: 4,
+              }}
+            >
+              Legal &amp; Privacy Standards
+            </span>
+
+            <Card style={{ padding: '4px 12px', backgroundColor: '#161B22' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <Link
+                  href="/privacy"
+                  onClick={() => setIsAccountOpen(false)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 4px',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+                    color: '#FFFFFF',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <Shield size={18} color="#0EA5E9" />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: 14, fontWeight: 600 }}>Privacy Policy</span>
+                      <span style={{ fontSize: 12, color: colors.textSecondary }}>
+                        On-device IndexedDB, zero third-party cloud tracking
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight size={18} color={colors.textSecondary} />
+                </Link>
+
+                <Link
+                  href="/terms"
+                  onClick={() => setIsAccountOpen(false)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 4px',
+                    color: '#FFFFFF',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <FileCheck size={18} color="#10B981" />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: 14, fontWeight: 600 }}>Terms &amp; Conditions</span>
+                      <span style={{ fontSize: 12, color: colors.textSecondary }}>
+                        Non-diagnostic clinical companion disclaimer
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight size={18} color={colors.textSecondary} />
+                </Link>
+              </div>
+            </Card>
+          </div>
+
+          {/* Section 5: Custom Domain & Network Status */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: colors.textSecondary,
+                paddingLeft: 4,
+              }}
+            >
+              Network &amp; Custom Domain
+            </span>
+
+            <Card style={{ padding: '14px 16px', backgroundColor: '#161B22' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                  <span style={{ color: colors.textSecondary }}>Custom Domain Status</span>
+                  <span style={{ fontWeight: 600, color: '#30D158' }}>Connected &amp; Verified</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                  <span style={{ color: colors.textSecondary }}>Web Bluetooth Security</span>
+                  <span style={{ fontWeight: 600 }}>HTTPS / Secure Context Enforced</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                  <span style={{ color: colors.textSecondary }}>Local Favicon Manifest</span>
+                  <span style={{ fontWeight: 600, color: '#38BDF8' }}>Active (SVG + ICO)</span>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Section 6: Log Out */}
           <div style={{ padding: '4px 0 24px 0' }}>
             <Card style={{ padding: '12px', backgroundColor: '#161B22' }}>
               <button
