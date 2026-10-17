@@ -38,27 +38,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const checkAuth = async () => {
       try {
         const session = await getSession();
-        // PERMANENT SESSION: If a session exists with a valid identifier,
-        // the user is authenticated FOREVER until they explicitly log out.
-        // No expiry check: "once registered, always logged in".
-        if (session && session.identifier) {
+        // Check for genuine registered session (exclude stale guardian-default bypass)
+        if (session && session.identifier && session.identifier !== 'guardian-default') {
           setIsAuthenticated(true);
           setGuardianName(session.guardianName);
           setIdentifier(session.identifier);
           setBandId(session.bandId);
         } else {
-          // Default to active companion session for direct dashboard access
-          setIsAuthenticated(true);
-          setGuardianName("Guardian");
-          setIdentifier("guardian-default");
-          setBandId("VG-C3-0001");
+          if (session && session.identifier === 'guardian-default') {
+            await clearSession();
+          }
+          setIsAuthenticated(false);
+          setGuardianName(null);
+          setIdentifier(null);
+          setBandId(null);
         }
       } catch (err) {
         console.warn("Auth check failed:", err);
-        setIsAuthenticated(true);
-        setGuardianName("Guardian");
-        setIdentifier("guardian-default");
-        setBandId("VG-C3-0001");
+        setIsAuthenticated(false);
+        setGuardianName(null);
+        setIdentifier(null);
+        setBandId(null);
       } finally {
         setIsLoading(false);
       }
@@ -68,7 +68,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading) {
-      if (!isAuthenticated && pathname !== '/login') {
+      const publicRoutes = ['/login', '/terms', '/privacy'];
+      const isPublic = publicRoutes.includes(pathname);
+      if (!isAuthenticated && !isPublic) {
         router.push('/login');
       } else if (isAuthenticated && pathname === '/login') {
         router.push('/');

@@ -234,27 +234,35 @@ export default function LoginPage() {
         // But wait, PinPad handles its own submit. So handleSignupAuth is only for Passkey!
       }
 
-      const apiBase = getApiBase();
-      const res = await fetch(`${apiBase}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          auth_type: authType,
-          identifier: identToUse,
-          guardian_name: nameToUse,
-          band_id: bandToUse,
-          credential_id: credentialId || null,
-          pin_hash: null
-        }),
-      });
+      let jwtToken = '';
+      try {
+        const apiBase = getApiBase();
+        const res = await fetch(`${apiBase}/api/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            auth_type: authType,
+            identifier: identToUse,
+            guardian_name: nameToUse,
+            band_id: bandToUse,
+            credential_id: credentialId || null,
+            pin_hash: null
+          }),
+        });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || 'Registration failed.');
+        if (res.ok) {
+          const data = await res.json();
+          jwtToken = data.access_token;
+        } else {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.detail || 'Registration failed.');
+        }
+      } catch (backendErr: any) {
+        if (backendErr.message && !backendErr.message.includes('fetch') && !backendErr.message.includes('Failed to fetch')) {
+          throw backendErr;
+        }
+        console.warn('Backend server unavailable; registered credential locally:', backendErr);
       }
-      
-      const data = await res.json();
-      const jwtToken = data.access_token;
 
       // Save credential in IndexedDB
       await saveCredential({
@@ -453,26 +461,35 @@ export default function LoginPage() {
         const nameToUse = guardianName.trim();
         const bandToUse = bandId.trim();
 
-        const apiBase = getApiBase();
-        const res = await fetch(`${apiBase}/api/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            auth_type: authType,
-            identifier: identToUse,
-            guardian_name: nameToUse,
-            band_id: bandToUse,
-            credential_id: null,
-            pin_hash: hashedPin
-          }),
-        });
+        let jwtToken = '';
+        try {
+          const apiBase = getApiBase();
+          const res = await fetch(`${apiBase}/api/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              auth_type: authType,
+              identifier: identToUse,
+              guardian_name: nameToUse,
+              band_id: bandToUse,
+              credential_id: null,
+              pin_hash: hashedPin
+            }),
+          });
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || 'Registration failed.');
+          if (res.ok) {
+            const data = await res.json();
+            jwtToken = data.access_token;
+          } else {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Registration failed.');
+          }
+        } catch (backendErr: any) {
+          if (backendErr.message && !backendErr.message.includes('fetch') && !backendErr.message.includes('Failed to fetch')) {
+            throw backendErr;
+          }
+          console.warn('Backend unavailable, proceeding with verified local PIN registration:', backendErr);
         }
-        
-        const data = await res.json();
 
         await saveCredential({
           identifier: identToUse,
@@ -490,7 +507,7 @@ export default function LoginPage() {
           authenticatedAt: Date.now(),
           expiresAt: Date.now() + 365 * 24 * 60 * 60 * 1000,
           authMethod: 'pin',
-          token: data.access_token,
+          token: jwtToken,
         });
 
         setLastIdentifier(identToUse);
@@ -511,28 +528,29 @@ export default function LoginPage() {
           throw new Error('Incorrect PIN.');
         }
 
-        const apiBase = getApiBase();
-        const res = await fetch(`${apiBase}/api/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            identifier: identToUse,
-            pin_hash: hashedAttempt,
-          }),
-        });
-
         let jwtToken = '';
         let finalBandId = cred.bandId;
         let finalName = cred.guardianName;
 
-        if (res.ok) {
-          const data = await res.json();
-          jwtToken = data.access_token;
-          finalBandId = data.band_id;
-          finalName = data.guardian_name;
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.detail || 'PIN verification failed on server.');
+        try {
+          const apiBase = getApiBase();
+          const res = await fetch(`${apiBase}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              identifier: identToUse,
+              pin_hash: hashedAttempt,
+            }),
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            jwtToken = data.access_token;
+            finalBandId = data.band_id || cred.bandId;
+            finalName = data.guardian_name || cred.guardianName;
+          }
+        } catch (backendErr) {
+          console.warn('Backend unavailable, proceeding with verified local PIN login:', backendErr);
         }
 
         await saveSession({
