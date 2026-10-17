@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import GlassIcon from '../components/GlassIcon';
 import GlassLogo from '../components/GlassLogo';
+import ThemeToggle from '../components/ThemeToggle';
 
 export const metadata: Metadata = {
   title: 'Terms & Conditions | VitalGuard C3',
@@ -11,25 +12,29 @@ export const metadata: Metadata = {
 
 export default function TermsAndConditionsPage() {
   return (
-    <main className="min-h-screen bg-[#0A0D12] text-white py-12 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[var(--bg-app)] text-[var(--text-primary)] py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-4xl mx-auto flex flex-col gap-8">
         {/* Navigation & Header */}
         <div className="flex flex-col gap-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors w-fit px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-cyan-400/40"
-          >
-            <ArrowLeft size={14} />
-            <span>Return to Dashboard</span>
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:opacity-80 transition-opacity w-fit px-3 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-slate-200 dark:border-white/10"
+            >
+              <ArrowLeft size={14} />
+              <span>Return to Dashboard</span>
+            </Link>
+
+            <ThemeToggle size="sm" />
+          </div>
 
           <div className="flex items-center gap-3 mt-2">
             <GlassLogo size={42} showStatusDot={false} />
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 Terms &amp; Conditions of Operation
               </h1>
-              <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                 Effective Date: October 17, 2026 | System Version: VitalGuard C3 Hardware Companion
               </p>
             </div>
@@ -51,7 +56,7 @@ export default function TermsAndConditionsPage() {
         </div>
 
         {/* Section 1: Scope of Service */}
-        <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
+        <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="pulse" size="sm" variant="cyan" />
             <h2 className="text-base sm:text-lg font-bold text-white">
@@ -72,7 +77,7 @@ export default function TermsAndConditionsPage() {
         </section>
 
         {/* Section 2: Hardware Operating Requirements */}
-        <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
+        <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="gauge" size="sm" variant="emerald" />
             <h2 className="text-base sm:text-lg font-bold text-white">
@@ -96,7 +101,7 @@ export default function TermsAndConditionsPage() {
         </section>
 
         {/* Section 3: Fall Detection Boundaries & Slide Rail Verification */}
-        <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
+        <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="shield-alert" size="sm" variant="rose" />
             <h2 className="text-base sm:text-lg font-bold text-white">
@@ -120,7 +125,7 @@ export default function TermsAndConditionsPage() {
         </section>
 
         {/* Section 4: Data Sovereignty & Local Retention */}
-        <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
+        <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="database" size="sm" variant="cyan" />
             <h2 className="text-base sm:text-lg font-bold text-white">
@@ -133,7 +138,7 @@ export default function TermsAndConditionsPage() {
         </section>
 
         {/* Section 5: Limitation of Liability */}
-        <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
+        <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <h2 className="text-base sm:text-lg font-bold text-white">
             5. Limitation of Liability &amp; Warranty
           </h2>

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { GlassIcon } from "./GlassIcon";
+import { useTheme } from "../context/ThemeContext";
 import { getApiBase, authFetch } from "../utils/api";
 
 interface Factor {
@@ -21,6 +22,7 @@ interface SummaryStats {
 }
 
 export default function RiskScoreCard() {
+  const { isDark } = useTheme();
   const [score, setScore] = useState<number>(93);
   const [level, setLevel] = useState<string>("safe");
   const [recommendation, setRecommendation] = useState<string>("Patient is stable. Continue routine monitoring.");
@@ -66,10 +68,10 @@ export default function RiskScoreCard() {
   return (
     <section
       aria-label="Health Safety Score"
-      className="p-5 sm:p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4"
+      className={`p-5 sm:p-6 rounded-2xl border flex flex-col gap-4 transition-colors ${isDark ? "bg-[#12161D] border-white/8 text-white" : "bg-white border-slate-200 text-slate-900 shadow-sm"}`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/8 pb-3">
+      <div className={`flex items-center justify-between border-b pb-3 ${isDark ? "border-white/8" : "border-slate-200"}`}>
         <div className="flex items-center gap-3">
           <GlassIcon
             name={isSafe ? "shield-check" : "shield-alert"}
@@ -77,7 +79,7 @@ export default function RiskScoreCard() {
             size="md"
           />
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+            <h2 className={`text-base sm:text-lg font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
               Safety Score
             </h2>
             <span className="text-[11px] text-slate-400">Clinical index computed from telemetry</span>
@@ -138,7 +140,7 @@ export default function RiskScoreCard() {
       {/* Dynamic Visual Status Indicators */}
       <div className="grid grid-cols-3 gap-2.5 pt-1">
         {/* Heart */}
-        <div className="p-3 rounded-xl bg-white/4 border border-white/6 text-center flex flex-col items-center gap-1.5">
+        <div className={`p-3 rounded-xl border text-center flex flex-col items-center gap-1.5 ${isDark ? "bg-white/4 border-white/6" : "bg-slate-50 border-slate-200"}`}>
           <GlassIcon name="heart" size="sm" />
           <span className="text-xs font-bold text-slate-300">Heart</span>
           <span className="text-base font-extrabold text-white font-mono">
@@ -156,7 +158,7 @@ export default function RiskScoreCard() {
         </div>
 
         {/* Oxygen */}
-        <div className="p-3 rounded-xl bg-white/4 border border-white/6 text-center flex flex-col items-center gap-1.5">
+        <div className={`p-3 rounded-xl border text-center flex flex-col items-center gap-1.5 ${isDark ? "bg-white/4 border-white/6" : "bg-slate-50 border-slate-200"}`}>
           <GlassIcon name="oxygen" size="sm" />
           <span className="text-xs font-bold text-slate-300">Oxygen</span>
           <span className="text-base font-extrabold text-white font-mono">
@@ -174,7 +176,7 @@ export default function RiskScoreCard() {
         </div>
 
         {/* Falls */}
-        <div className="p-3 rounded-xl bg-white/4 border border-white/6 text-center flex flex-col items-center gap-1.5">
+        <div className={`p-3 rounded-xl border text-center flex flex-col items-center gap-1.5 ${isDark ? "bg-white/4 border-white/6" : "bg-slate-50 border-slate-200"}`}>
           <GlassIcon
             name={(stats.active_falls ?? 0) > 0 ? "shield-alert" : "shield-check"}
             variant={(stats.active_falls ?? 0) > 0 ? "rose" : "emerald"}

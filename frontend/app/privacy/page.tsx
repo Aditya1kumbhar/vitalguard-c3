@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import GlassIcon from '../components/GlassIcon';
 import GlassLogo from '../components/GlassLogo';
+import ThemeToggle from '../components/ThemeToggle';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | VitalGuard C3',
@@ -11,25 +12,29 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <main className="min-h-screen bg-[#0A0D12] text-white py-12 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[var(--bg-app)] text-[var(--text-primary)] py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-4xl mx-auto flex flex-col gap-8">
         {/* Navigation & Header */}
         <div className="flex flex-col gap-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors w-fit px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:border-cyan-400/40"
-          >
-            <ArrowLeft size={14} />
-            <span>Return to Dashboard</span>
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:opacity-80 transition-opacity w-fit px-3 py-1.5 rounded-lg bg-black/5 dark:bg-white/5 border border-slate-200 dark:border-white/10"
+            >
+              <ArrowLeft size={14} />
+              <span>Return to Dashboard</span>
+            </Link>
+
+            <ThemeToggle size="sm" />
+          </div>
 
           <div className="flex items-center gap-3 mt-2">
             <GlassLogo size={42} showStatusDot={false} />
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 Privacy Policy &amp; Data Architecture
               </h1>
-              <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                 Effective Date: October 17, 2026 | Firmware: VitalGuard C3 rev 2.1
               </p>
             </div>
@@ -37,12 +42,12 @@ export default function PrivacyPolicyPage() {
         </div>
 
         {/* Core Guarantee Callout */}
-        <div className="p-5 rounded-2xl bg-[#12161D] border border-cyan-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="p-5 rounded-2xl bg-[var(--bg-card)] border border-cyan-500/25 shadow-sm dark:shadow-none flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <GlassIcon name="shield-check" size="md" variant="cyan" />
             <div className="flex flex-col gap-1">
-              <span className="text-sm font-bold text-white">Zero Cloud Telemetry Tracking</span>
-              <span className="text-xs text-slate-300 leading-relaxed">
+              <span className="text-sm font-bold text-slate-900 dark:text-white">Zero Cloud Telemetry Tracking</span>
+              <span className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 VitalGuard C3 processes, evaluates, and retains physiological signals locally on your client device.
                 No heart rate waveforms, pulse oximetry, or raw accelerometer telemetry are ever sold or transmitted to third-party ad networks.
               </span>
@@ -51,7 +56,7 @@ export default function PrivacyPolicyPage() {
         </div>
 
         {/* Section 1: Architecture & On-Device Storage */}
-        <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
+        <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="database" size="sm" variant="cyan" />
             <h2 className="text-base sm:text-lg font-bold text-white">
@@ -75,7 +80,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         {/* Section 2: Web Bluetooth Peer-to-Peer Telemetry */}
-        <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
+        <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="radio" size="sm" variant="emerald" />
             <h2 className="text-base sm:text-lg font-bold text-white">
@@ -99,7 +104,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         {/* Section 3: Emergency Fall Escalation Data Handling */}
-        <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
+        <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="shield-alert" size="sm" variant="rose" />
             <h2 className="text-base sm:text-lg font-bold text-white">
@@ -123,7 +128,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         {/* Section 4: Security & Passkey Authentication */}
-        <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
+        <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="shield-check" size="sm" variant="cyan" />
             <h2 className="text-base sm:text-lg font-bold text-white">
@@ -136,7 +141,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         {/* Section 5: Clinical Companion Scope & Contact */}
-        <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
+        <section className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-xs dark:shadow-none flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <GlassIcon name="medical" size="sm" variant="slate" />
             <h2 className="text-base sm:text-lg font-bold text-white">

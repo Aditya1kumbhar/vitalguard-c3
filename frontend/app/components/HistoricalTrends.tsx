@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import { Calendar, Heart, Droplets, Thermometer, AlertTriangle, RefreshCw, Database } from "lucide-react";
 import { GlassIcon } from "./GlassIcon";
+import { useTheme } from "../context/ThemeContext";
 import { getApiBase, authFetch } from "../utils/api";
 import {
   DailyRecord,
@@ -42,6 +43,7 @@ export interface DailySummary {
 type MetricTab = "hr" | "spo2" | "temp" | "anomalies";
 
 export default function HistoricalTrends() {
+  const { isDark } = useTheme();
   const [data, setData] = useState<DailySummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -122,14 +124,14 @@ export default function HistoricalTrends() {
   return (
     <section
       aria-label="30-Day Trends"
-      className="p-5 sm:p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-5"
+      className={`p-5 sm:p-6 rounded-2xl border flex flex-col gap-5 transition-colors ${isDark ? "bg-[#12161D] border-white/8 text-white" : "bg-white border-slate-200 text-slate-900 shadow-sm"}`}
     >
       {/* Header & Filter Range */}
-      <div className="flex items-center justify-between border-b border-white/8 pb-3.5 flex-wrap gap-2.5">
+      <div className={`flex items-center justify-between border-b pb-3.5 flex-wrap gap-2.5 ${isDark ? "border-white/8" : "border-slate-200"}`}>
         <div className="flex items-center gap-3">
           <GlassIcon name="calendar" size="md" />
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            <h2 className={`text-base sm:text-lg font-bold tracking-tight flex items-center gap-2 ${isDark ? "text-white" : "text-slate-900"}`}>
               <span>Historical Trends</span>
               <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <Database className="w-2.5 h-2.5" />
@@ -141,7 +143,7 @@ export default function HistoricalTrends() {
         </div>
 
         {/* Days Filter Buttons */}
-        <div className="flex items-center gap-1 bg-white/5 border border-white/8 p-1 rounded-xl">
+        <div className={`flex items-center gap-1 p-1 rounded-xl border ${isDark ? "bg-white/5 border-white/8" : "bg-slate-100 border-slate-200"}`}>
           {[7, 14, 30].map((days) => (
             <button
               key={days}

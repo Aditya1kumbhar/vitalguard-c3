@@ -51,9 +51,9 @@ export const Card: React.FC<CardProps> = ({
       }}
       style={{
         borderRadius: dimensions.cardRadius,
-        backgroundColor: colors.card,
-        border: `1px solid ${colors.cardBorder}`,
-        boxShadow: 'none',
+        backgroundColor: 'var(--bg-card)',
+        border: '1px solid var(--border-card)',
+        boxShadow: '0 2px 12px -2px rgba(0, 0, 0, 0.04)',
         padding: layout.pagePadding,
         opacity: disabled ? 0.4 : 1,
         cursor: isInteractive ? 'pointer' : 'default',
