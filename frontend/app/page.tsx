@@ -55,6 +55,7 @@ import RiskScoreCard from './components/RiskScoreCard';
 import ClinicalSummaryCard from './components/ClinicalSummaryCard';
 import HistoricalTrends from './components/HistoricalTrends';
 import GlassIcon from './components/GlassIcon';
+import GlassLogo from './components/GlassLogo';
 import {
   colors,
   dimensions,
@@ -240,22 +241,12 @@ export default function VitalGuardCompanionDashboard() {
         {/* ── Distinct VitalGuard C3 Header ──────────────────────────── */}
         <header className="flex items-center justify-between pb-4 sm:pb-6 border-b border-white/8">
           <div className="flex items-center gap-3">
-            {/* Extreme High-Resolution VG Interlocking Logo */}
-            <div className="relative flex items-center justify-center shrink-0">
-              <img
-                src="/logo-tight.png"
-                alt="VitalGuard Logo"
-                className="h-10 sm:h-12 w-auto object-contain select-none filter drop-shadow-[0_0_16px_rgba(20,184,166,0.35)]"
-              />
-              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                  isCurrentlyFalling ? 'bg-rose-400' : 'bg-emerald-400'
-                }`} />
-                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-                  isCurrentlyFalling ? 'bg-rose-500' : 'bg-emerald-500'
-                }`} />
-              </span>
-            </div>
+            {/* Apple Icon-Style IconScout Glassmorphism Logo */}
+            <GlassLogo
+              size={46}
+              isFalling={isCurrentlyFalling}
+              showStatusDot={true}
+            />
 
             <div>
               <div className="flex items-center gap-2">

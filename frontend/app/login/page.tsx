@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Fingerprint, Activity, AlertCircle, KeyRound, CheckCircle2, User, Phone, Mail, Hash, Bluetooth } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import PinPad from '../components/PinPad';
+import GlassLogo from '../components/GlassLogo';
 import { 
   isWebAuthnSupported, 
   isPlatformAuthenticatorAvailable, 
@@ -574,11 +575,9 @@ export default function LoginPage() {
         </div>
 
         <div className="p-6 sm:p-8 md:p-10 w-full flex flex-col items-center">
-          <img
-            src="/logo-tight.png"
-            alt="VitalGuard Logo"
-            className="h-16 w-auto object-contain mb-4 select-none drop-shadow-md"
-          />
+          <div className="mb-4">
+            <GlassLogo size={62} showStatusDot={false} />
+          </div>
           
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 mb-6">
             VitalGuard <span className="text-[#FE336A]">C3</span>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import GlassIcon from '../components/GlassIcon';
+import GlassLogo from '../components/GlassLogo';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | VitalGuard C3',
@@ -23,11 +24,7 @@ export default function PrivacyPolicyPage() {
           </Link>
 
           <div className="flex items-center gap-3 mt-2">
-            <img
-              src="/logo-tight.png"
-              alt="VitalGuard Logo"
-              className="h-10 w-auto object-contain select-none"
-            />
+            <GlassLogo size={42} showStatusDot={false} />
             <div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
                 Privacy Policy &amp; Data Architecture
