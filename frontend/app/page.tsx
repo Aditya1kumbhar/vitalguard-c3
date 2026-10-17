@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useMemo, useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   Heart,
   Users,
@@ -18,16 +19,15 @@ import {
   Apple,
   Wind,
   Bell,
-  ClipboardList,
-  CheckSquare,
   X,
   Radio,
   Bluetooth,
-  Wifi,
-  Battery as BatteryIcon,
   ChevronRight,
   ShieldAlert,
-  Activity,
+  FileText,
+  Sliders,
+  LogOut,
+  Cpu,
   Check,
 } from 'lucide-react';
 import { Ring } from './design/Ring';
@@ -37,23 +37,26 @@ import { FallAlertSheet } from './design/FallAlertSheet';
 import { MockBand } from './data/MockBand';
 import { WebBluetoothBand } from './data/WebBluetoothBand';
 import { useBand } from './data/useBand';
+import { useAuth } from './context/AuthContext';
 import {
   colors,
   dimensions,
   layout,
   press,
   spring,
-  stagger,
   typography,
 } from './design/motion.tokens';
 
 export default function AppleHealthDashboard() {
+  const { guardianName, bandId, logout } = useAuth();
+
   const [activeTab, setActiveTab] = useState<'summary' | 'sharing' | 'browse'>('summary');
   const [searchQuery, setSearchQuery] = useState('');
   const [transportMode, setTransportMode] = useState<'mock' | 'ble'>('mock');
   const [isBleSupported, setIsBleSupported] = useState<boolean>(true);
   const [isConnected, setIsConnected] = useState<boolean>(true);
-  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [isAccountOpen, setIsAccountOpen] = useState<boolean>(false);
+  const [manualFallActive, setManualFallActive] = useState<boolean>(false);
   const [dismissedCards, setDismissedCards] = useState<{ [key: string]: boolean }>({});
 
   // Rolling 60s heart rate history for the sparkline
@@ -134,7 +137,7 @@ export default function AppleHealthDashboard() {
     disconnect();
     setIsConnected(false);
     setTransportMode(mode);
-    setIsSettingsOpen(false);
+    setIsAccountOpen(false);
   };
 
   // Browse Health Categories (Exact match to screenshot 1)
@@ -155,6 +158,18 @@ export default function AppleHealthDashboard() {
     c.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const displayName = guardianName && guardianName !== 'Guardian' ? guardianName : 'Aditya Kumbhar';
+  const displayBandId = bandId || 'VG-C3-0001';
+
+  const initials = useMemo(() => {
+    if (!displayName) return 'AK';
+    const parts = displayName.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return displayName.slice(0, 2).toUpperCase() || 'AK';
+  }, [displayName]);
+
   return (
     <div
       style={{
@@ -169,9 +184,9 @@ export default function AppleHealthDashboard() {
         color: '#FFFFFF',
       }}
     >
-      {/* ── Desktop Phone Frame (390x844 on >=768px, native mobile on <768px) ── */}
+      {/* ── Mobile-First Responsive Container (Clean max-width 430px, no faux phone borders) ── */}
       <div
-        className="w-full md:w-[390px] md:h-[844px] md:rounded-[48px] md:border md:border-white/10 md:shadow-[0_0_80px_-10px_rgba(0,0,0,0.95)] flex flex-col relative overflow-hidden bg-black"
+        className="w-full flex flex-col relative bg-black mx-auto"
         style={{
           maxWidth: layout.phoneMaxWidth,
           minHeight: '100dvh',
@@ -199,51 +214,7 @@ export default function AppleHealthDashboard() {
           }}
         />
 
-        {/* ── Phone Status Bar (2:10, WiFi, Cellular, Battery 38) ── */}
-        <div
-          style={{
-            position: 'relative',
-            zIndex: 10,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '12px 24px 4px 24px',
-            fontSize: 14,
-            fontWeight: 600,
-            letterSpacing: '-0.02em',
-          }}
-        >
-          <span>2:10</span>
-          {/* Speaker / Dynamic Island notch simulation for desktop */}
-          <div
-            className="hidden md:block"
-            style={{
-              width: 110,
-              height: 28,
-              backgroundColor: '#000000',
-              borderRadius: dimensions.pillRadius,
-            }}
-          />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 11, letterSpacing: 1 }}>📶</span>
-            <Wifi size={13} strokeWidth={2.5} />
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                borderRadius: 5,
-                padding: '1px 4px',
-                fontSize: 10,
-                fontWeight: 700,
-              }}
-            >
-              38
-            </div>
-          </div>
-        </div>
-
-        {/* ── Scrollable Screen Body ───────────────────────────── */}
+        {/* ── Scrollable Screen Body (Natural top safe-area padding, NO fake clock/battery) ── */}
         <div
           style={{
             position: 'relative',
@@ -251,7 +222,7 @@ export default function AppleHealthDashboard() {
             flex: 1,
             overflowY: 'auto',
             overflowX: 'hidden',
-            padding: `12px 18px 96px 18px`,
+            padding: `max(20px, env(safe-area-inset-top)) 18px 96px 18px`,
             display: 'flex',
             flexDirection: 'column',
             gap: layout.sectionGap,
@@ -269,7 +240,7 @@ export default function AppleHealthDashboard() {
               style={{ display: 'flex', flexDirection: 'column', gap: layout.sectionGap }}
             >
               {/* Summary Header with Profile Avatar "AK" */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 4 }}>
                 <h1
                   style={{
                     fontSize: 34,
@@ -282,12 +253,12 @@ export default function AppleHealthDashboard() {
                   Summary
                 </h1>
 
-                {/* Profile Circle Avatar ("AK") -> Taps open Settings Sheet */}
+                {/* Profile Circle Avatar ("AK") -> Taps open Apple Health Account Sheet */}
                 <motion.button
                   type="button"
-                  onClick={() => setIsSettingsOpen(true)}
+                  onClick={() => setIsAccountOpen(true)}
                   whileTap={{ scale: press.scale }}
-                  aria-label="Account and Stream Settings"
+                  aria-label="Open Account & Application Settings"
                   style={{
                     width: 38,
                     height: 38,
@@ -302,7 +273,7 @@ export default function AppleHealthDashboard() {
                     padding: 0,
                   }}
                 >
-                  <span style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF' }}>AK</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF' }}>{initials}</span>
                 </motion.button>
               </div>
 
@@ -365,7 +336,7 @@ export default function AppleHealthDashboard() {
                         <div>
                           <motion.button
                             type="button"
-                            onClick={() => setIsSettingsOpen(true)}
+                            onClick={() => setIsAccountOpen(true)}
                             whileTap={{ scale: press.scale }}
                             style={{
                               backgroundColor: '#1A3B66',
@@ -697,6 +668,7 @@ export default function AppleHealthDashboard() {
                         <div style={{ marginTop: 6 }}>
                           <motion.button
                             type="button"
+                            onClick={() => setIsAccountOpen(true)}
                             whileTap={{ scale: press.scale }}
                             style={{
                               backgroundColor: '#1A3B66',
@@ -752,17 +724,42 @@ export default function AppleHealthDashboard() {
               transition={{ duration: 0.2 }}
               style={{ display: 'flex', flexDirection: 'column', gap: layout.sectionGap }}
             >
-              <h1
-                style={{
-                  fontSize: 34,
-                  fontWeight: 700,
-                  lineHeight: '41px',
-                  margin: 0,
-                  letterSpacing: '-0.03em',
-                }}
-              >
-                Browse
-              </h1>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 4 }}>
+                <h1
+                  style={{
+                    fontSize: 34,
+                    fontWeight: 700,
+                    lineHeight: '41px',
+                    margin: 0,
+                    letterSpacing: '-0.03em',
+                  }}
+                >
+                  Browse
+                </h1>
+
+                {/* Profile Circle Avatar ("AK") -> Taps open Apple Health Account Sheet */}
+                <motion.button
+                  type="button"
+                  onClick={() => setIsAccountOpen(true)}
+                  whileTap={{ scale: press.scale }}
+                  aria-label="Open Account & Application Settings"
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: dimensions.pillRadius,
+                    background: 'linear-gradient(135deg, #7AA5F8 0%, #D88277 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                    padding: 0,
+                  }}
+                >
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF' }}>{initials}</span>
+                </motion.button>
+              </div>
 
               {/* Pill Search Input with Mic Icon */}
               <div
@@ -859,7 +856,7 @@ export default function AppleHealthDashboard() {
               transition={{ duration: 0.2 }}
               style={{ display: 'flex', flexDirection: 'column', gap: layout.sectionGap }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 4 }}>
                 <h1
                   style={{
                     fontSize: 34,
@@ -872,7 +869,10 @@ export default function AppleHealthDashboard() {
                   Sharing
                 </h1>
 
-                <div
+                <motion.button
+                  type="button"
+                  onClick={() => setIsAccountOpen(true)}
+                  whileTap={{ scale: press.scale }}
                   style={{
                     width: 38,
                     height: 38,
@@ -881,10 +881,13 @@ export default function AppleHealthDashboard() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
                   }}
                 >
-                  <span style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF' }}>AK</span>
-                </div>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF' }}>{initials}</span>
+                </motion.button>
               </div>
 
               {/* Guardian Sharing Card */}
@@ -918,7 +921,7 @@ export default function AppleHealthDashboard() {
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: 16, fontWeight: 600, color: '#FFFFFF' }}>
-                        Aditya Kumbhar (Primary Guardian)
+                        {displayName} (Primary Guardian)
                       </span>
                       <span style={{ fontSize: 13, color: colors.textSecondary }}>
                         Continuous fall alerts &amp; rhythm notifications active
@@ -1057,116 +1060,356 @@ export default function AppleHealthDashboard() {
         </div>
       </div>
 
-      {/* ── SETTINGS BOTTOM SHEET (Mock vs. BLE ESP32) ─────────── */}
-      <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen} title="Device & Telemetry Stream">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: layout.sectionGap, paddingTop: layout.gridUnit }}>
+      {/* ═══════════════════════════════════════════════════════
+          APPLE HEALTH ACCOUNT & APPLICATION SETTINGS SHEET
+          (Triggered on tapping the "AK" avatar)
+         ═══════════════════════════════════════════════════════ */}
+      <Sheet open={isAccountOpen} onOpenChange={setIsAccountOpen} title="Account & Application Settings">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, paddingTop: 4 }}>
+          {/* Top Bar: Title & Done Button */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ fontSize: 20, fontWeight: 700, color: colors.textPrimary, margin: 0 }}>
-              Device Stream Settings
-            </h3>
+            <span style={{ fontSize: 18, fontWeight: 700, color: '#FFFFFF' }}>Account</span>
             <button
               type="button"
-              onClick={() => setIsSettingsOpen(false)}
+              onClick={() => setIsAccountOpen(false)}
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: colors.textSecondary,
+                color: '#2997FF',
+                fontSize: 16,
+                fontWeight: 600,
                 cursor: 'pointer',
-                padding: 4,
+                padding: '4px 8px',
               }}
             >
-              <X size={20} />
+              Done
             </button>
           </div>
 
-          <p style={{ fontSize: 14, color: colors.textSecondary, margin: 0 }}>
-            Toggle between the deterministic 90s test loop and direct ESP32-C3 Web Bluetooth streaming.
-          </p>
-
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: layout.gridUnit,
-              backgroundColor: 'rgba(255, 255, 255, 0.04)',
-              padding: layout.gridUnit,
-              borderRadius: dimensions.cardRadius / 2,
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => handleModeChange('mock')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: layout.gridUnit,
-                padding: '12px 16px',
-                borderRadius: dimensions.cardRadius / 2,
-                border: 'none',
-                backgroundColor: transportMode === 'mock' ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
-                color: colors.textPrimary,
-                fontSize: 15,
-                fontWeight: 600,
-                cursor: 'pointer',
-                textAlign: 'left',
-              }}
-            >
-              <Radio size={18} color={transportMode === 'mock' ? colors.heart : colors.textSecondary} />
+          {/* User Profile Card */}
+          <Card>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: dimensions.pillRadius,
+                  background: 'linear-gradient(135deg, #7AA5F8 0%, #D88277 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <span style={{ fontSize: 20, fontWeight: 700, color: '#FFFFFF' }}>{initials}</span>
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span>Mock 90s Loop</span>
-                <span style={{ fontSize: 12, fontWeight: 400, color: colors.textSecondary }}>
-                  Deterministic scenario: calm, tachycardia, fall at t=40s, disconnect, reconnect.
+                <span style={{ fontSize: 18, fontWeight: 700, color: '#FFFFFF' }}>{displayName}</span>
+                <span style={{ fontSize: 13, color: colors.textSecondary }}>
+                  Primary Guardian • Band: {displayBandId}
                 </span>
               </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleModeChange('ble')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: layout.gridUnit,
-                padding: '12px 16px',
-                borderRadius: dimensions.cardRadius / 2,
-                border: 'none',
-                backgroundColor: transportMode === 'ble' ? 'rgba(255, 255, 255, 0.12)' : 'transparent',
-                color: colors.textPrimary,
-                fontSize: 15,
-                fontWeight: 600,
-                cursor: 'pointer',
-                textAlign: 'left',
-              }}
-            >
-              <Bluetooth size={18} color={transportMode === 'ble' ? colors.spo2 : colors.textSecondary} />
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span>Web Bluetooth (ESP32-C3)</span>
-                <span style={{ fontSize: 12, fontWeight: 400, color: colors.textSecondary }}>
-                  Connect over Web Bluetooth GATT to Seeed Studio XIAO hardware.
-                </span>
-              </div>
-            </button>
-          </div>
-
-          {!isBleSupported && (
-            <div
-              style={{
-                padding: 12,
-                borderRadius: 12,
-                backgroundColor: 'rgba(255, 159, 10, 0.12)',
-                border: '1px solid rgba(255, 159, 10, 0.25)',
-              }}
-            >
-              <span style={{ fontSize: 13, color: colors.irregular, lineHeight: '18px', display: 'block' }}>
-                <strong>Note:</strong> Web Bluetooth is supported on Google Chrome (Android, macOS, Windows). iOS Safari does not support Web Bluetooth.
-              </span>
             </div>
-          )}
+          </Card>
+
+          {/* Section 1: Telemetry Stream Settings */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: colors.textSecondary,
+                paddingLeft: 4,
+              }}
+            >
+              Hardware &amp; Telemetry Stream
+            </span>
+
+            <Card style={{ padding: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <button
+                  type="button"
+                  onClick={() => handleModeChange('mock')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '12px 14px',
+                    borderRadius: 14,
+                    border: 'none',
+                    backgroundColor: transportMode === 'mock' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                    color: '#FFFFFF',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <Radio size={18} color={transportMode === 'mock' ? colors.heart : colors.textSecondary} />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: 15, fontWeight: 600 }}>Mock 90s Loop</span>
+                      <span style={{ fontSize: 12, color: colors.textSecondary }}>
+                        Deterministic scenarios: calm, tachycardia, fall at t=40s
+                      </span>
+                    </div>
+                  </div>
+                  {transportMode === 'mock' && <Check size={18} color="#2997FF" strokeWidth={2.5} />}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleModeChange('ble')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '12px 14px',
+                    borderRadius: 14,
+                    border: 'none',
+                    backgroundColor: transportMode === 'ble' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                    color: '#FFFFFF',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <Bluetooth size={18} color={transportMode === 'ble' ? colors.spo2 : colors.textSecondary} />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: 15, fontWeight: 600 }}>Web Bluetooth (ESP32-C3)</span>
+                      <span style={{ fontSize: 12, color: colors.textSecondary }}>
+                        Connect direct to Seeed Studio XIAO wrist hardware
+                      </span>
+                    </div>
+                  </div>
+                  {transportMode === 'ble' && <Check size={18} color="#2997FF" strokeWidth={2.5} />}
+                </button>
+              </div>
+            </Card>
+
+            {!isBleSupported && (
+              <div
+                style={{
+                  padding: 10,
+                  borderRadius: 12,
+                  backgroundColor: 'rgba(255, 159, 10, 0.12)',
+                  border: '1px solid rgba(255, 159, 10, 0.25)',
+                }}
+              >
+                <span style={{ fontSize: 12, color: colors.irregular, lineHeight: '17px', display: 'block' }}>
+                  <strong>iOS Note:</strong> Safari does not support the Web Bluetooth API. Use Chrome on Android, Windows, or Mac.
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Section 2: Original Application Feature Navigation */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: colors.textSecondary,
+                paddingLeft: 4,
+              }}
+            >
+              Features &amp; Clinical Data
+            </span>
+
+            <Card style={{ padding: '4px 12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {/* Path 1: Clinical Records & Historical Trends */}
+                <Link
+                  href="/records"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 4px',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+                    color: '#FFFFFF',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        backgroundColor: '#30D158',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <FileText size={18} color="#000000" />
+                    </div>
+                    <span style={{ fontSize: 15, fontWeight: 600 }}>Clinical Records &amp; Trends</span>
+                  </div>
+                  <ChevronRight size={18} color={colors.textSecondary} />
+                </Link>
+
+                {/* Path 2: Feel Lab Token Calibration */}
+                <Link
+                  href="/feel-lab"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 4px',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+                    color: '#FFFFFF',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        backgroundColor: '#5E5CE6',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Sliders size={18} color="#FFFFFF" />
+                    </div>
+                    <span style={{ fontSize: 15, fontWeight: 600 }}>Feel Lab Calibration</span>
+                  </div>
+                  <ChevronRight size={18} color={colors.textSecondary} />
+                </Link>
+
+                {/* Path 3: Test Fall Alarm Emergency Sequence */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAccountOpen(false);
+                    setManualFallActive(true);
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '14px 4px',
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#FFFFFF',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        backgroundColor: '#FF453A',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <ShieldAlert size={18} color="#FFFFFF" />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: 15, fontWeight: 600 }}>Test Fall Alarm (30s Sequence)</span>
+                      <span style={{ fontSize: 12, color: colors.textSecondary }}>
+                        Trigger emergency countdown and slide-to-confirm rail
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight size={18} color={colors.textSecondary} />
+                </button>
+              </div>
+            </Card>
+          </div>
+
+          {/* Section 3: Hardware & Safety Specs */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: colors.textSecondary,
+                paddingLeft: 4,
+              }}
+            >
+              Hardware Configuration
+            </span>
+
+            <Card style={{ padding: '14px 16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                  <span style={{ color: colors.textSecondary }}>Microcontroller</span>
+                  <span style={{ fontWeight: 600 }}>Seeed Studio XIAO ESP32-C3</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                  <span style={{ color: colors.textSecondary }}>Biometric Sensor</span>
+                  <span style={{ fontWeight: 600 }}>MAX30102 (HR + SpO2)</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                  <span style={{ color: colors.textSecondary }}>Motion &amp; Fall Sensor</span>
+                  <span style={{ fontWeight: 600 }}>MPU6050 (3-Axis SVM)</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                  <span style={{ color: colors.textSecondary }}>Fall Escalation Auto-SMS</span>
+                  <span style={{ fontWeight: 600, color: '#30D158' }}>Armed (30s countdown)</span>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Section 4: Log Out */}
+          <div style={{ padding: '4px 0 24px 0' }}>
+            <Card style={{ padding: '12px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  logout();
+                  setIsAccountOpen(false);
+                }}
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#FF453A',
+                  fontSize: 15,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  padding: '4px 0',
+                }}
+              >
+                <LogOut size={16} />
+                Sign Out of VitalGuard C3
+              </button>
+            </Card>
+          </div>
         </div>
       </Sheet>
 
       {/* ── Fall Alert Sheet Flow (Full-Screen Verification) ───── */}
-      <FallAlertSheet open={status === 'fall'} onConfirmSafe={dismissFall} />
+      <FallAlertSheet
+        open={status === 'fall' || manualFallActive}
+        onConfirmSafe={() => {
+          dismissFall();
+          setManualFallActive(false);
+        }}
+      />
     </div>
   );
 }
