@@ -39,7 +39,6 @@ export default function ClinicalSummaryCard() {
           <h2 className={`text-base sm:text-lg font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
             30-Day Baseline Summary
           </h2>
-          <span className="text-[11px] text-slate-400">Resting physiological averages</span>
         </div>
 
         <button

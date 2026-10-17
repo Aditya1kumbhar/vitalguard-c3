@@ -13,7 +13,7 @@ import {
   Tooltip,
   ReferenceLine,
 } from "recharts";
-import { Calendar, Heart, Droplets, Thermometer, AlertTriangle, RefreshCw, Database } from "lucide-react";
+import { Calendar, Heart, Droplets, Thermometer, AlertTriangle, RefreshCw } from "lucide-react";
 import { GlassIcon } from "./GlassIcon";
 import { useTheme } from "../context/ThemeContext";
 import { getApiBase, authFetch } from "../utils/api";
@@ -49,7 +49,6 @@ export default function HistoricalTrends() {
   const [error, setError] = useState<string | null>(null);
   const [daysRange, setDaysRange] = useState<number>(30);
   const [activeTab, setActiveTab] = useState<MetricTab>("hr");
-  const [storageSource, setStorageSource] = useState<"Live Bridge" | "IndexedDB (Offline)">("IndexedDB (Offline)");
 
   useEffect(() => {
     async function loadTrends() {
@@ -60,7 +59,6 @@ export default function HistoricalTrends() {
         if (!res.ok) throw new Error(`HTTP error ${res.status}`);
         const json: DailySummary[] = await res.json();
         setData(json);
-        setStorageSource("Live Bridge");
 
         const dbRecords: DailyRecord[] = json.map((item) => ({
           dateKey: item.date,
@@ -101,7 +99,6 @@ export default function HistoricalTrends() {
           }));
 
           setData(mapped.slice(-daysRange));
-          setStorageSource("IndexedDB (Offline)");
         } catch {
           setError("Failed to load local offline database");
         }
@@ -131,14 +128,9 @@ export default function HistoricalTrends() {
         <div className="flex items-center gap-3">
           <GlassIcon name="calendar" size="md" />
           <div>
-            <h2 className={`text-base sm:text-lg font-bold tracking-tight flex items-center gap-2 ${isDark ? "text-white" : "text-slate-900"}`}>
-              <span>Historical Trends</span>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <Database className="w-2.5 h-2.5" />
-                {storageSource}
-              </span>
+            <h2 className={`text-base sm:text-lg font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
+              Historical Trends
             </h2>
-            <span className="text-[11px] text-slate-400">Continuous telemetry aggregate</span>
           </div>
         </div>
 

@@ -242,64 +242,57 @@ export default function VitalGuardCompanionDashboard() {
           boxSizing: 'border-box',
         }}
       >
-        {/* ── Distinct VitalGuard C3 Header ──────────────────────────── */}
-        <header className="flex items-center justify-between pb-4 sm:pb-6 border-b border-slate-200 dark:border-white/8">
-          <div className="flex items-center gap-3">
-            {/* Apple Icon-Style IconScout Glassmorphism Logo */}
-            <GlassLogo
-              size={46}
-              isFalling={isCurrentlyFalling}
-              showStatusDot={true}
-            />
+        {/* ── Distinct VitalGuard C3 Header (Only on Vitals Tab) ──────────────────────────── */}
+        {activeTab === 'summary' && (
+          <header className="flex items-center justify-between pb-4 sm:pb-6 border-b border-slate-200 dark:border-white/8">
+            <div className="flex items-center gap-3">
+              {/* Apple Icon-Style IconScout Glassmorphism Logo */}
+              <GlassLogo
+                size={46}
+                isFalling={isCurrentlyFalling}
+                showStatusDot={true}
+              />
 
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-                  VitalGuard
-                </span>
-                <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-bold bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 tracking-wider">
-                  C3
-                </span>
-              </div>
-              <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-400">
-                <span className="font-medium text-slate-700 dark:text-slate-300">{displayName}</span>
-                <span className="text-slate-400 dark:text-white/20">•</span>
-                <span className="font-mono text-[11px] text-cyan-600 dark:text-cyan-400/90">
-                  {transportMode === 'mock' ? 'MOCK LOOP (90s)' : 'ESP32-C3 BLE'}
-                </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                    VitalGuard
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-bold bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 tracking-wider">
+                    C3
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Right Header: iOS 27 Glassmorphic Theme Toggle + Settings */}
-          <div className="flex items-center gap-2.5 sm:gap-3.5">
-            <ThemeToggle size="sm" />
-
-            <motion.button
-              type="button"
-              onClick={() => setIsAccountOpen(true)}
-              whileTap={{ scale: press.scale }}
-              aria-label="Open Account and Device Settings"
-              className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl transition-colors cursor-pointer bg-black/5 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-cyan-400/40"
-            >
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 0 12px rgba(14, 165, 233, 0.4)',
-                }}
+            {/* Right Header: Settings Sheet Button (Theme Toggle is inside Settings) */}
+            <div className="flex items-center gap-2.5 sm:gap-3.5">
+              <motion.button
+                type="button"
+                onClick={() => setIsAccountOpen(true)}
+                whileTap={{ scale: press.scale }}
+                aria-label="Open Account and Device Settings"
+                className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl transition-colors cursor-pointer bg-black/5 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-cyan-400/40"
               >
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#FFFFFF' }}>{initials}</span>
-              </div>
-              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 hidden sm:inline">Settings</span>
-            </motion.button>
-          </div>
-        </header>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 0 12px rgba(14, 165, 233, 0.4)',
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 800, color: '#FFFFFF' }}>{initials}</span>
+                </div>
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 hidden sm:inline">Settings</span>
+              </motion.button>
+            </div>
+          </header>
+        )}
 
         {/* ═════════════════════════════════════════════════════════════
             TAB 1: SUMMARY (Dual Column on PC, Single Column on Mobile)
@@ -312,17 +305,13 @@ export default function VitalGuardCompanionDashboard() {
             transition={{ duration: 0.2 }}
             className="mt-5 sm:mt-6 flex flex-col gap-6"
           >
-            {/* Title & Section Subtitle */}
+            {/* Title */}
             <div className="flex items-baseline justify-between">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                   Live Vitals Summary
                 </h1>
               </div>
-
-              <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
-                {isConnected ? 'STREAMING ACTIVE' : 'DISCONNECTED'}
-              </span>
             </div>
 
             {/* PC Responsive 12-Column Grid */}
@@ -420,49 +409,9 @@ export default function VitalGuardCompanionDashboard() {
                     </div>
                   </Card>
                 </div>
-
-                {/* Quick Hardware Controls & Emergency Fall Trigger */}
-                <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
-                  <div className="flex flex-col gap-3">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                      Hardware Connection
-                    </span>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-300">Band ID</span>
-                      <span className="font-mono text-cyan-400 font-bold">{displayBandId}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-300">GATT Service UUID</span>
-                      <span className="font-mono text-slate-400">0x180D (Heart Rate)</span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/6">
-                      <button
-                        type="button"
-                        onClick={handleConnectionToggle}
-                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-all ${
-                          isConnected
-                            ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30 hover:bg-rose-500/25'
-                            : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25'
-                        }`}
-                      >
-                        {isConnected ? 'Disconnect' : 'Connect Band'}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setManualFallActive(true)}
-                        className="py-2 px-3 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        <GlassIcon name="alert" size={16} variant="amber" interactive={false} glow={false} />
-                        <span>Test Alarm</span>
-                      </button>
-                    </div>
-                  </div>
-                </Card>
               </div>
 
-              {/* ── Right Column: 60s Sparkline, Rhythm Alerts, Wellbeing, Checklist ── */}
+              {/* ── Right Column: 60s Sparkline ── */}
               <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-5">
                 {/* 60-Second Real-Time PPG Heart Rate Sparkline */}
                 <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
@@ -473,9 +422,6 @@ export default function VitalGuardCompanionDashboard() {
                         <div>
                           <span className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
                             PPG Pulse Waveform (Rolling 60 Seconds)
-                          </span>
-                          <span className="text-xs text-slate-400">
-                            Optical capillary reflectance waveform streamed in real time
                           </span>
                         </div>
                       </div>
@@ -517,29 +463,6 @@ export default function VitalGuardCompanionDashboard() {
                     </div>
                   </div>
                 </Card>
-
-                {/* Autonomic Nervous System & HRV Balance */}
-                <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <GlassIcon name="brain" size="md" variant="cyan" />
-                      <div>
-                        <span className="text-sm font-bold text-slate-900 dark:text-white block">Autonomic Nervous System &amp; HRV Balance</span>
-                        <span className="text-xs text-slate-400">
-                          Autonomic balance check calculated from continuous beat-to-beat interval variance
-                        </span>
-                      </div>
-                    </div>
-
-                    <Link
-                      href="/feel-lab"
-                      className="px-4 py-2.5 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white transition-colors shrink-0 flex items-center gap-2"
-                    >
-                      <GlassIcon name="sliders" size={16} variant="slate" interactive={false} glow={false} />
-                      <span>Calibrate Feel Lab</span>
-                    </Link>
-                  </div>
-                </Card>
               </div>
             </div>
           </motion.div>
@@ -554,21 +477,14 @@ export default function VitalGuardCompanionDashboard() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="mt-5 sm:mt-6 flex flex-col gap-6"
+            className="mt-1 sm:mt-2 flex flex-col gap-6"
           >
             <div className="flex items-baseline justify-between">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                   Clinical Records &amp; Medical Vitals
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                  Resting vitals baseline, physiological risk score, and clinical telemetry analytics
-                </p>
               </div>
-
-              <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/25">
-                INDEXEDDB ACTIVE
-              </span>
             </div>
 
             {/* Responsive 12-Column Grid */}
@@ -596,15 +512,12 @@ export default function VitalGuardCompanionDashboard() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="mt-5 sm:mt-6 flex flex-col gap-6"
+            className="mt-1 sm:mt-2 flex flex-col gap-6"
           >
             <div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 Fall Detection &amp; Safety Report
               </h1>
-              <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                Continuous 3-Axis SVM impact telemetry and 30-day FIFO retention log
-              </p>
             </div>
 
             {/* PC Responsive 12-Column Grid */}
@@ -621,13 +534,11 @@ export default function VitalGuardCompanionDashboard() {
                           Live 3-Axis SVM Accelerometer
                         </span>
                       </div>
-                      <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded ${
-                        isCurrentlyFalling
-                          ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse'
-                          : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25'
-                      }`}>
-                        {isCurrentlyFalling ? 'IMPACT DETECTED' : 'ARMED & MONITORING'}
-                      </span>
+                      {isCurrentlyFalling && (
+                        <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse">
+                          IMPACT DETECTED
+                        </span>
+                      )}
                     </div>
 
                     {/* Numerical G-Force Display */}
@@ -637,11 +548,6 @@ export default function VitalGuardCompanionDashboard() {
                           {liveSvm.toFixed(2)}
                         </span>
                         <span className="text-base font-bold text-slate-400 ml-1.5">G</span>
-                      </div>
-
-                      <div className="text-right">
-                        <span className="text-xs text-slate-400 block">Sensor Chip</span>
-                        <span className="text-xs font-mono font-bold text-cyan-400">MPU6050 (50Hz)</span>
                       </div>
                     </div>
 
@@ -707,24 +613,6 @@ export default function VitalGuardCompanionDashboard() {
                     </div>
                   </div>
                 </Card>
-
-                {/* Emergency Automated SMS Escalation Status */}
-                <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
-                  <div className="flex flex-col gap-3">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                      Automated Fall Escalation
-                    </span>
-                    <div className={`flex items-center gap-3 p-3 rounded-xl border ${
-                      isDark ? 'bg-white/[0.04] border-white/[0.06]' : 'bg-slate-50 border-slate-200'
-                    }`}>
-                      <GlassIcon name="users" size="md" variant="cyan" />
-                      <div>
-                        <span className={`text-xs font-bold block ${isDark ? 'text-white' : 'text-slate-900'}`}>{displayName} (Guardian)</span>
-                        <span className="text-[11px] text-slate-400">Emergency Contact Priority 1</span>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
               </div>
 
               {/* ── Right Column: 30-Day FIFO Algorithm Report & Daily History ── */}
@@ -739,7 +627,6 @@ export default function VitalGuardCompanionDashboard() {
                           30-Day Rolling FIFO Ring Buffer
                         </span>
                       </div>
-                      <span className="text-[11px] font-mono text-slate-400">IndexedDB Engine</span>
                     </div>
 
                     {/* KPI Scoreboard */}
@@ -780,7 +667,7 @@ export default function VitalGuardCompanionDashboard() {
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                        Past 30 Days Audit Log ({thirtyDayRecords.length} Days Retained)
+                        Past 30 Days Audit Log
                       </span>
                     </div>
 

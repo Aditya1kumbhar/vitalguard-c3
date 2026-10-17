@@ -25,7 +25,6 @@ export default function RiskScoreCard() {
   const { isDark } = useTheme();
   const [score, setScore] = useState<number>(93);
   const [level, setLevel] = useState<string>("safe");
-  const [recommendation, setRecommendation] = useState<string>("Patient is stable. Continue routine monitoring.");
   const [factors, setFactors] = useState<Factor[]>([]);
   const [stats, setStats] = useState<SummaryStats>({
     avg_hr: 72,
@@ -47,7 +46,6 @@ export default function RiskScoreCard() {
         const safety = Math.round(Math.max(10, Math.min(100, 100 - risk)));
         setScore(safety);
         setLevel(safety >= 75 ? "safe" : safety >= 50 ? "watch" : "danger");
-        if (d.recommendation) setRecommendation(d.recommendation);
         if (Array.isArray(d.factors)) setFactors(d.factors);
         if (d.summary_stats) setStats(d.summary_stats);
       }
@@ -82,7 +80,6 @@ export default function RiskScoreCard() {
             <h2 className={`text-base sm:text-lg font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
               Safety Score
             </h2>
-            <span className="text-[11px] text-slate-400">Clinical index computed from telemetry</span>
           </div>
         </div>
 
@@ -117,23 +114,6 @@ export default function RiskScoreCard() {
             </span>
             <span className="text-sm font-bold text-slate-400">/ 100</span>
           </div>
-        </div>
-
-        <div className="flex flex-col items-end gap-1.5 text-right max-w-[55%]">
-          <span
-            className={`px-3 py-1 rounded-lg font-extrabold text-xs tracking-wide ${
-              isSafe
-                ? (isDark ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" : "bg-emerald-500/15 text-emerald-700 border border-emerald-500/30")
-                : isWatch
-                ? (isDark ? "bg-amber-500/20 text-amber-300 border border-amber-500/40" : "bg-amber-500/15 text-amber-800 border border-amber-500/30")
-                : (isDark ? "bg-rose-500/20 text-rose-300 border border-rose-500/40" : "bg-rose-500/15 text-rose-700 border border-rose-500/30")
-            }`}
-          >
-            {isSafe ? "NOMINAL & SAFE" : isWatch ? "MONITORING ADVISORY" : "ELEVATED RISK"}
-          </span>
-          <span className={`text-[11px] line-clamp-2 ${isDark ? "text-slate-300" : "text-slate-700 font-medium"}`}>
-            {recommendation}
-          </span>
         </div>
       </div>
 
