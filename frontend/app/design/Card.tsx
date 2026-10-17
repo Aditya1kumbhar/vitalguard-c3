@@ -2,13 +2,14 @@
 
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { radius, shadow, palette, press, spring, space } from './motion.tokens';
+import { colors, dimensions, layout, press, spring } from './motion.tokens';
 
 export interface CardProps {
   children: React.ReactNode;
   onPress?: () => void;
   disabled?: boolean;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -16,6 +17,7 @@ export const Card: React.FC<CardProps> = ({
   onPress,
   disabled = false,
   className = '',
+  style = {},
 }) => {
   const shouldReduceMotion = useReducedMotion();
   const isInteractive = Boolean(onPress) && !disabled;
@@ -43,19 +45,22 @@ export const Card: React.FC<CardProps> = ({
       }
       transition={{
         type: 'spring',
-        stiffness: spring.snappy.stiffness,
-        damping: spring.snappy.damping,
-        mass: spring.snappy.mass,
+        stiffness: spring.default.stiffness,
+        damping: spring.default.damping,
+        mass: spring.default.mass,
       }}
       style={{
-        borderRadius: radius.lg,
-        boxShadow: shadow.card,
-        backgroundColor: palette.light.surface,
-        padding: space.md,
+        borderRadius: dimensions.cardRadius,
+        backgroundColor: colors.card,
+        border: `1px solid ${colors.cardBorder}`,
+        boxShadow: 'none',
+        padding: layout.pagePadding,
         opacity: disabled ? 0.4 : 1,
         cursor: isInteractive ? 'pointer' : 'default',
         userSelect: isInteractive ? 'none' : 'auto',
         outline: 'none',
+        boxSizing: 'border-box',
+        ...style,
       }}
     >
       {children}

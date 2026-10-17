@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Drawer } from 'vaul';
-import { palette, radius, shadow, space, zIndex } from './motion.tokens';
+import { colors, dimensions, layout } from './motion.tokens';
 
 export interface SheetProps {
   open: boolean;
@@ -33,8 +33,8 @@ export const Sheet: React.FC<SheetProps> = ({
           style={{
             position: 'fixed',
             inset: 0,
-            backgroundColor: palette.light.sheetOverlay,
-            zIndex: zIndex.sheet,
+            backgroundColor: colors.sheetOverlay,
+            zIndex: 50,
           }}
         />
         <Drawer.Content
@@ -44,15 +44,20 @@ export const Sheet: React.FC<SheetProps> = ({
             left: 0,
             right: 0,
             maxHeight: '94vh',
-            backgroundColor: palette.light.surface,
-            borderTopLeftRadius: radius.lg,
-            borderTopRightRadius: radius.lg,
-            boxShadow: shadow.sheet,
-            zIndex: zIndex.sheet,
+            maxWidth: 430,
+            margin: '0 auto',
+            backgroundColor: colors.card,
+            borderTopLeftRadius: dimensions.cardRadius,
+            borderTopRightRadius: dimensions.cardRadius,
+            borderTop: `1px solid ${colors.cardBorder}`,
+            borderLeft: `1px solid ${colors.cardBorder}`,
+            borderRight: `1px solid ${colors.cardBorder}`,
+            boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.85)',
+            zIndex: 50,
             display: 'flex',
             flexDirection: 'column',
             outline: 'none',
-            paddingBottom: space.safe,
+            paddingBottom: layout.pagePadding,
           }}
         >
           {/* Handle bar */}
@@ -61,9 +66,9 @@ export const Sheet: React.FC<SheetProps> = ({
             style={{
               width: 36,
               height: 5,
-              borderRadius: radius.full,
-              backgroundColor: palette.light.border,
-              margin: `${space.sm}px auto ${space.sm}px auto`,
+              borderRadius: dimensions.pillRadius,
+              backgroundColor: 'rgba(255, 255, 255, 0.20)',
+              margin: `${layout.gridUnit}px auto ${layout.gridUnit}px auto`,
               flexShrink: 0,
             }}
           />
@@ -88,7 +93,7 @@ export const Sheet: React.FC<SheetProps> = ({
 
           <div
             style={{
-              padding: `0 ${space.lg}px ${space.md}px ${space.lg}px`,
+              padding: `0 ${layout.pagePadding}px ${layout.sectionGap}px ${layout.pagePadding}px`,
               overflowY: 'auto',
               flex: 1,
             }}

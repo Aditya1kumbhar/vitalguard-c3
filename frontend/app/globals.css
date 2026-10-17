@@ -3,138 +3,26 @@
 @tailwind utilities;
 
 :root {
-  --ambient-speed: 0.3s;
-  --ambient-gradient: linear-gradient(170deg, #F5F5F7 0%, #E8E8ED 100%);
-  /* Biofarma-inspired Design Tokens */
-  --bg-primary: #F9F8FF;
-  --text-primary: #01373D;
-  --text-muted: #44706A;
-  --accent-crimson: #FE336A;
-  --accent-crimson-dark: #CE1A4D;
-  --card-tint: #F1F4F9;
-  --card-tint-blue: #EAF1FF;
-  --border-soft: rgba(1, 55, 61, 0.08);
-  --glow-pink: rgba(254, 51, 106, 0.08);
-  --glow-cyan: rgba(56, 189, 248, 0.06);
+  color-scheme: dark;
 }
 
 html,
 body {
-  background: var(--ambient-gradient);
-  transition: background var(--ambient-speed);
-  color: var(--text-primary);
+  background-color: #000000;
+  color: #FFFFFF;
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  font-family: var(--font-dm-sans), "DM Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-attachment: fixed;
   overflow-x: hidden;
 }
 
-/* Biofarma-style Soft Frost Card */
-.royal-card {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(1, 55, 61, 0.06);
-  box-shadow:
-    0 4px 24px -4px rgba(1, 55, 61, 0.05),
-    0 1px 3px 0 rgba(1, 55, 61, 0.02),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  will-change: transform, box-shadow;
-}
-
-.royal-card-interactive {
-  cursor: pointer;
-  user-select: none;
-}
-
-.royal-card-interactive:hover {
-  transform: translateY(-3px);
-  border-color: rgba(1, 55, 61, 0.1);
-  box-shadow:
-    0 16px 40px -6px rgba(1, 55, 61, 0.08),
-    0 4px 10px -2px rgba(1, 55, 61, 0.03),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 1);
-}
-
-.royal-card-interactive:active {
-  transform: scale(0.975);
-  transition-duration: 0.12s;
-}
-
-/* Biofarma Floating Pill Navbar */
-.dynamic-island {
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
-  border: 1px solid rgba(1, 55, 61, 0.06);
-  box-shadow:
-    0 8px 32px -4px rgba(1, 55, 61, 0.08),
-    0 2px 6px 0 rgba(1, 55, 61, 0.03),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-
-/* Living Vascular Heartbeat Pulse */
-@keyframes living-heartbeat {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 4px 24px -2px rgba(254, 51, 106, 0.04);
-  }
-  15% {
-    transform: scale(1.025);
-    box-shadow: 0 8px 32px 0 rgba(254, 51, 106, 0.16);
-  }
-  28% {
-    transform: scale(0.995);
-  }
-  40% {
-    transform: scale(1.018);
-    box-shadow: 0 6px 28px 0 rgba(254, 51, 106, 0.11);
-  }
-  60% {
-    transform: scale(1);
-    box-shadow: 0 4px 24px -2px rgba(254, 51, 106, 0.04);
-  }
-}
-
-.animate-living-heart {
-  animation: living-heartbeat var(--pulse-speed, 0.85s) infinite ease-in-out;
-}
-
-/* Biofarma Pill Buttons */
-.spring-btn {
-  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  will-change: transform;
-}
-
-.spring-btn:hover {
-  transform: translateY(-1px);
-}
-
-.spring-btn:active {
-  transform: scale(0.95);
-  transition-duration: 0.1s;
-}
-
-/* Biofarma Telemetry Grid (light tint) */
-.telemetry-grid-light {
-  background-color: var(--card-tint);
-  background-image:
-    linear-gradient(to right, rgba(1, 55, 61, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(1, 55, 61, 0.04) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
-/* Biofarma-inspired scrollbars */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -142,52 +30,17 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(1, 55, 61, 0.15);
+  background: rgba(255, 255, 255, 0.16);
   border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(1, 55, 61, 0.25);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(1, 55, 61, 0.15) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+  box-sizing: border-box;
 }
 
 ::selection {
-  background-color: var(--accent-crimson);
-  color: #ffffff;
+  background-color: #FF375F;
+  color: #FFFFFF;
 }
-
-/* Emergency animation - Crimson tint */
-@keyframes emergency-glow {
-  0%, 100% {
-    box-shadow: 0 0 25px rgba(254, 51, 106, 0.35), 0 0 50px rgba(206, 26, 77, 0.15);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 45px rgba(254, 51, 106, 0.65), 0 0 80px rgba(206, 26, 77, 0.3);
-    transform: scale(1.015);
-  }
-}
-
-.animate-emergency-light {
-  animation: emergency-glow 1.2s infinite ease-in-out;
-}
-
-/* Fluid Responsive Container & Transitions */
-.responsive-adaptive {
-  transition: max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              padding 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              gap 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: max-width, padding;
-}
-
-/* Landscape Phone & Tablet Optimization */
-@media (orientation: landscape) and (max-height: 540px) {
-  .min-h-landscape-auto {
-    min-height: auto !important;
-  }
-}
-

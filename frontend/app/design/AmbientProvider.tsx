@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { BandStatus } from '../data/BandFrame';
-import { ambientGradient, ambientGradientDark, duration } from './motion.tokens';
+import { ambientOverlay, colors } from './motion.tokens';
 
 interface AmbientContextValue {
   status: BandStatus;
@@ -32,7 +32,6 @@ export const AmbientProvider: React.FC<AmbientProviderProps> = ({
   const [internalStatus, setInternalStatus] = useState<BandStatus>(initialStatus);
   const [overrideStatus, setOverrideStatus] = useState<BandStatus | null>(null);
 
-  // Sync when prop updates
   useEffect(() => {
     if (initialStatus) {
       setInternalStatus(initialStatus);
@@ -41,27 +40,30 @@ export const AmbientProvider: React.FC<AmbientProviderProps> = ({
 
   const activeStatus = overrideStatus ?? internalStatus;
 
+  const getOverlayForStatus = (st: BandStatus) => {
+    switch (st) {
+      case 'fall':
+        return ambientOverlay.fall;
+      case 'irregular':
+        return ambientOverlay.irregular;
+      case 'disconnected':
+      case 'normalStale':
+        return ambientOverlay.disconnected;
+      case 'normal':
+      case 'reconnecting':
+      case 'lowBattery':
+      default:
+        return ambientOverlay.normal;
+    }
+  };
+
+  const overlayGradient = getOverlayForStatus(activeStatus);
+
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    const applyGradient = () => {
-      const isDark = mediaQuery.matches;
-      const gradient = isDark
-        ? ambientGradientDark[activeStatus]
-        : ambientGradient[activeStatus];
-
-      document.body.style.setProperty('--ambient-speed', `${duration.normal}s`);
-      document.body.style.setProperty('--ambient-gradient', gradient);
-    };
-
-    applyGradient();
-
-    const handler = () => applyGradient();
-    mediaQuery.addEventListener('change', handler);
-    return () => mediaQuery.removeEventListener('change', handler);
-  }, [activeStatus]);
+    if (typeof document !== 'undefined') {
+      document.body.style.backgroundColor = colors.bg;
+    }
+  }, []);
 
   return (
     <AmbientContext.Provider
@@ -72,7 +74,22 @@ export const AmbientProvider: React.FC<AmbientProviderProps> = ({
         setOverrideStatus,
       }}
     >
-      {children}
+      {/* Fixed top-center 600px radial gradient overlay with 1200ms ease transition */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '100vh',
+          pointerEvents: 'none',
+          zIndex: 0,
+          backgroundImage: overlayGradient,
+          transition: `background-image ${ambientOverlay.transition}`,
+        }}
+      />
+      <div style={{ position: 'relative', zIndex: 1 }}>{children}</div>
     </AmbientContext.Provider>
   );
 };

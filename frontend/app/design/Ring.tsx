@@ -2,15 +2,16 @@
 
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ringDefaults, spring, type, palette } from './motion.tokens';
+import { dimensions, spring, colors } from './motion.tokens';
 
 export interface RingProps {
-  value: number;          // 0–100 (or beyond for overdrive)
+  value: number;          // 0–100 or actual HR reading
   max?: number;           // default 100
-  colour: string;         // token colour key, e.g. palette.light.hr
-  bgColour: string;       // ring track colour
-  size?: number;          // px, default ringDefaults.size
-  strokeWidth?: number;   // px, default ringDefaults.strokeWidth
+  colour: string;         // e.g. colors.heart (#FF375F)
+  bgColour: string;       // e.g. colors.heartTrack
+  size?: number;          // px, default dimensions.heroRingSize (200)
+  strokeWidth?: number;   // px, default dimensions.heroRingStroke (16)
+  glowFilter?: string;    // drop-shadow string
   label?: string;         // center top label
   displayValue?: string;  // center large number
   unit?: string;          // center bottom unit
@@ -23,8 +24,9 @@ export const Ring: React.FC<RingProps> = ({
   max = 100,
   colour,
   bgColour,
-  size = ringDefaults.size,
-  strokeWidth = ringDefaults.strokeWidth,
+  size = dimensions.heroRingSize,
+  strokeWidth = dimensions.heroRingStroke,
+  glowFilter,
   label,
   displayValue,
   unit,
@@ -35,7 +37,7 @@ export const Ring: React.FC<RingProps> = ({
   const radiusVal = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radiusVal;
   const clampedMax = max <= 0 ? 100 : max;
-  const progressRatio = value / clampedMax;
+  const progressRatio = Math.max(0, Math.min(value / clampedMax, 1.5));
   const strokeDashoffset = circumference * (1 - progressRatio);
 
   const calculatedAriaLabel =
@@ -58,6 +60,7 @@ export const Ring: React.FC<RingProps> = ({
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
+        filter: glowFilter ?? 'none',
       }}
     >
       <svg
@@ -72,7 +75,7 @@ export const Ring: React.FC<RingProps> = ({
           transformOrigin: '50% 50%',
         }}
       >
-        {/* Track circle */}
+        {/* Track circle (20% opacity) */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -81,7 +84,7 @@ export const Ring: React.FC<RingProps> = ({
           stroke={bgColour}
           strokeWidth={strokeWidth}
         />
-        {/* Animated Progress circle */}
+        {/* Animated Sweep Progress Circle */}
         <motion.circle
           cx={size / 2}
           cy={size / 2}
@@ -96,7 +99,7 @@ export const Ring: React.FC<RingProps> = ({
           transition={
             shouldReduceMotion
               ? { duration: 0 }
-              : { type: 'spring', stiffness: spring.ring.stiffness, damping: spring.ring.damping, mass: spring.ring.mass }
+              : { type: 'spring', stiffness: spring.ring.stiffness, damping: spring.ring.damping }
           }
         />
       </svg>
@@ -111,7 +114,7 @@ export const Ring: React.FC<RingProps> = ({
           justifyContent: 'center',
           textAlign: 'center',
           pointerEvents: 'none',
-          maxWidth: size - strokeWidth * 2 - 8,
+          maxWidth: size - strokeWidth * 2 - 4,
         }}
       >
         {children ? (
@@ -121,12 +124,12 @@ export const Ring: React.FC<RingProps> = ({
             {label && (
               <span
                 style={{
-                  fontSize: type.caption.size,
-                  fontWeight: type.caption.weight,
-                  lineHeight: `${type.caption.leading}px`,
-                  color: palette.light.textSecondary,
-                  letterSpacing: '0.02em',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  letterSpacing: '0.06em',
                   textTransform: 'uppercase',
+                  color: colors.textSecondary,
+                  marginBottom: 2,
                 }}
               >
                 {label}
@@ -134,10 +137,11 @@ export const Ring: React.FC<RingProps> = ({
             )}
             <span
               style={{
-                fontSize: type.title2.size,
-                fontWeight: type.title2.weight,
-                lineHeight: `${type.title2.leading}px`,
-                color: palette.light.text,
+                fontSize: size >= 150 ? 64 : 28,
+                fontWeight: 700,
+                lineHeight: size >= 150 ? '64px' : '34px',
+                fontVariantNumeric: 'tabular-nums',
+                color: colors.textPrimary,
               }}
             >
               {displayValue ?? Math.round(value)}
@@ -145,10 +149,10 @@ export const Ring: React.FC<RingProps> = ({
             {unit && (
               <span
                 style={{
-                  fontSize: type.caption.size,
-                  fontWeight: type.caption.weight,
-                  lineHeight: `${type.caption.leading}px`,
-                  color: palette.light.textSecondary,
+                  fontSize: 15,
+                  fontWeight: 500,
+                  color: colors.textSecondary,
+                  marginTop: 2,
                 }}
               >
                 {unit}

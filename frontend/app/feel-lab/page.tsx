@@ -625,61 +625,31 @@ export default function FeelLabPage() {
                 <span style={{ fontSize: type.bodyBold.size, fontWeight: type.bodyBold.weight, textTransform: 'uppercase' }}>
                   {springKey} spring
                 </span>
-                <div>
-                  <label style={{ fontSize: type.caption.size, color: palette.light.textSecondary }}>
-                    Stiffness: {customSprings[springKey].stiffness}
-                  </label>
-                  <input
-                    type="range"
-                    min="50"
-                    max="800"
-                    value={customSprings[springKey].stiffness}
-                    onChange={(e) =>
-                      setCustomSprings((prev) => ({
-                        ...prev,
-                        [springKey]: { ...prev[springKey], stiffness: Number(e.target.value) },
-                      }))
-                    }
-                    style={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: type.caption.size, color: palette.light.textSecondary }}>
-                    Damping: {customSprings[springKey].damping}
-                  </label>
-                  <input
-                    type="range"
-                    min="5"
-                    max="60"
-                    value={customSprings[springKey].damping}
-                    onChange={(e) =>
-                      setCustomSprings((prev) => ({
-                        ...prev,
-                        [springKey]: { ...prev[springKey], damping: Number(e.target.value) },
-                      }))
-                    }
-                    style={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: type.caption.size, color: palette.light.textSecondary }}>
-                    Mass: {customSprings[springKey].mass}
-                  </label>
-                  <input
-                    type="range"
-                    min="0.2"
-                    max="3.0"
-                    step="0.1"
-                    value={customSprings[springKey].mass}
-                    onChange={(e) =>
-                      setCustomSprings((prev) => ({
-                        ...prev,
-                        [springKey]: { ...prev[springKey], mass: Number(e.target.value) },
-                      }))
-                    }
-                    style={{ width: '100%' }}
-                  />
-                </div>
+                {[
+                  { prop: 'stiffness' as const, min: 50, max: 800, step: 1 },
+                  { prop: 'damping' as const, min: 5, max: 60, step: 1 },
+                  { prop: 'mass' as const, min: 0.2, max: 3.0, step: 0.1 },
+                ].map(({ prop, min, max, step }) => (
+                  <div key={prop}>
+                    <label style={{ fontSize: type.caption.size, color: palette.light.textSecondary, textTransform: 'capitalize' }}>
+                      {prop}: {customSprings[springKey][prop]}
+                    </label>
+                    <input
+                      type="range"
+                      min={min}
+                      max={max}
+                      step={step}
+                      value={customSprings[springKey][prop]}
+                      onChange={(e) =>
+                        setCustomSprings((prev) => ({
+                          ...prev,
+                          [springKey]: { ...prev[springKey], [prop]: Number(e.target.value) },
+                        }))
+                      }
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                ))}
               </div>
             </Card>
           ))}

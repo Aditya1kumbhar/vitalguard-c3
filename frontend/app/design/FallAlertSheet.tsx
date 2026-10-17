@@ -1,17 +1,17 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
+import { motion, useMotionValue, animate } from 'framer-motion';
 import { ChevronRight, ShieldAlert } from 'lucide-react';
 import { Sheet } from './Sheet';
 import {
+  colors,
+  dimensions,
   fallAlert,
   feedback,
-  palette,
-  radius,
-  space,
+  layout,
   spring,
-  type,
+  typography,
 } from './motion.tokens';
 
 export interface FallAlertSheetProps {
@@ -27,7 +27,6 @@ export const FallAlertSheet: React.FC<FallAlertSheetProps> = ({
   const railRef = useRef<HTMLDivElement>(null);
   const dragX = useMotionValue(0);
 
-  // Countdown timer & recurring alarm feedback every 2s
   useEffect(() => {
     if (!open) {
       setSecondsLeft(fallAlert.countdownSeconds);
@@ -35,7 +34,6 @@ export const FallAlertSheet: React.FC<FallAlertSheetProps> = ({
       return;
     }
 
-    // Alarm haptic loop
     const triggerAlarm = () => {
       if (typeof window !== 'undefined' && 'vibrate' in navigator) {
         try {
@@ -49,7 +47,6 @@ export const FallAlertSheet: React.FC<FallAlertSheetProps> = ({
     triggerAlarm();
     const alarmInterval = setInterval(triggerAlarm, 2000);
 
-    // Countdown interval
     const countdownInterval = setInterval(() => {
       setSecondsLeft((prev) => prev - 1);
     }, 1000);
@@ -70,7 +67,6 @@ export const FallAlertSheet: React.FC<FallAlertSheetProps> = ({
     const ratio = currentDistance / maxDistance;
 
     if (ratio >= fallAlert.dismissThreshold) {
-      // Confirmed safe!
       if (typeof window !== 'undefined' && 'vibrate' in navigator) {
         try {
           navigator.vibrate(feedback.confirm.vibrate as unknown as number[]);
@@ -81,12 +77,11 @@ export const FallAlertSheet: React.FC<FallAlertSheetProps> = ({
       onConfirmSafe();
       dragX.set(0);
     } else {
-      // Snap back with snappy spring
       animate(dragX, 0, {
         type: 'spring',
-        stiffness: spring.snappy.stiffness,
-        damping: spring.snappy.damping,
-        mass: spring.snappy.mass,
+        stiffness: spring.default.stiffness,
+        damping: spring.default.damping,
+        mass: spring.default.mass,
       });
     }
   };
@@ -101,7 +96,7 @@ export const FallAlertSheet: React.FC<FallAlertSheetProps> = ({
       open={open}
       onOpenChange={() => {}}
       dismissible={false}
-      snapPoints={[0.92]}
+      snapPoints={[0.88]}
       title="Safety Verification Alert"
     >
       <div
@@ -110,34 +105,34 @@ export const FallAlertSheet: React.FC<FallAlertSheetProps> = ({
           flexDirection: 'column',
           alignItems: 'center',
           textAlign: 'center',
-          paddingTop: space.md,
-          paddingBottom: space.xl,
-          gap: space.lg,
+          paddingTop: layout.sectionGap,
+          paddingBottom: layout.pagePadding,
+          gap: layout.sectionGap,
         }}
       >
         {/* Pulsing Alert Icon */}
         <div
           style={{
-            width: 72,
-            height: 72,
-            borderRadius: radius.full,
-            backgroundColor: palette.light.fallBg,
+            width: 64,
+            height: 64,
+            borderRadius: dimensions.pillRadius,
+            backgroundColor: 'rgba(255, 69, 58, 0.15)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <ShieldAlert size={36} color={palette.light.fall} />
+          <ShieldAlert size={32} color={colors.fall} strokeWidth={2} />
         </div>
 
         {/* Heading & Wellness Copy */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: space.xs }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: layout.gridUnit / 2 }}>
           <h2
             style={{
-              fontSize: type.large.size,
-              fontWeight: type.large.weight,
-              lineHeight: `${type.large.leading}px`,
-              color: palette.light.fall,
+              fontSize: typography.appTitle.size,
+              fontWeight: typography.appTitle.weight,
+              lineHeight: typography.appTitle.lineHeight,
+              color: colors.fall,
               margin: 0,
             }}
           >
@@ -145,10 +140,10 @@ export const FallAlertSheet: React.FC<FallAlertSheetProps> = ({
           </h2>
           <p
             style={{
-              fontSize: type.body.size,
-              lineHeight: `${type.body.leading}px`,
-              color: palette.light.textSecondary,
-              maxWidth: 320,
+              fontSize: 15,
+              lineHeight: '22px',
+              color: colors.textSecondary,
+              maxWidth: 300,
               margin: '0 auto',
             }}
           >
@@ -156,36 +151,36 @@ export const FallAlertSheet: React.FC<FallAlertSheetProps> = ({
           </p>
         </div>
 
-        {/* Countdown Escalation Label */}
+        {/* Countdown Escalation Pill */}
         <div
           style={{
-            backgroundColor: palette.light.fallBg,
-            padding: `${space.xs}px ${space.md}px`,
-            borderRadius: radius.full,
+            backgroundColor: 'rgba(255, 69, 58, 0.15)',
+            padding: `${layout.gridUnit}px ${layout.sectionGap}px`,
+            borderRadius: dimensions.pillRadius,
           }}
         >
           <span
             style={{
-              fontSize: type.caption.size,
-              fontWeight: type.bodyBold.weight,
-              color: palette.light.fall,
+              fontSize: 13,
+              fontWeight: 600,
+              color: colors.fall,
             }}
           >
             {labelText}
           </span>
         </div>
 
-        {/* ── Slide-to-Confirm Rail ────────────────────────────── */}
-        <div style={{ width: '100%', maxWidth: 360, marginTop: space.md }}>
+        {/* Slide-to-Confirm Rail */}
+        <div style={{ width: '100%', maxWidth: 350, marginTop: layout.gridUnit }}>
           <div
             ref={railRef}
             style={{
               position: 'relative',
               width: '100%',
               height: 56,
-              borderRadius: radius.full,
-              backgroundColor: palette.light.surfaceAlpha,
-              border: `1px solid ${palette.light.border}`,
+              borderRadius: dimensions.pillRadius,
+              backgroundColor: 'rgba(255, 255, 255, 0.04)',
+              border: `1px solid ${colors.cardBorder}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -194,20 +189,18 @@ export const FallAlertSheet: React.FC<FallAlertSheetProps> = ({
               touchAction: 'none',
             }}
           >
-            {/* Background Hint Text */}
             <span
               style={{
-                fontSize: type.bodyBold.size,
-                fontWeight: type.bodyBold.weight,
-                color: palette.light.textSecondary,
-                letterSpacing: '0.02em',
+                fontSize: 14,
+                fontWeight: 600,
+                color: colors.textSecondary,
+                letterSpacing: '0.04em',
                 pointerEvents: 'none',
               }}
             >
               Slide to confirm safe &gt;&gt;
             </span>
 
-            {/* Draggable Slider Thumb */}
             <motion.div
               style={{
                 position: 'absolute',
@@ -215,8 +208,8 @@ export const FallAlertSheet: React.FC<FallAlertSheetProps> = ({
                 top: 0,
                 width: 56,
                 height: 56,
-                borderRadius: radius.full,
-                backgroundColor: palette.light.fall,
+                borderRadius: dimensions.pillRadius,
+                backgroundColor: colors.fall,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -225,12 +218,12 @@ export const FallAlertSheet: React.FC<FallAlertSheetProps> = ({
                 zIndex: 2,
               }}
               drag="x"
-              dragConstraints={{ left: 0, right: 304 }}
+              dragConstraints={{ left: 0, right: 294 }}
               dragElastic={0.05}
               onDragEnd={handleDragEnd}
               whileTap={{ cursor: 'grabbing' }}
             >
-              <ChevronRight size={24} color="#FFFFFF" />
+              <ChevronRight size={24} color="#FFFFFF" strokeWidth={2.5} />
             </motion.div>
           </div>
         </div>
