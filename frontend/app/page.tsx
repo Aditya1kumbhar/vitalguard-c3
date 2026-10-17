@@ -54,6 +54,7 @@ import { DailyRecord, getDailyRecords, seedInitialDataIfEmpty } from './utils/lo
 import RiskScoreCard from './components/RiskScoreCard';
 import ClinicalSummaryCard from './components/ClinicalSummaryCard';
 import HistoricalTrends from './components/HistoricalTrends';
+import GlassIcon from './components/GlassIcon';
 import {
   colors,
   dimensions,
@@ -334,7 +335,7 @@ export default function VitalGuardCompanionDashboard() {
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Heart size={18} color="#FF375F" fill="#FF375F" />
+                        <GlassIcon name="heart" size="sm" variant="rose" />
                         <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
                           Heart Rate (PPG)
                         </span>
@@ -382,7 +383,7 @@ export default function VitalGuardCompanionDashboard() {
                   <Card style={{ backgroundColor: '#12161D', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
-                        <Wind size={16} color="#30D158" />
+                        <GlassIcon name="oxygen" size="sm" variant="emerald" />
                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">SpO2</span>
                       </div>
                       <div className="flex items-baseline gap-1 mt-1">
@@ -403,7 +404,7 @@ export default function VitalGuardCompanionDashboard() {
                   <Card style={{ backgroundColor: '#12161D', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
-                        <Cpu size={16} color="#FFD60A" />
+                        <GlassIcon name="battery" size="sm" variant="amber" />
                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Battery</span>
                       </div>
                       <div className="flex items-baseline gap-1 mt-1">
@@ -452,9 +453,9 @@ export default function VitalGuardCompanionDashboard() {
                       <button
                         type="button"
                         onClick={() => setManualFallActive(true)}
-                        className="py-2 px-3 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500/25 transition-all flex items-center justify-center gap-1.5"
+                        className="py-2 px-3 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
                       >
-                        <Zap size={14} />
+                        <GlassIcon name="alert" size={16} variant="amber" interactive={false} glow={false} />
                         <span>Test Alarm</span>
                       </button>
                     </div>
@@ -468,13 +469,16 @@ export default function VitalGuardCompanionDashboard() {
                 <Card style={{ backgroundColor: '#12161D', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
-                          PPG Pulse Waveform (Rolling 60 Seconds)
-                        </span>
-                        <span className="text-xs text-slate-400">
-                          Optical capillary reflectance waveform streamed in real time
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <GlassIcon name="pulse" size="sm" variant="cyan" />
+                        <div>
+                          <span className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
+                            PPG Pulse Waveform (Rolling 60 Seconds)
+                          </span>
+                          <span className="text-xs text-slate-400">
+                            Optical capillary reflectance waveform streamed in real time
+                          </span>
+                        </div>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
@@ -519,9 +523,7 @@ export default function VitalGuardCompanionDashboard() {
                 <Card style={{ backgroundColor: '#12161D', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
-                        <Brain size={20} />
-                      </div>
+                      <GlassIcon name="brain" size="md" variant="cyan" />
                       <div>
                         <span className="text-sm font-bold text-white block">Autonomic Nervous System &amp; HRV Balance</span>
                         <span className="text-xs text-slate-400">
@@ -532,9 +534,9 @@ export default function VitalGuardCompanionDashboard() {
 
                     <Link
                       href="/feel-lab"
-                      className="px-4 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white transition-colors shrink-0 flex items-center gap-1.5"
+                      className="px-4 py-2.5 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white transition-colors shrink-0 flex items-center gap-2"
                     >
-                      <Sliders size={14} />
+                      <GlassIcon name="sliders" size={16} variant="slate" interactive={false} glow={false} />
                       <span>Calibrate Feel Lab</span>
                     </Link>
                   </div>
@@ -558,10 +560,10 @@ export default function VitalGuardCompanionDashboard() {
             <div className="flex items-baseline justify-between">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                  Clinical Records &amp; Trends
+                  Clinical Records &amp; Medical Vitals
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                  Resting vitals baseline, safety score, and historical telemetry trends
+                  Resting vitals baseline, physiological risk score, and clinical telemetry analytics
                 </p>
               </div>
 
@@ -615,7 +617,7 @@ export default function VitalGuardCompanionDashboard() {
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Gauge size={18} color="#FF9F0A" />
+                        <GlassIcon name="gauge" size="sm" variant="amber" />
                         <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
                           Live 3-Axis SVM Accelerometer
                         </span>
@@ -684,9 +686,9 @@ export default function VitalGuardCompanionDashboard() {
                       <button
                         type="button"
                         onClick={() => setManualFallActive(true)}
-                        className="w-full py-3 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-all flex items-center justify-center gap-2 shadow-lg shadow-rose-950/40"
+                        className="w-full py-3 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-all flex items-center justify-center gap-2.5 shadow-lg shadow-rose-950/40 cursor-pointer"
                       >
-                        <ShieldAlert size={16} />
+                        <GlassIcon name="shield-alert" size={18} variant="rose" interactive={false} glow={false} />
                         <span>Trigger Test Fall Alarm (30s Countdown)</span>
                       </button>
 
@@ -697,9 +699,9 @@ export default function VitalGuardCompanionDashboard() {
                             dismissFall();
                             setManualFallActive(false);
                           }}
-                          className="w-full py-2.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/15 text-white transition-all flex items-center justify-center gap-2"
+                          className="w-full py-2.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/15 text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
                         >
-                          <RotateCcw size={14} />
+                          <GlassIcon name="refresh" size={16} variant="slate" interactive={false} glow={false} />
                           <span>Reset Sensor Alarm Baseline</span>
                         </button>
                       )}
@@ -714,7 +716,7 @@ export default function VitalGuardCompanionDashboard() {
                       Automated Fall Escalation
                     </span>
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-white/4 border border-white/6">
-                      <Users size={20} className="text-cyan-400" />
+                      <GlassIcon name="users" size="md" variant="cyan" />
                       <div>
                         <span className="text-xs font-bold text-white block">{displayName} (Guardian)</span>
                         <span className="text-[11px] text-slate-400">Emergency Contact Priority 1</span>
@@ -731,7 +733,7 @@ export default function VitalGuardCompanionDashboard() {
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Database size={16} color="#0EA5E9" />
+                        <GlassIcon name="database" size="sm" variant="blue" />
                         <span className="text-xs font-bold uppercase tracking-wider text-cyan-400">
                           30-Day Rolling FIFO Ring Buffer
                         </span>
@@ -794,13 +796,11 @@ export default function VitalGuardCompanionDashboard() {
                             }`}
                           >
                             <div className="flex items-center gap-3">
-                              <div
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                                  hasFall ? 'bg-rose-500 text-white' : 'bg-white/10 text-slate-400'
-                                }`}
-                              >
-                                {hasFall ? <AlertTriangle size={16} /> : <Check size={16} />}
-                              </div>
+                              {hasFall ? (
+                                <GlassIcon name="shield-alert" size="sm" variant="rose" />
+                              ) : (
+                                <GlassIcon name="shield-check" size="sm" variant="emerald" />
+                              )}
                               <div>
                                 <span className="font-bold text-white block">{r.dateKey}</span>
                                 <span className="text-slate-400 text-[11px]">
@@ -862,7 +862,7 @@ export default function VitalGuardCompanionDashboard() {
             boxShadow: '0 12px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(14, 165, 233, 0.15)',
           }}
         >
-          {/* Tab 1: Summary */}
+          {/* Tab 1: Live Vitals */}
           <motion.button
             type="button"
             onClick={() => setActiveTab('summary')}
@@ -870,9 +870,9 @@ export default function VitalGuardCompanionDashboard() {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 6,
-              padding: '9px 16px',
-              borderRadius: 10,
+              gap: 8,
+              padding: '8px 14px',
+              borderRadius: 12,
               border: 'none',
               backgroundColor: activeTab === 'summary' ? 'rgba(14, 165, 233, 0.22)' : 'transparent',
               color: activeTab === 'summary' ? '#38BDF8' : '#8E8E93',
@@ -882,11 +882,11 @@ export default function VitalGuardCompanionDashboard() {
               transition: 'all 200ms ease',
             }}
           >
-            <Activity size={17} color={activeTab === 'summary' ? '#38BDF8' : '#8E8E93'} />
-            <span>Summary</span>
+            <GlassIcon name="pulse" size={19} variant={activeTab === 'summary' ? 'cyan' : 'slate'} interactive={false} glow={activeTab === 'summary'} />
+            <span>Live Vitals</span>
           </motion.button>
 
-          {/* Tab 2: Browse */}
+          {/* Tab 2: Clinical Records */}
           <motion.button
             type="button"
             onClick={() => setActiveTab('trends')}
@@ -894,9 +894,9 @@ export default function VitalGuardCompanionDashboard() {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 6,
-              padding: '9px 16px',
-              borderRadius: 10,
+              gap: 8,
+              padding: '8px 14px',
+              borderRadius: 12,
               border: 'none',
               backgroundColor: activeTab === 'trends' ? 'rgba(14, 165, 233, 0.22)' : 'transparent',
               color: activeTab === 'trends' ? '#38BDF8' : '#8E8E93',
@@ -906,11 +906,11 @@ export default function VitalGuardCompanionDashboard() {
               transition: 'all 200ms ease',
             }}
           >
-            <TrendingUp size={17} color={activeTab === 'trends' ? '#38BDF8' : '#8E8E93'} />
-            <span>Trends</span>
+            <GlassIcon name="records" size={19} variant={activeTab === 'trends' ? 'cyan' : 'slate'} interactive={false} glow={activeTab === 'trends'} />
+            <span>Clinical Records</span>
           </motion.button>
 
-          {/* Tab 3: Fall Safety (Replaced Sharing) */}
+          {/* Tab 3: Fall Safety */}
           <motion.button
             type="button"
             onClick={() => setActiveTab('falls')}
@@ -918,9 +918,9 @@ export default function VitalGuardCompanionDashboard() {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 6,
-              padding: '9px 16px',
-              borderRadius: 10,
+              gap: 8,
+              padding: '8px 14px',
+              borderRadius: 12,
               border: 'none',
               backgroundColor: activeTab === 'falls' ? 'rgba(255, 69, 58, 0.22)' : 'transparent',
               color: activeTab === 'falls' ? '#FF453A' : '#8E8E93',
@@ -930,7 +930,7 @@ export default function VitalGuardCompanionDashboard() {
               transition: 'all 200ms ease',
             }}
           >
-            <ShieldAlert size={17} color={activeTab === 'falls' ? '#FF453A' : '#8E8E93'} />
+            <GlassIcon name="shield-alert" size={19} variant={activeTab === 'falls' ? 'rose' : 'slate'} interactive={false} glow={activeTab === 'falls'} />
             <span>Fall Safety</span>
           </motion.button>
         </div>
@@ -1023,7 +1023,7 @@ export default function VitalGuardCompanionDashboard() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <Radio size={18} color={transportMode === 'mock' ? '#38BDF8' : colors.textSecondary} />
+                    <GlassIcon name="radio" size="sm" variant={transportMode === "mock" ? "cyan" : "slate"} />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: 14, fontWeight: 600 }}>Mock 90s Loop</span>
                       <span style={{ fontSize: 12, color: colors.textSecondary }}>
@@ -1052,7 +1052,7 @@ export default function VitalGuardCompanionDashboard() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <Bluetooth size={18} color={transportMode === 'ble' ? '#30D158' : colors.textSecondary} />
+                    <GlassIcon name="bluetooth" size="sm" variant={transportMode === "ble" ? "emerald" : "slate"} />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: 14, fontWeight: 600 }}>Web Bluetooth (ESP32-C3)</span>
                       <span style={{ fontSize: 12, color: colors.textSecondary }}>
@@ -1121,21 +1121,9 @@ export default function VitalGuardCompanionDashboard() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 8,
-                        backgroundColor: '#10B981',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <FileText size={18} color="#000000" />
-                    </div>
+                    <GlassIcon name="records" size="md" variant="emerald" />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: 14, fontWeight: 600 }}>Clinical Records &amp; Trends</span>
+                      <span style={{ fontSize: 14, fontWeight: 600 }}>Clinical Records &amp; Medical Vitals</span>
                       <span style={{ fontSize: 12, color: colors.textSecondary }}>
                         Safety score, baseline vitals &amp; 30-day graphs
                       </span>
@@ -1157,19 +1145,7 @@ export default function VitalGuardCompanionDashboard() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 8,
-                        backgroundColor: '#0EA5E9',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Sliders size={18} color="#FFFFFF" />
-                    </div>
+                    <GlassIcon name="sliders" size="md" variant="cyan" />
                     <span style={{ fontSize: 14, fontWeight: 600 }}>Feel Lab Calibration</span>
                   </div>
                   <ChevronRight size={18} color={colors.textSecondary} />
@@ -1195,19 +1171,7 @@ export default function VitalGuardCompanionDashboard() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 8,
-                        backgroundColor: '#FF453A',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <ShieldAlert size={18} color="#FFFFFF" />
-                    </div>
+                    <GlassIcon name="shield-alert" size="md" variant="rose" />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: 14, fontWeight: 600 }}>Test Fall Alarm (30s Countdown)</span>
                       <span style={{ fontSize: 12, color: colors.textSecondary }}>
@@ -1289,7 +1253,7 @@ export default function VitalGuardCompanionDashboard() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <Shield size={18} color="#0EA5E9" />
+                    <GlassIcon name="shield-check" size="sm" variant="cyan" />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: 14, fontWeight: 600 }}>Privacy Policy</span>
                       <span style={{ fontSize: 12, color: colors.textSecondary }}>
@@ -1313,7 +1277,7 @@ export default function VitalGuardCompanionDashboard() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <FileCheck size={18} color="#10B981" />
+                    <GlassIcon name="medical" size="sm" variant="emerald" />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontSize: 14, fontWeight: 600 }}>Terms &amp; Conditions</span>
                       <span style={{ fontSize: 12, color: colors.textSecondary }}>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft, Shield, Lock, Database, Radio, Bell, FileText, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import GlassIcon from '../components/GlassIcon';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | VitalGuard C3',
@@ -41,7 +42,7 @@ export default function PrivacyPolicyPage() {
         {/* Core Guarantee Callout */}
         <div className="p-5 rounded-2xl bg-[#12161D] border border-cyan-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <CheckCircle2 size={20} className="text-cyan-400 shrink-0 mt-0.5" />
+            <GlassIcon name="shield-check" size="md" variant="cyan" />
             <div className="flex flex-col gap-1">
               <span className="text-sm font-bold text-white">Zero Cloud Telemetry Tracking</span>
               <span className="text-xs text-slate-300 leading-relaxed">
@@ -54,8 +55,8 @@ export default function PrivacyPolicyPage() {
 
         {/* Section 1: Architecture & On-Device Storage */}
         <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
-          <div className="flex items-center gap-2.5 text-cyan-400">
-            <Database size={18} />
+          <div className="flex items-center gap-2.5">
+            <GlassIcon name="database" size="sm" variant="cyan" />
             <h2 className="text-base sm:text-lg font-bold text-white">
               1. Local On-Device Storage &amp; 30-Day FIFO Engine
             </h2>
@@ -78,8 +79,8 @@ export default function PrivacyPolicyPage() {
 
         {/* Section 2: Web Bluetooth Peer-to-Peer Telemetry */}
         <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
-          <div className="flex items-center gap-2.5 text-emerald-400">
-            <Radio size={18} />
+          <div className="flex items-center gap-2.5">
+            <GlassIcon name="radio" size="sm" variant="emerald" />
             <h2 className="text-base sm:text-lg font-bold text-white">
               2. Web Bluetooth GATT Communications
             </h2>
@@ -102,8 +103,8 @@ export default function PrivacyPolicyPage() {
 
         {/* Section 3: Emergency Fall Escalation Data Handling */}
         <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
-          <div className="flex items-center gap-2.5 text-rose-400">
-            <Bell size={18} />
+          <div className="flex items-center gap-2.5">
+            <GlassIcon name="shield-alert" size="sm" variant="rose" />
             <h2 className="text-base sm:text-lg font-bold text-white">
               3. Emergency Fall Detection Escalation
             </h2>
@@ -126,8 +127,8 @@ export default function PrivacyPolicyPage() {
 
         {/* Section 4: Security & Passkey Authentication */}
         <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
-          <div className="flex items-center gap-2.5 text-cyan-400">
-            <Lock size={18} />
+          <div className="flex items-center gap-2.5">
+            <GlassIcon name="shield-check" size="sm" variant="cyan" />
             <h2 className="text-base sm:text-lg font-bold text-white">
               4. Authentication &amp; Hardware Identity
             </h2>
@@ -139,8 +140,8 @@ export default function PrivacyPolicyPage() {
 
         {/* Section 5: Clinical Companion Scope & Contact */}
         <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
-          <div className="flex items-center gap-2.5 text-slate-400">
-            <FileText size={18} />
+          <div className="flex items-center gap-2.5">
+            <GlassIcon name="medical" size="sm" variant="slate" />
             <h2 className="text-base sm:text-lg font-bold text-white">
               5. Non-Diagnostic Notice &amp; Inquiries
             </h2>

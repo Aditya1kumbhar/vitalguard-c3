@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft, ShieldAlert, AlertTriangle, Cpu, Activity, FileCheck, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import GlassIcon from '../components/GlassIcon';
 
 export const metadata: Metadata = {
   title: 'Terms & Conditions | VitalGuard C3',
@@ -41,7 +42,7 @@ export default function TermsAndConditionsPage() {
         {/* Essential Clinical Safety Notice */}
         <div className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <AlertTriangle size={22} className="text-rose-400 shrink-0 mt-0.5" />
+            <GlassIcon name="shield-alert" size="md" variant="rose" />
             <div className="flex flex-col gap-1">
               <span className="text-sm font-bold text-rose-300">Non-Diagnostic Clinical Disclaimer</span>
               <span className="text-xs text-rose-200/90 leading-relaxed">
@@ -54,8 +55,8 @@ export default function TermsAndConditionsPage() {
 
         {/* Section 1: Scope of Service */}
         <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
-          <div className="flex items-center gap-2.5 text-cyan-400">
-            <Activity size={18} />
+          <div className="flex items-center gap-2.5">
+            <GlassIcon name="pulse" size="sm" variant="cyan" />
             <h2 className="text-base sm:text-lg font-bold text-white">
               1. Platform Scope &amp; Intended Use
             </h2>
@@ -75,8 +76,8 @@ export default function TermsAndConditionsPage() {
 
         {/* Section 2: Hardware Operating Requirements */}
         <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
-          <div className="flex items-center gap-2.5 text-emerald-400">
-            <Cpu size={18} />
+          <div className="flex items-center gap-2.5">
+            <GlassIcon name="gauge" size="sm" variant="emerald" />
             <h2 className="text-base sm:text-lg font-bold text-white">
               2. Hardware Operating Conditions &amp; Maintenance
             </h2>
@@ -99,8 +100,8 @@ export default function TermsAndConditionsPage() {
 
         {/* Section 3: Fall Detection Boundaries & Slide Rail Verification */}
         <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
-          <div className="flex items-center gap-2.5 text-rose-400">
-            <ShieldAlert size={18} />
+          <div className="flex items-center gap-2.5">
+            <GlassIcon name="shield-alert" size="sm" variant="rose" />
             <h2 className="text-base sm:text-lg font-bold text-white">
               3. Algorithmic Fall Detection Boundaries
             </h2>
@@ -123,8 +124,8 @@ export default function TermsAndConditionsPage() {
 
         {/* Section 4: Data Sovereignty & Local Retention */}
         <section className="p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4">
-          <div className="flex items-center gap-2.5 text-cyan-400">
-            <CheckCircle2 size={18} />
+          <div className="flex items-center gap-2.5">
+            <GlassIcon name="database" size="sm" variant="cyan" />
             <h2 className="text-base sm:text-lg font-bold text-white">
               4. Data Sovereignty &amp; FIFO Storage
             </h2>

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ShieldCheck, AlertCircle, RefreshCw, Heart, Activity } from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import { GlassIcon } from "./GlassIcon";
 import { getApiBase, authFetch } from "../utils/api";
 
 interface Factor {
@@ -69,18 +70,12 @@ export default function RiskScoreCard() {
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/8 pb-3">
-        <div className="flex items-center gap-2.5">
-          <div
-            className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-              isSafe
-                ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                : isWatch
-                ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                : "bg-rose-500/15 text-rose-400 border border-rose-500/30"
-            }`}
-          >
-            <ShieldCheck className="w-5 h-5" />
-          </div>
+        <div className="flex items-center gap-3">
+          <GlassIcon
+            name={isSafe ? "shield-check" : "shield-alert"}
+            variant={isSafe ? "emerald" : isWatch ? "amber" : "rose"}
+            size="md"
+          />
           <div>
             <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
               Safety Score
@@ -143,8 +138,8 @@ export default function RiskScoreCard() {
       {/* Dynamic Visual Status Indicators */}
       <div className="grid grid-cols-3 gap-2.5 pt-1">
         {/* Heart */}
-        <div className="p-3 rounded-xl bg-white/4 border border-white/6 text-center flex flex-col items-center gap-1">
-          <Heart className="w-4 h-4 text-rose-400" />
+        <div className="p-3 rounded-xl bg-white/4 border border-white/6 text-center flex flex-col items-center gap-1.5">
+          <GlassIcon name="heart" size="sm" />
           <span className="text-xs font-bold text-slate-300">Heart</span>
           <span className="text-base font-extrabold text-white font-mono">
             {stats.avg_hr ?? 72} <span className="text-[10px] font-normal text-slate-400">BPM</span>
@@ -161,8 +156,8 @@ export default function RiskScoreCard() {
         </div>
 
         {/* Oxygen */}
-        <div className="p-3 rounded-xl bg-white/4 border border-white/6 text-center flex flex-col items-center gap-1">
-          <Activity className="w-4 h-4 text-sky-400" />
+        <div className="p-3 rounded-xl bg-white/4 border border-white/6 text-center flex flex-col items-center gap-1.5">
+          <GlassIcon name="oxygen" size="sm" />
           <span className="text-xs font-bold text-slate-300">Oxygen</span>
           <span className="text-base font-extrabold text-white font-mono">
             {stats.avg_spo2 ?? 98}<span className="text-[10px] font-normal text-slate-400">%</span>
@@ -179,11 +174,11 @@ export default function RiskScoreCard() {
         </div>
 
         {/* Falls */}
-        <div className="p-3 rounded-xl bg-white/4 border border-white/6 text-center flex flex-col items-center gap-1">
-          <AlertCircle
-            className={`w-4 h-4 ${
-              (stats.active_falls ?? 0) > 0 ? "text-rose-400" : "text-emerald-400"
-            }`}
+        <div className="p-3 rounded-xl bg-white/4 border border-white/6 text-center flex flex-col items-center gap-1.5">
+          <GlassIcon
+            name={(stats.active_falls ?? 0) > 0 ? "shield-alert" : "shield-check"}
+            variant={(stats.active_falls ?? 0) > 0 ? "rose" : "emerald"}
+            size="sm"
           />
           <span className="text-xs font-bold text-slate-300">Falls</span>
           <span className="text-base font-extrabold text-white font-mono">

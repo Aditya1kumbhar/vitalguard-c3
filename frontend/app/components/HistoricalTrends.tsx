@@ -14,6 +14,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { Calendar, Heart, Droplets, Thermometer, AlertTriangle, RefreshCw, Database } from "lucide-react";
+import { GlassIcon } from "./GlassIcon";
 import { getApiBase, authFetch } from "../utils/api";
 import {
   DailyRecord,
@@ -125,10 +126,8 @@ export default function HistoricalTrends() {
     >
       {/* Header & Filter Range */}
       <div className="flex items-center justify-between border-b border-white/8 pb-3.5 flex-wrap gap-2.5">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-            <Calendar className="w-5 h-5" />
-          </div>
+        <div className="flex items-center gap-3">
+          <GlassIcon name="calendar" size="md" />
           <div>
             <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
               <span>Historical Trends</span>
@@ -165,52 +164,52 @@ export default function HistoricalTrends() {
         <button
           type="button"
           onClick={() => setActiveTab("hr")}
-          className={`flex items-center justify-center gap-1.5 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+          className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
             activeTab === "hr"
               ? "bg-rose-500/15 text-rose-300 border-rose-500/40 shadow-sm"
               : "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white"
           }`}
         >
-          <Heart className="w-3.5 h-3.5 text-rose-400" />
+          <GlassIcon name="heart" size={20} interactive={false} glow={false} />
           <span>Heart Beat</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("spo2")}
-          className={`flex items-center justify-center gap-1.5 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+          className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
             activeTab === "spo2"
               ? "bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm"
               : "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white"
           }`}
         >
-          <Droplets className="w-3.5 h-3.5 text-sky-400" />
+          <GlassIcon name="oxygen" size={20} interactive={false} glow={false} />
           <span>Oxygen (SpO2)</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("temp")}
-          className={`flex items-center justify-center gap-1.5 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+          className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
             activeTab === "temp"
               ? "bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-sm"
               : "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white"
           }`}
         >
-          <Thermometer className="w-3.5 h-3.5 text-amber-400" />
+          <GlassIcon name="temp" size={20} interactive={false} glow={false} />
           <span>Body Temp</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("anomalies")}
-          className={`flex items-center justify-center gap-1.5 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+          className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
             activeTab === "anomalies"
               ? "bg-rose-500/15 text-rose-300 border-rose-500/40 shadow-sm"
               : "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white"
           }`}
         >
-          <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+          <GlassIcon name="shield-alert" size={20} interactive={false} glow={false} />
           <span>Fall Alerts</span>
         </button>
       </div>

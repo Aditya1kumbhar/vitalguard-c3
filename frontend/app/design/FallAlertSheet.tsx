@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, useMotionValue, animate } from 'framer-motion';
-import { ChevronRight, ShieldAlert } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
+import GlassIcon from '../components/GlassIcon';
 import { Sheet } from './Sheet';
 import {
   colors,
@@ -111,19 +112,7 @@ export const FallAlertSheet: React.FC<FallAlertSheetProps> = ({
         }}
       >
         {/* Pulsing Alert Icon */}
-        <div
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: dimensions.pillRadius,
-            backgroundColor: 'rgba(255, 69, 58, 0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <ShieldAlert size={32} color={colors.fall} strokeWidth={2} />
-        </div>
+        <GlassIcon name="shield-alert" size="lg" variant="rose" glow={true} />
 
         {/* Heading & Wellness Copy */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: layout.gridUnit / 2 }}>

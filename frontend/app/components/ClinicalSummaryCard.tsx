@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Heart, Activity, Thermometer, Printer } from "lucide-react";
+import { GlassIcon } from "./GlassIcon";
 import { getApiBase, authFetch } from "../utils/api";
 
 export default function ClinicalSummaryCard() {
@@ -42,11 +42,11 @@ export default function ClinicalSummaryCard() {
 
         <button
           onClick={handlePrint}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold text-xs border border-white/10 transition-all cursor-pointer"
+          className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold text-xs border border-white/10 transition-all cursor-pointer"
           title="Print Summary Report"
           type="button"
         >
-          <Printer className="w-3.5 h-3.5 text-cyan-400" />
+          <GlassIcon name="printer" size={20} interactive={false} glow={false} />
           <span>Export</span>
         </button>
       </div>
@@ -54,10 +54,8 @@ export default function ClinicalSummaryCard() {
       {/* 3 Metric Badges */}
       <div className="grid grid-cols-3 gap-2.5">
         {/* Heart Rate */}
-        <div className="p-3.5 rounded-xl bg-white/4 border border-white/6 flex flex-col items-center text-center gap-1">
-          <div className="p-2 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20">
-            <Heart className="w-4 h-4" />
-          </div>
+        <div className="p-3.5 rounded-xl bg-white/4 border border-white/6 flex flex-col items-center text-center gap-1.5">
+          <GlassIcon name="heart" size="md" />
           <span className="text-xs font-semibold text-slate-300">Heart</span>
           <span className="text-xl sm:text-2xl font-black text-white font-mono">
             {patient?.baseline_hr ?? 72}
@@ -68,10 +66,8 @@ export default function ClinicalSummaryCard() {
         </div>
 
         {/* Oxygen */}
-        <div className="p-3.5 rounded-xl bg-white/4 border border-white/6 flex flex-col items-center text-center gap-1">
-          <div className="p-2 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20">
-            <Activity className="w-4 h-4" />
-          </div>
+        <div className="p-3.5 rounded-xl bg-white/4 border border-white/6 flex flex-col items-center text-center gap-1.5">
+          <GlassIcon name="oxygen" size="md" />
           <span className="text-xs font-semibold text-slate-300">Oxygen</span>
           <span className="text-xl sm:text-2xl font-black text-white font-mono">
             {patient?.baseline_spo2 ?? 97}%
@@ -82,10 +78,8 @@ export default function ClinicalSummaryCard() {
         </div>
 
         {/* Temp */}
-        <div className="p-3.5 rounded-xl bg-white/4 border border-white/6 flex flex-col items-center text-center gap-1">
-          <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            <Thermometer className="w-4 h-4" />
-          </div>
+        <div className="p-3.5 rounded-xl bg-white/4 border border-white/6 flex flex-col items-center text-center gap-1.5">
+          <GlassIcon name="temp" size="md" />
           <span className="text-xs font-semibold text-slate-300">Temp</span>
           <span className="text-xl sm:text-2xl font-black text-white font-mono">
             {patient?.baseline_temp ?? 36.6}°C
