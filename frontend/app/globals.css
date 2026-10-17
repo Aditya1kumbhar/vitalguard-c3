@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 :root {
+  --ambient-speed: 0.3s;
+  --ambient-gradient: linear-gradient(170deg, #F5F5F7 0%, #E8E8ED 100%);
   /* Biofarma-inspired Design Tokens */
   --bg-primary: #F9F8FF;
   --text-primary: #01373D;
@@ -18,7 +20,8 @@
 
 html,
 body {
-  background-color: var(--bg-primary);
+  background: var(--ambient-gradient);
+  transition: background var(--ambient-speed);
   color: var(--text-primary);
   min-height: 100vh;
   margin: 0;
@@ -26,10 +29,6 @@ body {
   font-family: var(--font-dm-sans), "DM Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-image:
-    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(254, 51, 106, 0.06), transparent 55%),
-    radial-gradient(ellipse 60% 50% at 90% 20%, rgba(56, 189, 248, 0.05), transparent 50%),
-    radial-gradient(ellipse 50% 60% at 10% 90%, rgba(1, 55, 61, 0.03), transparent 60%);
   background-attachment: fixed;
   overflow-x: hidden;
 }

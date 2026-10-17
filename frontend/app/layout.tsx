@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "./context/AuthContext";
+import { AmbientProvider } from "./design/AmbientProvider";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -37,10 +38,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={dmSans.variable}>
-      <body className="font-sans antialiased text-[#01373D] bg-[#F9F8FF] selection:bg-[#FE336A] selection:text-white">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+      <body className="font-sans antialiased text-[#01373D] selection:bg-[#FE336A] selection:text-white">
+        <AmbientProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </AmbientProvider>
       </body>
     </html>
   );
