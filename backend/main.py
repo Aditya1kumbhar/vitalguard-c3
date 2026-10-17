@@ -211,6 +211,19 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         if vitals_count == 0:
             from seed import seed_data
             await seed_data()
+
+        # Seed default Guardian accounts if not present (Guaranteed permanent login across Render restarts)
+        demo_guardians = [
+            ("phone", "9876543210", "Aditya Kumbhar", "VG-C3-0001", "$2b$12$PAngKq3J.cWj/98UzISjROja0UwkViwGolPIoN7WBAwbv25HsD/cC"),
+            ("email", "aditya@vitalguard.local", "Aditya Kumbhar", "VG-C3-0001", "$2b$12$PAngKq3J.cWj/98UzISjROja0UwkViwGolPIoN7WBAwbv25HsD/cC"),
+        ]
+        ts_now = datetime.now(timezone.utc).isoformat()
+        for g_auth_type, g_ident, g_name, g_band, g_pin_hash in demo_guardians:
+            await db.execute("""
+                INSERT OR IGNORE INTO guardians (auth_type, identifier, guardian_name, band_id, pin_hash, created_at, last_login_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (g_auth_type, g_ident, g_name, g_band, g_pin_hash, ts_now, ts_now))
+        await db.commit()
             
     broadcaster.start()
     yield

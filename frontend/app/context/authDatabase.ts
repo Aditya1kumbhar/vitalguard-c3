@@ -285,7 +285,22 @@ export async function getCredential(identifier: string): Promise<CredentialData 
   }
 
   // Fallback: localStorage
-  return getCredFromLS(identifier);
+  const lsCred = getCredFromLS(identifier);
+  if (lsCred) return lsCred;
+
+  // Fallback: Default demo credentials if matching demo accounts (for examiners / fresh devices)
+  const clean = identifier.replace(/\D/g, '');
+  if (clean === "9876543210" || identifier.toLowerCase() === "aditya@vitalguard.local") {
+    return {
+      identifier: clean === "9876543210" ? "9876543210" : "aditya@vitalguard.local",
+      guardianName: "Aditya Kumbhar",
+      bandId: "VG-C3-0001",
+      pinSalt: "vg_demo_salt",
+      pinHash: "e6638f1d12530821f4c78e3d2fa2905fcab5fa8a2f9ef2f453984eee7c751ff9",
+    };
+  }
+
+  return null;
 }
 
 // ─── PIN Hashing (unchanged) ─────────────────────────────────────────
