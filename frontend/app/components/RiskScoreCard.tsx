@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ShieldCheck, AlertCircle, RefreshCw, Heart, Activity, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, AlertCircle, RefreshCw, Heart, Activity } from "lucide-react";
 import { getApiBase, authFetch } from "../utils/api";
 
 interface Factor {
@@ -40,7 +40,6 @@ export default function RiskScoreCard() {
       const res = await authFetch(`${getApiBase()}/analytics/risk-score`);
       if (res.ok) {
         const d = await res.json();
-        // Calculate health safety index (100 - risk score = safety score)
         const risk = typeof d.overall_score === "number" ? d.overall_score : 10;
         const safety = Math.round(Math.max(10, Math.min(100, 100 - risk)));
         setScore(safety);
@@ -64,121 +63,169 @@ export default function RiskScoreCard() {
   const isWatch = level === "watch";
 
   return (
-    <section aria-label="Health Safety Score" className="royal-card rounded-3xl p-5 sm:p-6 flex flex-col gap-4">
+    <section
+      aria-label="Health Safety Score"
+      className="p-5 sm:p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#01373D]/5 pb-3">
+      <div className="flex items-center justify-between border-b border-white/8 pb-3">
         <div className="flex items-center gap-2.5">
-          <div className={`w-9 h-9 rounded-2xl flex items-center justify-center shadow-xs ${
-            isSafe ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : isWatch ? "bg-amber-50 text-amber-600 border border-amber-200" : "bg-[#FE336A]/10 text-[#FE336A] border border-[#FE336A]/20"
-          }`}>
+          <div
+            className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+              isSafe
+                ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                : isWatch
+                ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+                : "bg-rose-500/15 text-rose-400 border border-rose-500/30"
+            }`}
+          >
             <ShieldCheck className="w-5 h-5" />
           </div>
-          <h2 className="text-base sm:text-lg font-extrabold text-[#01373D] tracking-tight">
-            Safety Score
-          </h2>
+          <div>
+            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+              Safety Score
+            </h2>
+            <span className="text-[11px] text-slate-400">Clinical index computed from telemetry</span>
+          </div>
         </div>
 
         <button
           onClick={fetchRisk}
           disabled={loading}
-          className="p-2 rounded-xl text-[#44706A] hover:text-[#01373D] hover:bg-[#F1F4F9] transition-all"
-          title="Refresh"
+          className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
+          title="Refresh Safety Score"
+          type="button"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
 
       {/* Big Visual Score Display */}
-      <div className={`p-5 rounded-2xl flex items-center justify-between border ${
-        isSafe ? "bg-emerald-50/70 border-emerald-200" : isWatch ? "bg-amber-50/70 border-amber-200" : "bg-[#FE336A]/5 border-[#FE336A]/20"
-      }`}>
+      <div
+        className={`p-4 sm:p-5 rounded-xl flex items-center justify-between border ${
+          isSafe
+            ? "bg-emerald-500/10 border-emerald-500/25"
+            : isWatch
+            ? "bg-amber-500/10 border-amber-500/25"
+            : "bg-rose-500/10 border-rose-500/25"
+        }`}
+      >
         <div>
-          <span className="text-xs font-bold text-[#44706A] uppercase tracking-wider block">
-            Current Health
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+            Health Safety Index
           </span>
           <div className="flex items-baseline gap-1 mt-1">
-            <span className="text-4xl sm:text-5xl font-extrabold text-[#01373D] font-mono">
+            <span className="text-4xl sm:text-5xl font-black text-white font-mono">
               {score}
             </span>
-            <span className="text-sm font-bold text-[#44706A]">/ 100</span>
+            <span className="text-sm font-bold text-slate-400">/ 100</span>
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-1 text-right max-w-[55%]">
-          <span className={`px-3.5 py-1.5 rounded-md font-extrabold text-xs sm:text-sm tracking-wide shadow-xs ${
-            isSafe ? "bg-emerald-600 text-white" : isWatch ? "bg-amber-500 text-white" : "bg-[#FE336A] text-white"
-          }`}>
-            {isSafe ? "GOOD & SAFE" : isWatch ? "ATTENTION" : "HIGH RISK"}
+        <div className="flex flex-col items-end gap-1.5 text-right max-w-[55%]">
+          <span
+            className={`px-3 py-1 rounded-lg font-extrabold text-xs tracking-wide ${
+              isSafe
+                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                : isWatch
+                ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                : "bg-rose-500/20 text-rose-300 border border-rose-500/40"
+            }`}
+          >
+            {isSafe ? "NOMINAL & SAFE" : isWatch ? "MONITORING ADVISORY" : "ELEVATED RISK"}
           </span>
-          <span className="text-[11px] font-semibold text-[#44706A] line-clamp-2">
+          <span className="text-[11px] text-slate-300 line-clamp-2">
             {recommendation}
           </span>
         </div>
       </div>
 
       {/* Dynamic Visual Status Indicators */}
-      <div className="grid grid-cols-3 gap-2 pt-1">
+      <div className="grid grid-cols-3 gap-2.5 pt-1">
         {/* Heart */}
-        <div className="p-3 rounded-2xl bg-[#F1F4F9] border border-[#01373D]/6 text-center flex flex-col items-center gap-1">
-          <Heart className="w-4 h-4 text-rose-500" />
-          <span className="text-xs font-bold text-[#01373D]">Heart</span>
-          <span className="text-[11px] font-extrabold text-[#01373D]">
-            {stats.avg_hr ?? 72} <span className="text-[9px] font-normal text-[#44706A]">bpm</span>
+        <div className="p-3 rounded-xl bg-white/4 border border-white/6 text-center flex flex-col items-center gap-1">
+          <Heart className="w-4 h-4 text-rose-400" />
+          <span className="text-xs font-bold text-slate-300">Heart</span>
+          <span className="text-base font-extrabold text-white font-mono">
+            {stats.avg_hr ?? 72} <span className="text-[10px] font-normal text-slate-400">BPM</span>
           </span>
-          <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${
-            stats.hr_status === "Normal" ? "text-emerald-700 bg-emerald-100/80" : "text-amber-700 bg-amber-100/80"
-          }`}>
+          <span
+            className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+              stats.hr_status === "Normal"
+                ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
+                : "text-amber-400 bg-amber-500/10 border border-amber-500/20"
+            }`}
+          >
             {stats.hr_status ?? "Normal"}
           </span>
         </div>
 
         {/* Oxygen */}
-        <div className="p-3 rounded-2xl bg-[#F1F4F9] border border-[#01373D]/6 text-center flex flex-col items-center gap-1">
-          <Activity className="w-4 h-4 text-sky-500" />
-          <span className="text-xs font-bold text-[#01373D]">Oxygen</span>
-          <span className="text-[11px] font-extrabold text-[#01373D]">
-            {stats.avg_spo2 ?? 98}<span className="text-[9px] font-normal text-[#44706A]">%</span>
+        <div className="p-3 rounded-xl bg-white/4 border border-white/6 text-center flex flex-col items-center gap-1">
+          <Activity className="w-4 h-4 text-sky-400" />
+          <span className="text-xs font-bold text-slate-300">Oxygen</span>
+          <span className="text-base font-extrabold text-white font-mono">
+            {stats.avg_spo2 ?? 98}<span className="text-[10px] font-normal text-slate-400">%</span>
           </span>
-          <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${
-            stats.spo2_status === "Good" ? "text-emerald-700 bg-emerald-100/80" : "text-amber-700 bg-amber-100/80"
-          }`}>
+          <span
+            className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+              stats.spo2_status === "Good"
+                ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
+                : "text-amber-400 bg-amber-500/10 border border-amber-500/20"
+            }`}
+          >
             {stats.spo2_status ?? "Good"}
           </span>
         </div>
 
         {/* Falls */}
-        <div className="p-3 rounded-2xl bg-[#F1F4F9] border border-[#01373D]/6 text-center flex flex-col items-center gap-1">
-          <AlertCircle className={`w-4 h-4 ${(stats.active_falls ?? 0) > 0 ? "text-rose-500" : "text-emerald-500"}`} />
-          <span className="text-xs font-bold text-[#01373D]">Falls</span>
-          <span className="text-[11px] font-extrabold text-[#01373D]">
+        <div className="p-3 rounded-xl bg-white/4 border border-white/6 text-center flex flex-col items-center gap-1">
+          <AlertCircle
+            className={`w-4 h-4 ${
+              (stats.active_falls ?? 0) > 0 ? "text-rose-400" : "text-emerald-400"
+            }`}
+          />
+          <span className="text-xs font-bold text-slate-300">Falls</span>
+          <span className="text-base font-extrabold text-white font-mono">
             {(stats.active_falls ?? 0) === 0 ? "0 Active" : `${stats.active_falls} Alert`}
           </span>
-          <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${
-            (stats.active_falls ?? 0) === 0 ? "text-emerald-700 bg-emerald-100/80" : "text-rose-700 bg-rose-100/80"
-          }`}>
-            {(stats.active_falls ?? 0) === 0 ? "Safe" : "Action Needed"}
+          <span
+            className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+              (stats.active_falls ?? 0) === 0
+                ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
+                : "text-rose-400 bg-rose-500/10 border border-rose-500/20"
+            }`}
+          >
+            {(stats.active_falls ?? 0) === 0 ? "Clear" : "Incident"}
           </span>
         </div>
       </div>
 
       {/* Clinical Factor Breakdown */}
       {factors.length > 0 && (
-        <div className="pt-2 border-t border-[#01373D]/5 flex flex-col gap-1.5">
-          <div className="flex items-center justify-between text-[11px] font-bold text-[#44706A] uppercase tracking-wider">
-            <span>Clinical Breakdown</span>
-            <span>{factors.length} {factors.length === 1 ? 'factor' : 'factors'}</span>
+        <div className="pt-2 border-t border-white/8 flex flex-col gap-2">
+          <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <span>Risk Factors</span>
+            <span>{factors.length} {factors.length === 1 ? "factor" : "factors"}</span>
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             {factors.map((f, i) => (
-              <div key={i} className="flex items-center justify-between text-xs bg-[#F1F4F9]/60 px-3 py-2 rounded-xl border border-[#01373D]/5">
+              <div
+                key={i}
+                className="flex items-center justify-between text-xs bg-white/4 px-3 py-2 rounded-xl border border-white/6"
+              >
                 <div className="flex flex-col">
-                  <span className="font-bold text-[#01373D] text-[11px]">{f.name}</span>
-                  <span className="text-[10px] text-[#44706A] font-medium leading-tight">{f.description}</span>
+                  <span className="font-bold text-white text-xs">{f.name}</span>
+                  <span className="text-[11px] text-slate-400 leading-tight">{f.description}</span>
                 </div>
-                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md whitespace-nowrap ml-2 ${
-                  f.impact > 0 ? "text-amber-700 bg-amber-100/80" : "text-emerald-700 bg-emerald-100/80"
-                }`}>
-                  {f.impact > 0 ? `+${f.impact}% risk` : "Healthy"}
+                <span
+                  className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md whitespace-nowrap ml-2 ${
+                    f.impact > 0
+                      ? "text-amber-400 bg-amber-500/10 border border-amber-500/20"
+                      : "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
+                  }`}
+                >
+                  {f.impact > 0 ? `+${f.impact}% risk` : "Nominal"}
                 </span>
               </div>
             ))}

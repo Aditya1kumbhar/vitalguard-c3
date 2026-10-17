@@ -53,14 +53,12 @@ export default function HistoricalTrends() {
       setLoading(true);
       setError(null);
       try {
-        // Attempt fetch from local ESP32 / Edge server
         const res = await authFetch(`${getApiBase()}/analytics/daily?days=${daysRange}`);
         if (!res.ok) throw new Error(`HTTP error ${res.status}`);
         const json: DailySummary[] = await res.json();
         setData(json);
         setStorageSource("Live Bridge");
 
-        // Sync into browser IndexedDB with automatic Day 31+ pruning
         const dbRecords: DailyRecord[] = json.map((item) => ({
           dateKey: item.date,
           avg_hr: Math.round(item.hr_avg),
@@ -77,7 +75,6 @@ export default function HistoricalTrends() {
         }));
         await saveBulkDailyRecordsAndPrune(dbRecords);
       } catch {
-        // Offline Fallback: Load 30-day rolling log directly from local IndexedDB
         try {
           let cached = await getDailyRecords(daysRange);
           if (cached.length === 0) {
@@ -124,33 +121,37 @@ export default function HistoricalTrends() {
   return (
     <section
       aria-label="30-Day Trends"
-      className="royal-card rounded-2xl p-5 flex flex-col gap-4"
+      className="p-5 sm:p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-5"
     >
       {/* Header & Filter Range */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-sky-600" aria-hidden="true" />
+      <div className="flex items-center justify-between border-b border-white/8 pb-3.5 flex-wrap gap-2.5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+            <Calendar className="w-5 h-5" />
+          </div>
           <div>
-            <h2 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <span>30-Day History</span>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+              <span>Historical Trends</span>
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <Database className="w-2.5 h-2.5" />
                 {storageSource}
               </span>
             </h2>
+            <span className="text-[11px] text-slate-400">Continuous telemetry aggregate</span>
           </div>
         </div>
 
         {/* Days Filter Buttons */}
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+        <div className="flex items-center gap-1 bg-white/5 border border-white/8 p-1 rounded-xl">
           {[7, 14, 30].map((days) => (
             <button
               key={days}
+              type="button"
               onClick={() => setDaysRange(days)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 daysRange === days
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-500 hover:text-slate-800"
+                  ? "bg-cyan-600 text-white shadow-sm"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
               }`}
             >
               {days}D
@@ -160,131 +161,234 @@ export default function HistoricalTrends() {
       </div>
 
       {/* Metric Selector Tabs */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <button
+          type="button"
           onClick={() => setActiveTab("hr")}
-          className={`flex items-center justify-center gap-1.5 p-2 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center justify-center gap-1.5 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
             activeTab === "hr"
-              ? "bg-rose-50 text-rose-700 border border-rose-200 shadow-sm"
-              : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+              ? "bg-rose-500/15 text-rose-300 border-rose-500/40 shadow-sm"
+              : "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white"
           }`}
         >
-          <Heart className="w-3.5 h-3.5 text-rose-500" />
+          <Heart className="w-3.5 h-3.5 text-rose-400" />
           <span>Heart Beat</span>
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab("spo2")}
-          className={`flex items-center justify-center gap-1.5 p-2 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center justify-center gap-1.5 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
             activeTab === "spo2"
-              ? "bg-sky-50 text-sky-700 border border-sky-200 shadow-sm"
-              : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+              ? "bg-sky-500/15 text-sky-300 border-sky-500/40 shadow-sm"
+              : "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white"
           }`}
         >
-          <Droplets className="w-3.5 h-3.5 text-sky-500" />
-          <span>Oxygen</span>
+          <Droplets className="w-3.5 h-3.5 text-sky-400" />
+          <span>Oxygen (SpO2)</span>
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab("temp")}
-          className={`flex items-center justify-center gap-1.5 p-2 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center justify-center gap-1.5 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
             activeTab === "temp"
-              ? "bg-amber-50 text-amber-700 border border-amber-200 shadow-sm"
-              : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+              ? "bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-sm"
+              : "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white"
           }`}
         >
-          <Thermometer className="w-3.5 h-3.5 text-amber-500" />
+          <Thermometer className="w-3.5 h-3.5 text-amber-400" />
           <span>Body Temp</span>
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab("anomalies")}
-          className={`flex items-center justify-center gap-1.5 p-2 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center justify-center gap-1.5 p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
             activeTab === "anomalies"
-              ? "bg-rose-50 text-rose-700 border border-rose-200 shadow-sm"
-              : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+              ? "bg-rose-500/15 text-rose-300 border-rose-500/40 shadow-sm"
+              : "bg-white/4 text-slate-400 border-white/6 hover:bg-white/8 hover:text-white"
           }`}
         >
-          <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-          <span>Alerts</span>
+          <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+          <span>Fall Alerts</span>
         </button>
       </div>
 
       {/* Chart Canvas */}
-      <div className="w-full h-52 sm:h-56 rounded-xl border border-slate-200 p-2 telemetry-grid-light relative overflow-hidden">
+      <div className="w-full h-64 sm:h-72 rounded-xl border border-white/8 bg-black/40 p-2 sm:p-3 relative overflow-hidden">
         {loading ? (
           <div className="w-full h-full flex items-center justify-center gap-2 text-slate-400">
-            <RefreshCw className="w-4 h-4 animate-spin text-sky-600" />
-            <span className="text-xs">Loading...</span>
+            <RefreshCw className="w-4 h-4 animate-spin text-cyan-400" />
+            <span className="text-xs">Loading telemetry records...</span>
           </div>
         ) : error ? (
-          <div className="w-full h-full flex items-center justify-center text-rose-600 text-xs">
+          <div className="w-full h-full flex items-center justify-center text-rose-400 text-xs">
             {error}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             {activeTab === "hr" ? (
-              <AreaChart data={formattedData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={formattedData} margin={{ top: 12, right: 12, left: -20, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="hrGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0.0} />
+                  <linearGradient id="hrDarkGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#FF375F" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#FF375F" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="displayDate" stroke="#94a3b8" tick={{ fontSize: 9, fill: "#64748b" }} />
-                <YAxis domain={[40, 120]} stroke="#94a3b8" tick={{ fontSize: 9, fill: "#64748b" }} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: "8px", fontSize: "11px", color: "#0f172a" }}
-                  formatter={(val: number) => [`${val} bpm`, ""]}
+                <XAxis
+                  dataKey="displayDate"
+                  stroke="rgba(255, 255, 255, 0.15)"
+                  tick={{ fontSize: 10, fill: "#94a3b8" }}
                 />
-                <ReferenceLine y={50} stroke="#ef4444" strokeDasharray="3 3" label={{ value: "Low (50 bpm)", fill: "#dc2626", fontSize: 9, position: "insideBottomLeft" }} />
-                <Area type="monotone" dataKey="hr_avg" name="Average HR" stroke="#ef4444" strokeWidth={2} fillOpacity={1} fill="url(#hrGrad)" />
-                <Line type="monotone" dataKey="hr_min" name="Min" stroke="#94a3b8" strokeDasharray="2 2" strokeWidth={1} dot={false} />
-                <Line type="monotone" dataKey="hr_max" name="Max" stroke="#64748b" strokeDasharray="2 2" strokeWidth={1} dot={false} />
+                <YAxis
+                  domain={[40, 120]}
+                  stroke="rgba(255, 255, 255, 0.15)"
+                  tick={{ fontSize: 10, fill: "#94a3b8" }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#12161D",
+                    borderColor: "rgba(255, 255, 255, 0.15)",
+                    borderRadius: "10px",
+                    fontSize: "11px",
+                    color: "#FFFFFF",
+                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6)",
+                  }}
+                  formatter={(val: number) => [`${val} BPM`, "Heart Rate"]}
+                />
+                <ReferenceLine
+                  y={50}
+                  stroke="#FF375F"
+                  strokeDasharray="3 3"
+                  label={{ value: "Bradycardia (50 BPM)", fill: "#FF375F", fontSize: 9, position: "insideBottomLeft" }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="hr_avg"
+                  name="Average HR"
+                  stroke="#FF375F"
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#hrDarkGrad)"
+                />
+                <Line type="monotone" dataKey="hr_min" name="Min" stroke="#64748b" strokeDasharray="2 2" strokeWidth={1} dot={false} />
+                <Line type="monotone" dataKey="hr_max" name="Max" stroke="#94a3b8" strokeDasharray="2 2" strokeWidth={1} dot={false} />
               </AreaChart>
             ) : activeTab === "spo2" ? (
-              <AreaChart data={formattedData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={formattedData} margin={{ top: 12, right: 12, left: -20, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="spo2Grad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0284c7" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#0284c7" stopOpacity={0.0} />
+                  <linearGradient id="spo2DarkGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#0EA5E9" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#0EA5E9" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="displayDate" stroke="#94a3b8" tick={{ fontSize: 9, fill: "#64748b" }} />
-                <YAxis domain={[88, 100]} stroke="#94a3b8" tick={{ fontSize: 9, fill: "#64748b" }} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: "8px", fontSize: "11px", color: "#0f172a" }}
-                  formatter={(val: number) => [`${val}%`, ""]}
+                <XAxis
+                  dataKey="displayDate"
+                  stroke="rgba(255, 255, 255, 0.15)"
+                  tick={{ fontSize: 10, fill: "#94a3b8" }}
                 />
-                <ReferenceLine y={92} stroke="#ef4444" strokeDasharray="3 3" label={{ value: "Low (92%)", fill: "#dc2626", fontSize: 9, position: "insideBottomLeft" }} />
-                <Area type="monotone" dataKey="spo2_avg" name="Oxygen" stroke="#0284c7" strokeWidth={2} fillOpacity={1} fill="url(#spo2Grad)" />
+                <YAxis
+                  domain={[88, 100]}
+                  stroke="rgba(255, 255, 255, 0.15)"
+                  tick={{ fontSize: 10, fill: "#94a3b8" }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#12161D",
+                    borderColor: "rgba(255, 255, 255, 0.15)",
+                    borderRadius: "10px",
+                    fontSize: "11px",
+                    color: "#FFFFFF",
+                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6)",
+                  }}
+                  formatter={(val: number) => [`${val}%`, "Oxygen Saturation"]}
+                />
+                <ReferenceLine
+                  y={92}
+                  stroke="#FF375F"
+                  strokeDasharray="3 3"
+                  label={{ value: "Hypoxia (<92%)", fill: "#FF375F", fontSize: 9, position: "insideBottomLeft" }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="spo2_avg"
+                  name="Oxygen"
+                  stroke="#0EA5E9"
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#spo2DarkGrad)"
+                />
               </AreaChart>
             ) : activeTab === "temp" ? (
-              <AreaChart data={formattedData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={formattedData} margin={{ top: 12, right: 12, left: -20, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="tempGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
+                  <linearGradient id="tempDarkGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="displayDate" stroke="#94a3b8" tick={{ fontSize: 9, fill: "#64748b" }} />
-                <YAxis domain={[35.5, 38.5]} stroke="#94a3b8" tick={{ fontSize: 9, fill: "#64748b" }} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: "8px", fontSize: "11px", color: "#0f172a" }}
-                  formatter={(val: number) => [`${val} °C`, ""]}
+                <XAxis
+                  dataKey="displayDate"
+                  stroke="rgba(255, 255, 255, 0.15)"
+                  tick={{ fontSize: 10, fill: "#94a3b8" }}
                 />
-                <ReferenceLine y={37.5} stroke="#ef4444" strokeDasharray="3 3" label={{ value: "Fever (37.5°C)", fill: "#dc2626", fontSize: 9, position: "insideTopLeft" }} />
-                <Area type="monotone" dataKey="temp_avg" name="Temp" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#tempGrad)" />
+                <YAxis
+                  domain={[35.5, 38.5]}
+                  stroke="rgba(255, 255, 255, 0.15)"
+                  tick={{ fontSize: 10, fill: "#94a3b8" }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#12161D",
+                    borderColor: "rgba(255, 255, 255, 0.15)",
+                    borderRadius: "10px",
+                    fontSize: "11px",
+                    color: "#FFFFFF",
+                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6)",
+                  }}
+                  formatter={(val: number) => [`${val} °C`, "Body Temp"]}
+                />
+                <ReferenceLine
+                  y={37.5}
+                  stroke="#FF375F"
+                  strokeDasharray="3 3"
+                  label={{ value: "Fever (>37.5°C)", fill: "#FF375F", fontSize: 9, position: "insideTopLeft" }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="temp_avg"
+                  name="Temp"
+                  stroke="#F59E0B"
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#tempDarkGrad)"
+                />
               </AreaChart>
             ) : (
-              <BarChart data={formattedData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <XAxis dataKey="displayDate" stroke="#94a3b8" tick={{ fontSize: 9, fill: "#64748b" }} />
-                <YAxis stroke="#94a3b8" tick={{ fontSize: 9, fill: "#64748b" }} allowDecimals={false} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", borderRadius: "8px", fontSize: "11px", color: "#0f172a" }}
-                  formatter={(val: number) => [`${val} alerts`, "Alerts"]}
+              <BarChart data={formattedData} margin={{ top: 12, right: 12, left: -20, bottom: 0 }}>
+                <XAxis
+                  dataKey="displayDate"
+                  stroke="rgba(255, 255, 255, 0.15)"
+                  tick={{ fontSize: 10, fill: "#94a3b8" }}
                 />
-                <Bar dataKey="anomaly_count" name="Alerts" fill="#e11d48" radius={[4, 4, 0, 0]} />
+                <YAxis
+                  stroke="rgba(255, 255, 255, 0.15)"
+                  tick={{ fontSize: 10, fill: "#94a3b8" }}
+                  allowDecimals={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#12161D",
+                    borderColor: "rgba(255, 255, 255, 0.15)",
+                    borderRadius: "10px",
+                    fontSize: "11px",
+                    color: "#FFFFFF",
+                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6)",
+                  }}
+                  formatter={(val: number) => [`${val} Incident(s)`, "Fall Alerts"]}
+                />
+                <Bar dataKey="anomaly_count" name="Alerts" fill="#FF375F" radius={[4, 4, 0, 0]} />
               </BarChart>
             )}
           </ResponsiveContainer>

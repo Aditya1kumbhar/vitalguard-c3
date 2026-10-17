@@ -51,6 +51,9 @@ import { WebBluetoothBand } from './data/WebBluetoothBand';
 import { useBand } from './data/useBand';
 import { useAuth } from './context/AuthContext';
 import { DailyRecord, getDailyRecords, seedInitialDataIfEmpty } from './utils/localDatabase';
+import RiskScoreCard from './components/RiskScoreCard';
+import ClinicalSummaryCard from './components/ClinicalSummaryCard';
+import HistoricalTrends from './components/HistoricalTrends';
 import {
   colors,
   dimensions,
@@ -60,34 +63,15 @@ import {
   typography,
 } from './design/motion.tokens';
 
-// ── Browse Category Contract ──────────────────────────────────────────
-interface BrowseCategory {
-  id: string;
-  title: string;
-  subtitle: string;
-  icon: React.ReactNode;
-  bgGradient: string;
-  accentColor: string;
-  liveMetric: string;
-  liveLabel: string;
-  statusBadge: string;
-  baseline: string;
-  sensorInfo: string;
-  clinicalExplanation: string;
-  recommendations: string[];
-}
-
 export default function VitalGuardCompanionDashboard() {
   const { guardianName, bandId, logout } = useAuth();
 
-  // Navigation tab state: 'summary' | 'browse' | 'falls'
-  const [activeTab, setActiveTab] = useState<'summary' | 'browse' | 'falls'>('summary');
-  const [searchQuery, setSearchQuery] = useState('');
+  // Navigation tab state: 'summary' | 'trends' | 'falls'
+  const [activeTab, setActiveTab] = useState<'summary' | 'trends' | 'falls'>('summary');
   const [transportMode, setTransportMode] = useState<'mock' | 'ble'>('mock');
   const [isBleSupported, setIsBleSupported] = useState<boolean>(true);
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const [isAccountOpen, setIsAccountOpen] = useState<boolean>(false);
-  const [selectedCategory, setSelectedCategory] = useState<BrowseCategory | null>(null);
   const [manualFallActive, setManualFallActive] = useState<boolean>(false);
   const [dismissedCards, setDismissedCards] = useState<{ [key: string]: boolean }>({});
   const [thirtyDayRecords, setThirtyDayRecords] = useState<DailyRecord[]>([]);
@@ -210,145 +194,7 @@ export default function VitalGuardCompanionDashboard() {
     return thirtyDayRecords.filter((r) => (r.fall_count || 0) === 0).length;
   }, [thirtyDayRecords]);
 
-  // ── Curated Health Categories for Browse & One-Tap Popup ─────────────
-  const healthCategories: BrowseCategory[] = useMemo(
-    () => [
-      {
-        id: 'activity',
-        title: 'Activity & Motion',
-        subtitle: 'Continuous 3-axis IMU kinematics',
-        icon: <Flame size={28} color="#FF9500" />,
-        bgGradient: 'none',
-        accentColor: '#FF9500',
-        liveMetric: `${liveSvm.toFixed(2)} G`,
-        liveLabel: 'Real-Time SVM Acceleration',
-        statusBadge: isCurrentlyFalling ? 'HIGH IMPACT' : 'Nominal Kinetic Baseline',
-        baseline: '0.80 - 1.60 G daily baseline variance',
-        sensorInfo:
-          'MPU6050 6-Axis Inertial Measurement Unit sampled at 50Hz over I2C (0x68). Calculates continuous Signal Vector Magnitude (SVM = √(ax² + ay² + az²) / 9.8) to distinguish sedentary rest from ambulatory movement.',
-        clinicalExplanation:
-          'Continuous kinetic tracking measures physical exertion, posture shifts, and involuntary acceleration spikes. A sudden acceleration spike above 3.0G coupled with post-impact stillness signifies an incapacitating fall.',
-        recommendations: [
-          'Target at least 30 minutes of low-impact ambulatory movement daily.',
-          'Ensure the wrist strap is fastened snugly 1 finger width above the wrist bone.',
-          'Sudden changes in gait symmetry can indicate fatigue or musculoskeletal strain.',
-        ],
-      },
-      {
-        id: 'body',
-        title: 'Body Measurements',
-        subtitle: 'Epidermal thermometry & skin contact',
-        icon: <User size={28} color="#0EA5E9" />,
-        bgGradient: 'none',
-        accentColor: '#0EA5E9',
-        liveMetric: '36.6 °C',
-        liveLabel: 'Wrist Surface Temperature',
-        statusBadge: 'Thermal Homeostasis',
-        baseline: '36.1 °C - 37.2 °C circadian range',
-        sensorInfo:
-          'MAX30102 on-die calibrated temperature sensor with ±0.5°C clinical accuracy. Monitors surface thermometry and ambient delta.',
-        clinicalExplanation:
-          'Peripheral skin temperature reflects circadian rhythm transitions, peripheral perfusion, and thermal regulation. Nighttime temperature dips correlate directly with deep sleep cycles.',
-        recommendations: [
-          'Consistent wrist temperature confirms active, snug sensor skin contact.',
-          'Sudden cold drops can indicate peripheral vasoconstriction or improper sensor placement.',
-          'Track morning versus evening temperature variance for circadian health assessment.',
-        ],
-      },
-      {
-        id: 'heart',
-        title: 'Heart & Cardiovascular',
-        subtitle: 'Optical PPG pulse rate & rhythm',
-        icon: <Heart size={28} color="#FF375F" fill="#FF375F" />,
-        bgGradient: 'none',
-        accentColor: '#FF375F',
-        liveMetric: `${hrValue} BPM`,
-        liveLabel: 'Live Cardiovascular Pulse',
-        statusBadge: status === 'irregular' ? 'Irregular Pattern Noticed' : 'Nominal Sinus Rhythm',
-        baseline: '60 - 100 BPM resting adult standard',
-        sensorInfo:
-          'MAX30102 high-sensitivity reflective photoplethysmography (PPG). Uses 525nm Green LED absorption through microvascular capillary beds with 18-bit ADC resolution.',
-        clinicalExplanation:
-          'Measures pulsatile blood flow volume in wrist arterioles. Real-time peak-to-peak interval algorithms monitor heart rate variability (HRV) and flag abnormal pattern spikes without diagnostic over-reach.',
-        recommendations: [
-          'Resting heart rates between 60 and 80 BPM indicate healthy cardiovascular baseline.',
-          'Elevated resting pulse across consecutive hours may warrant rest and hydration.',
-          'Consult a physician if you notice prolonged palpitations or dizziness.',
-        ],
-      },
-      {
-        id: 'respiratory',
-        title: 'Respiratory & Oxygenation',
-        subtitle: 'Dual-wavelength pulse oximetry',
-        icon: <Wind size={28} color="#30D158" />,
-        bgGradient: 'none',
-        accentColor: '#30D158',
-        liveMetric: `${spo2Value}%`,
-        liveLabel: 'Functional SpO2 Saturation',
-        statusBadge: spo2Value >= 95 ? 'Optimal Saturation' : 'Mild Desaturation Notice',
-        baseline: '95% - 100% room air standard',
-        sensorInfo:
-          'Dual Red (660nm) and Infrared (880nm) LED ratio absorption (R-curve). Compares oxygenated vs deoxygenated hemoglobin absorption.',
-        clinicalExplanation:
-          'Peripheral capillary oxygen saturation (SpO2) measures the fraction of oxygen-saturated hemoglobin relative to total hemoglobin in arterial blood. Values below 93% flag possible hypoxemia.',
-        recommendations: [
-          'Values between 95% and 100% are standard at sea level to moderate altitudes.',
-          'Avoid excessive wrist movement during oximetry measurement for optimal SNR.',
-          'If readings fall below 92% persistently, verify sensor snugness and seek medical guidance.',
-        ],
-      },
-      {
-        id: 'mobility',
-        title: 'Kinetic Motion & Fall Tracking',
-        subtitle: 'Continuous 3-axis IMU SVM vector',
-        icon: <MoveHorizontal size={28} color="#0EA5E9" />,
-        bgGradient: 'none',
-        accentColor: '#0EA5E9',
-        liveMetric: `${liveSvm.toFixed(2)} G`,
-        liveLabel: 'Signal Vector Magnitude (SVM)',
-        statusBadge: isCurrentlyFalling ? 'IMPACT DETECTED' : 'Nominal Kinetic Baseline',
-        baseline: '0.80 - 1.60 G daily baseline variance',
-        sensorInfo:
-          '3-axis accelerometer data evaluated at 50Hz to calculate real-time Signal Vector Magnitude. Threshold triggers immediately at >3.0G impact forces.',
-        clinicalExplanation:
-          'Signal Vector Magnitude provides continuous kinematic tracking of physical movement. High-G impact transitions followed by immobility indicate potential incapacitation.',
-        recommendations: [
-          'Keep home hallways illuminated and free from loose throw rugs.',
-          'Practice balance exercises like single-leg stands or gentle tai chi.',
-          'Use supportive footwear with non-slip soles during outdoor walking.',
-        ],
-      },
-      {
-        id: 'fifo_falls',
-        title: 'Fall Safety & 30-Day FIFO Log',
-        subtitle: 'Autonomous rolling event ledger',
-        icon: <ShieldAlert size={28} color="#FF453A" />,
-        bgGradient: 'none',
-        accentColor: '#FF453A',
-        liveMetric: `${thirtyDayRecords.length > 0 ? totalFallsIn30Days : 0} Events`,
-        liveLabel: 'Past 30 Days Fall Incidents',
-        statusBadge: totalFallsIn30Days === 0 ? 'Zero Incidents Logged' : `${totalFallsIn30Days} Event(s) Recorded`,
-        baseline: 'Target: 0 incidents per 30-day window',
-        sensorInfo:
-          'Hardware MPU6050 impact interrupt coupled with local client IndexedDB rolling FIFO storage. Records impact peak G-forces and timestamps with automatic 30-day retention pruning.',
-        clinicalExplanation:
-          'Fall incidence history is the single greatest clinical predictor of future fracture risk. Rolling 30-day logs provide accurate trend data for medical reviews without requiring cloud storage.',
-        recommendations: [
-          'Review the 30-day FIFO report with primary care physicians during routine wellness checks.',
-          'Verify emergency contact phone numbers in settings periodically.',
-          'Maintain clear walking paths and low-pile rugs in high-traffic living spaces.',
-        ],
-      },
-    ],
-    [hrValue, spo2Value, liveSvm, isCurrentlyFalling, status, thirtyDayRecords, totalFallsIn30Days]
-  );
-
-  const filteredCategories = healthCategories.filter((c) =>
-    c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.subtitle.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  return (
+    return (
     <div
       style={{
         width: '100%',
@@ -698,10 +544,10 @@ export default function VitalGuardCompanionDashboard() {
           </motion.div>
         )}
 
-        {/* ═════════════════════════════════════════════════════════════
-            TAB 2: BROWSE (Curated Categories with One-Tap Popup Windows)
-           ═════════════════════════════════════════════════════════════ */}
-        {activeTab === 'browse' && (
+        {/* ═══════════════════════════════════════════════════════════
+            TAB 2: CLINICAL RECORDS & TRENDS (Integrated Native Tab)
+           ═══════════════════════════════════════════════════════════ */}
+        {activeTab === 'trends' && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -709,63 +555,33 @@ export default function VitalGuardCompanionDashboard() {
             transition={{ duration: 0.2 }}
             className="mt-5 sm:mt-6 flex flex-col gap-6"
           >
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                Biometric Categories
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                Tap any category to open one-tap scrollable clinical sensor telemetry &amp; science
-              </p>
+            <div className="flex items-baseline justify-between">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                  Clinical Records &amp; Trends
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                  Resting vitals baseline, safety score, and historical telemetry trends
+                </p>
+              </div>
+
+              <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/25">
+                INDEXEDDB ACTIVE
+              </span>
             </div>
 
-            {/* Search Bar */}
-            <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#12161D] border border-white/10 max-w-md">
-              <Search size={18} className="text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search health categories..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent border-none outline-none text-white text-sm w-full placeholder:text-slate-500"
-              />
-              <Mic size={18} className="text-slate-500" />
-            </div>
+            {/* Responsive 12-Column Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+              {/* Left Column: Safety Score + Baseline Summary */}
+              <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-5">
+                <RiskScoreCard />
+                <ClinicalSummaryCard />
+              </div>
 
-            {/* Responsive Category Grid: 2 on mobile, 3 on tablet, 4 on PC */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-              {filteredCategories.map((cat) => (
-                <motion.div
-                  key={cat.id}
-                  whileHover={{ y: -3, scale: 1.01 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setSelectedCategory(cat)}
-                  className="p-5 rounded-2xl cursor-pointer border border-white/8 hover:border-cyan-500/30 transition-all flex flex-col justify-between min-h-[160px] relative overflow-hidden"
-                  style={{
-                    background: cat.bgGradient,
-                    backgroundColor: '#12161D',
-                  }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center"
-                      style={{ backgroundColor: `${cat.accentColor}20` }}
-                    >
-                      {cat.icon}
-                    </div>
-                    <ArrowUpRight size={18} className="text-slate-500" />
-                  </div>
-
-                  <div className="mt-4 flex flex-col">
-                    <span className="text-xs font-mono uppercase tracking-wider" style={{ color: cat.accentColor }}>
-                      {cat.liveLabel}
-                    </span>
-                    <span className="text-xl sm:text-2xl font-black font-mono text-white mt-0.5">
-                      {cat.liveMetric}
-                    </span>
-                    <span className="text-sm font-bold text-slate-200 mt-1">{cat.title}</span>
-                  </div>
-                </motion.div>
-              ))}
+              {/* Right Column: Historical Trends Charts */}
+              <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-5">
+                <HistoricalTrends />
+              </div>
             </div>
           </motion.div>
         )}
@@ -1073,7 +889,7 @@ export default function VitalGuardCompanionDashboard() {
           {/* Tab 2: Browse */}
           <motion.button
             type="button"
-            onClick={() => setActiveTab('browse')}
+            onClick={() => setActiveTab('trends')}
             whileTap={{ scale: 0.94 }}
             style={{
               display: 'flex',
@@ -1082,16 +898,16 @@ export default function VitalGuardCompanionDashboard() {
               padding: '9px 16px',
               borderRadius: 10,
               border: 'none',
-              backgroundColor: activeTab === 'browse' ? 'rgba(14, 165, 233, 0.22)' : 'transparent',
-              color: activeTab === 'browse' ? '#38BDF8' : '#8E8E93',
+              backgroundColor: activeTab === 'trends' ? 'rgba(14, 165, 233, 0.22)' : 'transparent',
+              color: activeTab === 'trends' ? '#38BDF8' : '#8E8E93',
               fontSize: 13,
               fontWeight: 700,
               cursor: 'pointer',
               transition: 'all 200ms ease',
             }}
           >
-            <LayoutGrid size={17} color={activeTab === 'browse' ? '#38BDF8' : '#8E8E93'} />
-            <span>Browse</span>
+            <TrendingUp size={17} color={activeTab === 'trends' ? '#38BDF8' : '#8E8E93'} />
+            <span>Trends</span>
           </motion.button>
 
           {/* Tab 3: Fall Safety (Replaced Sharing) */}
@@ -1119,117 +935,6 @@ export default function VitalGuardCompanionDashboard() {
           </motion.button>
         </div>
       </nav>
-
-      {/* ═════════════════════════════════════════════════════════════
-          ONE-TAP POPUP WINDOW FOR BROWSE CATEGORIES
-         ═════════════════════════════════════════════════════════════ */}
-      <Sheet
-        open={Boolean(selectedCategory)}
-        onOpenChange={(open) => {
-          if (!open) setSelectedCategory(null);
-        }}
-        title={selectedCategory?.title || 'Category Details'}
-      >
-        {selectedCategory && (
-          <div className="flex flex-col gap-4 pt-2">
-            {/* Header with Done button */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/8">
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ backgroundColor: `${selectedCategory.accentColor}25` }}
-                >
-                  {selectedCategory.icon}
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white leading-tight">{selectedCategory.title}</h3>
-                  <span className="text-xs text-slate-400">{selectedCategory.subtitle}</span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSelectedCategory(null)}
-                className="text-sm font-semibold text-cyan-400 hover:text-cyan-300 px-2 py-1"
-              >
-                Done
-              </button>
-            </div>
-
-            {/* Card 1: Real-Time Sensor Telemetry */}
-            <Card style={{ backgroundColor: '#161B22', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
-              <div className="flex flex-col gap-2">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
-                  {selectedCategory.liveLabel}
-                </span>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-3xl font-black font-mono text-white">
-                    {selectedCategory.liveMetric}
-                  </span>
-                  <span
-                    className="text-xs font-bold font-mono px-2.5 py-1 rounded-md"
-                    style={{
-                      backgroundColor: `${selectedCategory.accentColor}20`,
-                      color: selectedCategory.accentColor,
-                    }}
-                  >
-                    {selectedCategory.statusBadge}
-                  </span>
-                </div>
-              </div>
-            </Card>
-
-            {/* Card 2: 30-Day Clinical Baseline */}
-            <Card style={{ backgroundColor: '#161B22', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
-                  30-Day Reference Baseline
-                </span>
-                <span className="text-sm font-bold text-white">{selectedCategory.baseline}</span>
-              </div>
-            </Card>
-
-            {/* Card 3: Sensor Hardware Mechanism */}
-            <Card style={{ backgroundColor: '#161B22', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
-                  Sensor Hardware &amp; Methodology
-                </span>
-                <p className="text-xs text-slate-300 leading-relaxed m-0">
-                  {selectedCategory.sensorInfo}
-                </p>
-              </div>
-            </Card>
-
-            {/* Card 4: Clinical Guidance & Recommendations */}
-            <Card style={{ backgroundColor: '#161B22', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
-              <div className="flex flex-col gap-2">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
-                  Clinical Recommendations
-                </span>
-                <div className="space-y-1.5">
-                  {selectedCategory.recommendations.map((rec, idx) => (
-                    <div key={idx} className="flex items-start gap-2 text-xs text-slate-300">
-                      <Check size={14} className="text-cyan-400 shrink-0 mt-0.5" />
-                      <span>{rec}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </Card>
-
-            {/* Action: Open Historical Records */}
-            <Link
-              href="/records"
-              onClick={() => setSelectedCategory(null)}
-              className="w-full py-3 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white transition-colors flex items-center justify-center gap-2"
-            >
-              <FileText size={16} />
-              <span>View 30-Day Historical Trends &amp; Baseline</span>
-            </Link>
-          </div>
-        )}
-      </Sheet>
 
       {/* ═════════════════════════════════════════════════════════════
           ACCOUNT & DEVICE APPLICATION SETTINGS SHEET
@@ -1393,8 +1098,12 @@ export default function VitalGuardCompanionDashboard() {
 
             <Card style={{ padding: '4px 12px', backgroundColor: '#161B22' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <Link
-                  href="/records"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('trends');
+                    setIsAccountOpen(false);
+                  }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -1402,7 +1111,13 @@ export default function VitalGuardCompanionDashboard() {
                     padding: '14px 4px',
                     borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
                     color: '#FFFFFF',
-                    textDecoration: 'none',
+                    backgroundColor: 'transparent',
+                    borderLeft: 'none',
+                    borderRight: 'none',
+                    borderTop: 'none',
+                    width: '100%',
+                    cursor: 'pointer',
+                    textAlign: 'left',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -1411,7 +1126,7 @@ export default function VitalGuardCompanionDashboard() {
                         width: 32,
                         height: 32,
                         borderRadius: 8,
-                        backgroundColor: '#30D158',
+                        backgroundColor: '#10B981',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1419,10 +1134,15 @@ export default function VitalGuardCompanionDashboard() {
                     >
                       <FileText size={18} color="#000000" />
                     </div>
-                    <span style={{ fontSize: 14, fontWeight: 600 }}>Clinical Records &amp; Trends</span>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: 14, fontWeight: 600 }}>Clinical Records &amp; Trends</span>
+                      <span style={{ fontSize: 12, color: colors.textSecondary }}>
+                        Safety score, baseline vitals &amp; 30-day graphs
+                      </span>
+                    </div>
                   </div>
                   <ChevronRight size={18} color={colors.textSecondary} />
-                </Link>
+                </button>
 
                 <Link
                   href="/feel-lab"

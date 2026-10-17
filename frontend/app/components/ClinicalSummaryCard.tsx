@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Heart, Activity, Thermometer, Printer, RefreshCw } from "lucide-react";
+import { Heart, Activity, Thermometer, Printer } from "lucide-react";
 import { getApiBase, authFetch } from "../utils/api";
 
 export default function ClinicalSummaryCard() {
@@ -27,68 +27,73 @@ export default function ClinicalSummaryCard() {
   };
 
   return (
-    <section aria-label="30-Day Vitals Average" className="royal-card rounded-3xl p-5 sm:p-6 flex flex-col gap-4">
+    <section
+      aria-label="30-Day Vitals Average"
+      className="p-5 sm:p-6 rounded-2xl bg-[#12161D] border border-white/8 flex flex-col gap-4"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-          30-Day Health Summary
-        </h2>
+      <div className="flex items-center justify-between border-b border-white/8 pb-3">
+        <div>
+          <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+            30-Day Baseline Summary
+          </h2>
+          <span className="text-[11px] text-slate-400">Resting physiological averages</span>
+        </div>
 
         <button
           onClick={handlePrint}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs border border-slate-200 transition-all shadow-xs"
-          title="Print Summary"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold text-xs border border-white/10 transition-all cursor-pointer"
+          title="Print Summary Report"
+          type="button"
         >
-          <Printer className="w-3.5 h-3.5" />
-          <span>Print</span>
+          <Printer className="w-3.5 h-3.5 text-cyan-400" />
+          <span>Export</span>
         </button>
       </div>
 
-      {/* 3 Expressive Visual Metric Badges */}
+      {/* 3 Metric Badges */}
       <div className="grid grid-cols-3 gap-2.5">
-        
         {/* Heart Rate */}
-        <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col items-center text-center gap-1">
-          <div className="p-2 rounded-xl bg-rose-50 text-rose-500">
+        <div className="p-3.5 rounded-xl bg-white/4 border border-white/6 flex flex-col items-center text-center gap-1">
+          <div className="p-2 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20">
             <Heart className="w-4 h-4" />
           </div>
-          <span className="text-xs font-bold text-slate-700">Heart</span>
-          <span className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+          <span className="text-xs font-semibold text-slate-300">Heart</span>
+          <span className="text-xl sm:text-2xl font-black text-white font-mono">
             {patient?.baseline_hr ?? 72}
           </span>
-          <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
             Normal
           </span>
         </div>
 
         {/* Oxygen */}
-        <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col items-center text-center gap-1">
-          <div className="p-2 rounded-xl bg-sky-50 text-sky-500">
+        <div className="p-3.5 rounded-xl bg-white/4 border border-white/6 flex flex-col items-center text-center gap-1">
+          <div className="p-2 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20">
             <Activity className="w-4 h-4" />
           </div>
-          <span className="text-xs font-bold text-slate-700">Oxygen</span>
-          <span className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+          <span className="text-xs font-semibold text-slate-300">Oxygen</span>
+          <span className="text-xl sm:text-2xl font-black text-white font-mono">
             {patient?.baseline_spo2 ?? 97}%
           </span>
-          <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-            Good
+          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+            Optimal
           </span>
         </div>
 
         {/* Temp */}
-        <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col items-center text-center gap-1">
-          <div className="p-2 rounded-xl bg-amber-50 text-amber-500">
+        <div className="p-3.5 rounded-xl bg-white/4 border border-white/6 flex flex-col items-center text-center gap-1">
+          <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
             <Thermometer className="w-4 h-4" />
           </div>
-          <span className="text-xs font-bold text-slate-700">Temp</span>
-          <span className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
-            {patient?.baseline_temp ?? 36.6}°
+          <span className="text-xs font-semibold text-slate-300">Temp</span>
+          <span className="text-xl sm:text-2xl font-black text-white font-mono">
+            {patient?.baseline_temp ?? 36.6}°C
           </span>
-          <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-            Normal
+          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+            Stable
           </span>
         </div>
-
       </div>
     </section>
   );

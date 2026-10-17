@@ -32,17 +32,17 @@ export default function RecordsPage() {
 
         </div>
 
-        {/* Minimal Prototype Footer */}
-        <footer className="text-center py-6 border-t border-slate-200/80 text-xs text-slate-500 font-medium flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
+        {/* Clean Clinical Footer */}
+        <footer className="text-center py-6 border-t border-white/8 text-xs text-slate-400 font-medium flex flex-col sm:flex-row items-center justify-between gap-3 px-2">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-700">VitalGuard C3</span>
-            <span className="text-slate-300">|</span>
-            <span className="font-semibold text-slate-700">{guardianName || 'Guardian'}</span>
-            <span className="text-slate-300">|</span>
-            <span className="font-mono text-sky-700">Band: {bandId || 'VG-C3-0001'}</span>
+            <span className="font-bold text-white">VitalGuard C3</span>
+            <span className="text-slate-600">|</span>
+            <span className="font-semibold text-slate-300">{guardianName || 'Guardian'}</span>
+            <span className="text-slate-600">|</span>
+            <span className="font-mono text-cyan-400">Band: {bandId || 'VG-C3-0001'}</span>
           </div>
-          <div className="text-xs text-slate-400 font-semibold">
-            Prototype Records Active
+          <div className="text-xs text-emerald-400 font-mono">
+            Clinical Records Stream Active
           </div>
         </footer>
 
