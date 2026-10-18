@@ -1266,24 +1266,6 @@ export default function VitalGuardCompanionDashboard() {
 
             <Card style={{ padding: '4px 12px', backgroundColor: isDark ? '#161B22' : '#FFFFFF', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(203,213,225,0.8)' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <Link
-                  href="/feel-lab"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '14px 4px',
-                    borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid rgba(0, 0, 0, 0.06)',
-                    color: isDark ? '#FFFFFF' : '#0F172A',
-                    textDecoration: 'none',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <GlassIcon name="sliders" size="md" variant="cyan" />
-                    <span style={{ fontSize: 14, fontWeight: 600 }}>Feel Lab Calibration</span>
-                  </div>
-                  <ChevronRight size={18} color={isDark ? colors.textSecondary : '#64748B'} />
-                </Link>
 
                 <button
                   type="button"
