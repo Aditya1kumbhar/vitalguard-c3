@@ -58,6 +58,7 @@ import GlassIcon from './components/GlassIcon';
 import GlassLogo from './components/GlassLogo';
 import { useTheme } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
+import VitalGuardCanvasBackground from './components/VitalGuardCanvasBackground';
 import { playHaptic } from './utils/haptics';
 import {
   colors,
@@ -205,13 +206,16 @@ export default function VitalGuardCompanionDashboard() {
       style={{
         width: '100%',
         minHeight: '100dvh',
-        backgroundColor: 'var(--bg-app)',
+        backgroundColor: 'transparent',
         fontFamily: typography.fontFamily,
         color: 'var(--text-primary)',
         position: 'relative',
         overflowX: 'hidden',
       }}
     >
+      {/* ── 3D Interactive Hardware Scrollytelling Canvas Background ── */}
+      <VitalGuardCanvasBackground isDark={isDark} opacity={isDark ? 0.95 : 0.88} />
+
       {/* ── Background Cyber-Glow Effect ───────────────────────────── */}
       <div
         aria-hidden="true"
@@ -233,69 +237,66 @@ export default function VitalGuardCompanionDashboard() {
         }}
       />
 
-      {/* ── Main Responsive Container (Works on Mobile & Expands on PC) ── */}
+      {/* ── Main Responsive Container (Expanded Breathing Room & Minimal Calming Aesthetic) ── */}
       <div
-        className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 relative z-10 flex flex-col"
+        className="w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 pt-8 sm:pt-14 relative z-10 flex flex-col gap-16 sm:gap-20 lg:gap-28"
         style={{
-          paddingBottom: 'calc(max(24px, env(safe-area-inset-bottom)) + 84px)',
-          minHeight: '100dvh',
+          paddingBottom: 'calc(max(40px, env(safe-area-inset-bottom)) + 260px)',
+          minHeight: '280vh',
           boxSizing: 'border-box',
         }}
       >
-        {/* ── Distinct VitalGuard C3 Header (Only on Vitals Tab) ──────────────────────────── */}
-        {activeTab === 'summary' && (
-          <header className="flex items-center justify-between pb-4 sm:pb-6 border-b border-slate-200 dark:border-white/8">
-            <div className="flex items-center gap-3">
-              {/* Apple Icon-Style IconScout Glassmorphism Logo */}
-              <GlassLogo
-                size={46}
-                isFalling={isCurrentlyFalling}
-                showStatusDot={true}
-              />
+        {/* ── Cohesive Header Bar across all tabs ──────────────────────────── */}
+        <header className="flex items-center justify-between pb-6 sm:pb-8 border-b border-slate-200 dark:border-white/8">
+          <div className="flex items-center gap-3.5">
+            <GlassLogo
+              size={48}
+              isFalling={isCurrentlyFalling}
+              showStatusDot={true}
+            />
 
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-                    VitalGuard
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-bold bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 tracking-wider">
-                    C3
-                  </span>
-                </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+                  VitalGuard
+                </span>
+                <span className="px-2.5 py-0.5 rounded-md text-xs font-mono font-bold bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 tracking-wider">
+                  C3
+                </span>
               </div>
             </div>
+          </div>
 
-            {/* Right Header: Settings Sheet Button (Theme Toggle is inside Settings) */}
-            <div className="flex items-center gap-2.5 sm:gap-3.5">
-              <motion.button
-                type="button"
-                onClick={() => setIsAccountOpen(true)}
-                whileTap={{ scale: press.scale }}
-                aria-label="Open Account and Device Settings"
-                className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl transition-colors cursor-pointer bg-black/5 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-cyan-400/40"
+          {/* Right Header: Settings Sheet Button */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            <motion.button
+              type="button"
+              onClick={() => setIsAccountOpen(true)}
+              whileTap={{ scale: press.scale }}
+              aria-label="Open Account and Device Settings"
+              className="flex items-center gap-3 p-2 pr-4 rounded-2xl transition-colors cursor-pointer bg-black/5 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-cyan-400/40"
+            >
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 0 14px rgba(14, 165, 233, 0.45)',
+                }}
               >
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
-                    background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 0 12px rgba(14, 165, 233, 0.4)',
-                  }}
-                >
-                  <span style={{ fontSize: 13, fontWeight: 800, color: '#FFFFFF' }}>{initials}</span>
-                </div>
-                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 hidden sm:inline">Settings</span>
-              </motion.button>
-            </div>
-          </header>
-        )}
+                <span style={{ fontSize: 14, fontWeight: 800, color: '#FFFFFF' }}>{initials}</span>
+              </div>
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 hidden sm:inline">Settings</span>
+            </motion.button>
+          </div>
+        </header>
 
         {/* ═════════════════════════════════════════════════════════════
-            TAB 1: SUMMARY (Dual Column on PC, Single Column on Mobile)
+            TAB 1: LIVE VITALS & TELEMETRY (Dual Column on PC, Single Column on Mobile)
            ═════════════════════════════════════════════════════════════ */}
         {activeTab === 'summary' && (
           <motion.div
@@ -303,37 +304,35 @@ export default function VitalGuardCompanionDashboard() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="mt-5 sm:mt-6 flex flex-col gap-6"
+            className="flex flex-col gap-12 sm:gap-16"
           >
-            {/* Title */}
-            <div className="flex items-baseline justify-between">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                  Live Vitals Summary
-                </h1>
-              </div>
+            {/* Title (Big Minimal Header) */}
+            <div>
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-slate-900 dark:text-white">
+                Live Vitals &amp; Telemetry
+              </h1>
             </div>
 
             {/* PC Responsive 12-Column Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
-              {/* ── Left Column: Hero HR Ring, SpO2/Battery Cards, Connection Control ── */}
-              <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 items-start">
+              {/* ── Left Column: Hero HR Ring, SpO2/Battery Cards ── */}
+              <div className="lg:col-span-5 xl:col-span-5 flex flex-col gap-6">
                 {/* Hero Heart Rate Ring Card */}
-                <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
-                  <div className="flex flex-col gap-4">
+                <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', padding: '28px', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
+                  <div className="flex flex-col gap-5">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <GlassIcon name="heart" size="sm" variant="rose" />
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                      <div className="flex items-center gap-2.5">
+                        <GlassIcon name="heart" size="md" variant="rose" />
+                        <span className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                           Heart Rate (PPG)
                         </span>
                       </div>
-                      <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold">
+                      <span className="text-xs font-mono px-2.5 py-1 rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold">
                         {status === 'irregular' ? 'PATTERN NOTICED' : 'NOMINAL'}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-around py-3">
+                    <div className="flex items-center justify-around py-4">
                       <motion.div
                         animate={{ scale: [1, 1.03, 1] }}
                         transition={{ duration: pulseDuration, repeat: Infinity, ease: 'easeInOut' }}
@@ -341,24 +340,24 @@ export default function VitalGuardCompanionDashboard() {
                         <Ring
                           value={hrValue}
                           max={160}
-                          size={130}
-                          strokeWidth={13}
+                          size={160}
+                          strokeWidth={15}
                           colour="#FF375F"
                           bgColour="rgba(255, 55, 95, 0.18)"
                           displayValue={String(hrValue)}
                           unit="BPM"
-                          glowFilter="drop-shadow(0 0 16px rgba(255, 55, 95, 0.4))"
+                          glowFilter="drop-shadow(0 0 20px rgba(255, 55, 95, 0.45))"
                         />
                       </motion.div>
 
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-3">
                         <div>
-                          <span className="text-xs text-slate-400 block">Resting Baseline</span>
-                          <span className="text-lg font-bold font-mono text-slate-900 dark:text-white">68 - 74 BPM</span>
+                          <span className="text-xs text-slate-400 block font-medium">Resting Baseline</span>
+                          <span className="text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white">68 - 74 BPM</span>
                         </div>
                         <div>
-                          <span className="text-xs text-slate-400 block">24h Peak</span>
-                          <span className="text-lg font-bold font-mono text-rose-400">118 BPM</span>
+                          <span className="text-xs text-slate-400 block font-medium">24h Peak</span>
+                          <span className="text-xl sm:text-2xl font-black font-mono text-rose-400">118 BPM</span>
                         </div>
                       </div>
                     </div>
@@ -366,76 +365,75 @@ export default function VitalGuardCompanionDashboard() {
                 </Card>
 
                 {/* Dual Metrics: SpO2 & Battery Level */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-5">
                   {/* SpO2 Card */}
-                  <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
-                    <div className="flex flex-col gap-2">
+                  <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', padding: '24px', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
+                    <div className="flex flex-col gap-2.5">
                       <div className="flex items-center justify-between">
                         <GlassIcon name="oxygen" size="sm" variant="emerald" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">SpO2</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">SpO2</span>
                       </div>
                       <div className="flex items-baseline gap-1 mt-1">
-                        <span className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white">{spo2Value}</span>
-                        <span className="text-sm font-semibold text-slate-400">%</span>
+                        <span className="text-4xl sm:text-5xl font-black font-mono text-slate-900 dark:text-white">{spo2Value}</span>
+                        <span className="text-base font-bold text-slate-400">%</span>
                       </div>
-                      <div className="w-full bg-white/10 rounded-sm h-1.5 mt-1 overflow-hidden">
+                      <div className="w-full bg-white/10 rounded-full h-2.5 mt-1 overflow-hidden">
                         <div
-                          className="h-full bg-emerald-500 rounded-sm transition-all duration-500"
+                          className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                           style={{ width: `${Math.min(100, spo2Value)}%` }}
                         />
                       </div>
-                      <span className="text-[11px] text-emerald-400 font-medium mt-1">Optimal Saturation</span>
+                      <span className="text-xs text-emerald-400 font-semibold mt-1">Optimal Saturation</span>
                     </div>
                   </Card>
 
                   {/* Battery Level Card */}
-                  <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
-                    <div className="flex flex-col gap-2">
+                  <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', padding: '24px', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
+                    <div className="flex flex-col gap-2.5">
                       <div className="flex items-center justify-between">
                         <GlassIcon name="battery" size="sm" variant="amber" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Battery</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Battery</span>
                       </div>
                       <div className="flex items-baseline gap-1 mt-1">
-                        <span className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white">{batteryValue}</span>
-                        <span className="text-sm font-semibold text-slate-400">%</span>
+                        <span className="text-4xl sm:text-5xl font-black font-mono text-slate-900 dark:text-white">{batteryValue}</span>
+                        <span className="text-base font-bold text-slate-400">%</span>
                       </div>
-                      <div className="w-full bg-white/10 rounded-sm h-1.5 mt-1 overflow-hidden">
+                      <div className="w-full bg-white/10 rounded-full h-2.5 mt-1 overflow-hidden">
                         <div
-                          className="h-full bg-amber-400 rounded-sm transition-all duration-500"
+                          className="h-full bg-amber-400 rounded-full transition-all duration-500"
                           style={{ width: `${Math.min(100, batteryValue)}%` }}
                         />
                       </div>
-                      <span className="text-[11px] text-slate-400 font-medium mt-1">Hardware ADC Nominal</span>
+                      <span className="text-xs text-slate-400 font-semibold mt-1">Hardware ADC Nominal</span>
                     </div>
                   </Card>
                 </div>
               </div>
 
               {/* ── Right Column: 60s Sparkline ── */}
-              <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-5">
-                {/* 60-Second Real-Time PPG Heart Rate Sparkline */}
-                <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
-                  <div className="flex flex-col gap-3">
+              <div className="lg:col-span-7 xl:col-span-7 flex flex-col gap-6">
+                <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', padding: '28px', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
+                  <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <GlassIcon name="pulse" size="sm" variant="cyan" />
+                        <GlassIcon name="pulse" size="md" variant="cyan" />
                         <div>
-                          <span className="text-xs font-bold uppercase tracking-wider text-slate-300 block">
+                          <span className="text-sm font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 block">
                             PPG Pulse Waveform (Rolling 60 Seconds)
                           </span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
-                        <span className="text-[11px] font-mono text-cyan-400 font-bold">1 Hz Live</span>
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-cyan-400 animate-pulse" />
+                        <span className="text-xs font-mono text-cyan-400 font-bold">1 Hz Live</span>
                       </div>
                     </div>
 
                     {/* SVG Sparkline Graph */}
-                    <div className="w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/6 p-2">
+                    <div className="w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/6 p-3">
                       <svg
-                        viewBox="0 0 420 90"
-                        className="w-full h-24"
+                        viewBox="0 0 420 120"
+                        className="w-full h-36 sm:h-44"
                         preserveAspectRatio="none"
                       >
                         <defs>
@@ -449,16 +447,16 @@ export default function VitalGuardCompanionDashboard() {
                           d={sparklineSvg.linePath}
                           fill="none"
                           stroke="#38BDF8"
-                          strokeWidth="2.5"
+                          strokeWidth="3"
                           strokeLinecap="round"
                         />
                       </svg>
-                      <div className="flex justify-between text-[10px] font-mono text-slate-500 px-1 pt-1">
+                      <div className="flex justify-between text-xs font-mono text-slate-500 px-2 pt-2">
                         <span>-60s</span>
                         <span>-45s</span>
                         <span>-30s</span>
                         <span>-15s</span>
-                        <span>Now ({hrValue} BPM)</span>
+                        <span className="text-cyan-400 font-bold">Now ({hrValue} BPM)</span>
                       </div>
                     </div>
                   </div>
@@ -477,29 +475,75 @@ export default function VitalGuardCompanionDashboard() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="mt-1 sm:mt-2 flex flex-col gap-6"
+            className="flex flex-col gap-12 sm:gap-16"
           >
-            <div className="flex items-baseline justify-between">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                  Clinical Records &amp; Medical Vitals
-                </h1>
-              </div>
+            {/* Title (Big Minimal Header) */}
+            <div>
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-slate-900 dark:text-white">
+                Clinical Records &amp; Medical Vitals
+              </h1>
             </div>
 
             {/* Responsive 12-Column Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 items-start">
               {/* Left Column: Safety Score + Baseline Summary */}
-              <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-5">
+              <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
                 <RiskScoreCard />
                 <ClinicalSummaryCard />
               </div>
 
               {/* Right Column: Historical Trends Charts */}
-              <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-5">
+              <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
                 <HistoricalTrends />
               </div>
             </div>
+
+
+            {/* 30-Day Physiological Biometric Ledger Table */}
+            <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', padding: '32px' }}>
+              <div className="flex flex-col gap-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <GlassIcon name="records" size="sm" variant="cyan" />
+                    <span className="text-base font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                      Cardiovascular &amp; Physiological Daily Ledger (30 Days)
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono text-cyan-400 font-bold">
+                    FIFO Synchronized
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-white/10 text-slate-400 uppercase text-[10px] tracking-wider">
+                        <th className="pb-3.5 font-semibold">Date</th>
+                        <th className="pb-3.5 font-semibold">Resting HR</th>
+                        <th className="pb-3.5 font-semibold">SpO2 Mean</th>
+                        <th className="pb-3.5 font-semibold">SVM Motion Index</th>
+                        <th className="pb-3.5 font-semibold text-right">Clinical Stratification</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                      {thirtyDayRecords.slice(0, 10).map((r, i) => (
+                        <tr key={r.dateKey || i}>
+                          <td className="py-4 font-bold text-slate-900 dark:text-white">{r.dateKey}</td>
+                          <td className="py-4 font-mono text-slate-700 dark:text-slate-300">{r.avg_hr} BPM</td>
+                          <td className="py-4 font-mono text-slate-700 dark:text-slate-300">{r.avg_spo2}%</td>
+                          <td className="py-4 font-mono text-slate-700 dark:text-slate-300">1.04 G (Stable)</td>
+                          <td className="py-4 text-right">
+                            <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              PHYSIOLOGICALLY NOMINAL
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </Card>
           </motion.div>
         )}
 
@@ -512,88 +556,89 @@ export default function VitalGuardCompanionDashboard() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="mt-1 sm:mt-2 flex flex-col gap-6"
+            className="flex flex-col gap-12 sm:gap-16"
           >
+            {/* Title (Big Minimal Header) */}
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-slate-900 dark:text-white">
                 Fall Detection &amp; Safety Report
               </h1>
             </div>
 
             {/* PC Responsive 12-Column Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 items-start">
               {/* ── Left Column: Live SVM Accelerometer & Test Fall Controls ── */}
-              <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-5">
+              <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
                 {/* Live 3-Axis SVM Accelerometer Monitor */}
-                <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
-                  <div className="flex flex-col gap-4">
+                <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', padding: '32px', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
+                  <div className="flex flex-col gap-5">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <GlassIcon name="gauge" size="sm" variant="amber" />
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                      <div className="flex items-center gap-2.5">
+                        <GlassIcon name="gauge" size="md" variant="amber" />
+                        <span className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                           Live 3-Axis SVM Accelerometer
                         </span>
                       </div>
                       {isCurrentlyFalling && (
-                        <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse">
+                        <span className="text-xs font-mono font-bold px-3 py-1 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse">
                           IMPACT DETECTED
                         </span>
                       )}
                     </div>
 
                     {/* Numerical G-Force Display */}
-                    <div className="flex items-baseline justify-between py-2">
+                    <div className="flex items-baseline justify-between py-3">
                       <div>
-                        <span className="text-4xl sm:text-5xl font-black font-mono text-slate-900 dark:text-white">
+                        <span className="text-7xl sm:text-8xl font-black font-mono text-slate-900 dark:text-white">
                           {liveSvm.toFixed(2)}
                         </span>
-                        <span className="text-base font-bold text-slate-400 ml-1.5">G</span>
+                        <span className="text-2xl font-bold text-slate-400 ml-2">G</span>
                       </div>
                     </div>
 
                     {/* G-Force Range Bar */}
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex justify-between text-[11px] text-slate-400">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex justify-between text-xs text-slate-400">
                         <span>0.0G (Rest)</span>
                         <span>1.4G (Motion)</span>
                         <span className="text-rose-400 font-bold">&gt;3.0G (Fall Trigger)</span>
                       </div>
-                      <div className="w-full bg-white/10 rounded-sm h-3 relative overflow-hidden">
+                      <div className="w-full bg-white/10 rounded-full h-4 relative overflow-hidden">
                         <div
-                          className={`h-full rounded-sm transition-all duration-300 ${
+                          className={`h-full rounded-full transition-all duration-300 ${
                             liveSvm >= 3.0 ? 'bg-rose-500' : liveSvm >= 1.4 ? 'bg-amber-400' : 'bg-emerald-400'
                           }`}
                           style={{ width: `${Math.min(100, (liveSvm / 4.0) * 100)}%` }}
                         />
                         {/* Threshold mark at 3.0G (75%) */}
-                        <div className="absolute top-0 bottom-0 left-[75%] w-0.5 bg-rose-400 shadow-[0_0_6px_#FF453A]" />
+                        <div className="absolute top-0 bottom-0 left-[75%] w-1 bg-rose-400 shadow-[0_0_8px_#FF453A]" />
                       </div>
                     </div>
 
                     {/* 3-Axis Decomposition */}
-                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/6 text-center text-xs">
-                      <div className="p-2 rounded-lg bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-white/6">
-                        <span className="text-slate-400 block text-[10px]">X-Axis</span>
-                        <span className="font-mono font-bold text-slate-900 dark:text-white">0.04 G</span>
+                    <div className="grid grid-cols-3 gap-3 pt-3 border-t border-white/6 text-center text-xs">
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-white/6">
+                        <span className="text-slate-400 block text-xs">X-Axis</span>
+                        <span className="font-mono text-base font-bold text-slate-900 dark:text-white mt-1 block">0.04 G</span>
                       </div>
-                      <div className="p-2 rounded-lg bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-white/6">
-                        <span className="text-slate-400 block text-[10px]">Y-Axis</span>
-                        <span className="font-mono font-bold text-slate-900 dark:text-white">0.98 G</span>
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-white/6">
+                        <span className="text-slate-400 block text-xs">Y-Axis</span>
+                        <span className="font-mono text-base font-bold text-slate-900 dark:text-white mt-1 block">0.98 G</span>
                       </div>
-                      <div className="p-2 rounded-lg bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-white/6">
-                        <span className="text-slate-400 block text-[10px]">Z-Axis</span>
-                        <span className="font-mono font-bold text-slate-900 dark:text-white">0.12 G</span>
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-white/6">
+                        <span className="text-slate-400 block text-xs">Z-Axis</span>
+                        <span className="font-mono text-base font-bold text-slate-900 dark:text-white mt-1 block">0.12 G</span>
                       </div>
                     </div>
 
                     {/* Test Alarm Controls */}
-                    <div className="pt-2 flex flex-col gap-2">
+                    <div className="pt-3 flex flex-col gap-3">
                       <button
                         type="button"
                         onClick={() => setManualFallActive(true)}
-                        className="w-full py-3 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-all flex items-center justify-center gap-2.5 shadow-lg shadow-rose-950/40 cursor-pointer"
+                        className="w-full py-4 rounded-2xl text-sm font-bold bg-rose-600 hover:bg-rose-500 text-white transition-all flex items-center justify-center gap-3 shadow-xl shadow-rose-950/40 cursor-pointer"
                       >
-                        <GlassIcon name="shield-alert" size={18} variant="rose" interactive={false} glow={false} />
+                        <GlassIcon name="shield-alert" size={20} variant="rose" interactive={false} glow={false} />
                         <span>Trigger Test Fall Alarm (30s Countdown)</span>
                       </button>
 
@@ -604,9 +649,9 @@ export default function VitalGuardCompanionDashboard() {
                             dismissFall();
                             setManualFallActive(false);
                           }}
-                          className="w-full py-2.5 rounded-xl text-xs font-bold bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 text-slate-800 dark:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
+                          className="w-full py-3.5 rounded-2xl text-sm font-bold bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 text-slate-800 dark:text-white transition-all flex items-center justify-center gap-2.5 cursor-pointer"
                         >
-                          <GlassIcon name="refresh" size={16} variant="slate" interactive={false} glow={false} />
+                          <GlassIcon name="refresh" size={18} variant="slate" interactive={false} glow={false} />
                           <span>Reset Sensor Alarm Baseline</span>
                         </button>
                       )}
@@ -616,68 +661,68 @@ export default function VitalGuardCompanionDashboard() {
               </div>
 
               {/* ── Right Column: 30-Day FIFO Algorithm Report & Daily History ── */}
-              <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-5">
+              <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
                 {/* FIFO Algorithm Architecture Card */}
-                <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
-                  <div className="flex flex-col gap-3">
+                <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', padding: '28px', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
+                  <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2.5">
                         <GlassIcon name="database" size="sm" variant="blue" />
-                        <span className="text-xs font-bold uppercase tracking-wider text-cyan-400">
+                        <span className="text-sm font-bold uppercase tracking-wider text-cyan-400">
                           30-Day Rolling FIFO Ring Buffer
                         </span>
                       </div>
                     </div>
 
                     {/* KPI Scoreboard */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/6 flex flex-col">
-                        <span className="text-[11px] text-slate-400">30-Day Falls</span>
-                        <span className="text-2xl font-black font-mono text-slate-900 dark:text-white mt-1">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/6 flex flex-col">
+                        <span className="text-xs text-slate-400">30-Day Falls</span>
+                        <span className="text-3xl font-black font-mono text-slate-900 dark:text-white mt-1">
                           {totalFallsIn30Days}
                         </span>
-                        <span className="text-[10px] text-emerald-400 mt-0.5">Isolated incidents</span>
+                        <span className="text-xs text-emerald-400 mt-1 font-semibold">Isolated incidents</span>
                       </div>
 
-                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/6 flex flex-col">
-                        <span className="text-[11px] text-slate-400">Safe Days</span>
-                        <span className="text-2xl font-black font-mono text-slate-900 dark:text-white mt-1">
+                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/6 flex flex-col">
+                        <span className="text-xs text-slate-400">Safe Days</span>
+                        <span className="text-3xl font-black font-mono text-slate-900 dark:text-white mt-1">
                           {safeDaysCount}/30
                         </span>
-                        <span className="text-[10px] text-cyan-400 mt-0.5">93.3% safe index</span>
+                        <span className="text-xs text-cyan-400 mt-1 font-semibold">93.3% safe index</span>
                       </div>
 
-                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/6 flex flex-col">
-                        <span className="text-[11px] text-slate-400">Countdown Limit</span>
-                        <span className="text-2xl font-black font-mono text-slate-900 dark:text-white mt-1">30s</span>
-                        <span className="text-[10px] text-slate-400 mt-0.5">Verification window</span>
+                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/6 flex flex-col">
+                        <span className="text-xs text-slate-400">Countdown Limit</span>
+                        <span className="text-3xl font-black font-mono text-slate-900 dark:text-white mt-1">30s</span>
+                        <span className="text-xs text-slate-400 mt-1 font-semibold">Verification window</span>
                       </div>
 
-                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/6 flex flex-col">
-                        <span className="text-[11px] text-slate-400">FIFO Rotation</span>
-                        <span className="text-2xl font-black font-mono text-emerald-400 mt-1">Day 31+</span>
-                        <span className="text-[10px] text-slate-400 mt-0.5">Auto-purge active</span>
+                      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/6 flex flex-col">
+                        <span className="text-xs text-slate-400">FIFO Rotation</span>
+                        <span className="text-3xl font-black font-mono text-emerald-400 mt-1">Day 31+</span>
+                        <span className="text-xs text-slate-400 mt-1 font-semibold">Auto-purge active</span>
                       </div>
                     </div>
                   </div>
                 </Card>
 
                 {/* Chronological 30-Day Daily Audit Log */}
-                <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
-                  <div className="flex flex-col gap-3">
+                <Card style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-card)', padding: '28px', boxShadow: isDark ? 'none' : '0 4px 20px -2px rgba(15, 23, 42, 0.06)' }}>
+                  <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                      <span className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                         Past 30 Days Audit Log
                       </span>
                     </div>
 
-                    <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+                    <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
                       {thirtyDayRecords.map((r, i) => {
                         const hasFall = (r.fall_count || 0) > 0;
                         return (
                           <div
                             key={r.dateKey || i}
-                            className={`p-3 rounded-xl flex items-center justify-between text-xs transition-colors border ${
+                            className={`p-4 rounded-2xl flex items-center justify-between text-xs transition-colors border ${
                               hasFall
                                 ? 'bg-rose-500/10 border-rose-500/30'
                                 : (isDark
@@ -685,15 +730,15 @@ export default function VitalGuardCompanionDashboard() {
                                     : 'bg-slate-50 border-slate-200 hover:bg-slate-100')
                             }`}
                           >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3.5">
                               {hasFall ? (
                                 <GlassIcon name="shield-alert" size="sm" variant="rose" />
                               ) : (
                                 <GlassIcon name="shield-check" size="sm" variant="emerald" />
                               )}
                               <div>
-                                <span className={`font-bold block ${isDark ? 'text-white' : 'text-slate-900'}`}>{r.dateKey}</span>
-                                <span className="text-slate-400 text-[11px]">
+                                <span className={`font-bold text-sm block ${isDark ? 'text-white' : 'text-slate-900'}`}>{r.dateKey}</span>
+                                <span className="text-slate-400 text-xs mt-0.5 block">
                                   Avg HR: <strong className={isDark ? 'text-white' : 'text-slate-900'}>{r.avg_hr} BPM</strong> | SpO2: <strong className={isDark ? 'text-white' : 'text-slate-900'}>{r.avg_spo2}%</strong>
                                 </span>
                               </div>
@@ -701,11 +746,11 @@ export default function VitalGuardCompanionDashboard() {
 
                             <div className="text-right">
                               {hasFall ? (
-                                <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                                <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
                                   {r.fall_count} Fall Logged
                                 </span>
                               ) : (
-                                <span className="px-2 py-0.5 rounded text-[11px] font-medium text-emerald-400 bg-emerald-500/10">
+                                <span className="px-3 py-1 rounded-lg text-xs font-medium text-emerald-400 bg-emerald-500/10">
                                   Safe Baseline
                                 </span>
                               )}
@@ -757,6 +802,7 @@ export default function VitalGuardCompanionDashboard() {
             type="button"
             onClick={() => {
               setActiveTab('summary');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
               playHaptic('click');
             }}
             aria-label="Live Vitals"
@@ -846,6 +892,7 @@ export default function VitalGuardCompanionDashboard() {
             type="button"
             onClick={() => {
               setActiveTab('trends');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
               playHaptic('click');
             }}
             aria-label="Clinical Records and Trends"
@@ -921,6 +968,7 @@ export default function VitalGuardCompanionDashboard() {
             type="button"
             onClick={() => {
               setActiveTab('falls');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
               playHaptic('click');
             }}
             aria-label="Fall Safety and Dispatch"

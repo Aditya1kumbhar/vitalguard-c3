@@ -11,17 +11,17 @@ html.dark,
 html[data-theme='dark'] {
   color-scheme: dark;
 
-  /* Surfaces & Backgrounds (100% Preserved Existing Dark Theme) */
+  /* Surfaces & Backgrounds (Ultra-Clean Translucent Glass for 3D Hardware Background) */
   --bg-primary: #0A0D12;
   --bg-app: #0A0D12;
-  --bg-surface: #12161D;
-  --bg-card: #12161D;
-  --bg-elevated: #161B22;
-  --bg-glass: rgba(18, 22, 29, 0.85);
-  --bg-input: #0D1117;
+  --bg-surface: rgba(14, 18, 26, 0.45);
+  --bg-card: rgba(14, 18, 26, 0.40);
+  --bg-elevated: rgba(18, 24, 38, 0.55);
+  --bg-glass: rgba(14, 18, 26, 0.45);
+  --bg-input: rgba(13, 17, 23, 0.65);
   --bg-modal: #12161D;
-  --bg-subtle: rgba(255, 255, 255, 0.04);
-  --bg-subtle-hover: rgba(255, 255, 255, 0.08);
+  --bg-subtle: rgba(255, 255, 255, 0.05);
+  --bg-subtle-hover: rgba(255, 255, 255, 0.09);
 
   /* Typography */
   --text-primary: #FFFFFF;
@@ -90,9 +90,9 @@ html[data-theme='light'] {
   /* Surfaces & Backgrounds - High Contrast WCAG AAA Light Mode */
   --bg-primary: #F8FAFC;
   --bg-app: #F8FAFC;
-  --bg-surface: #FFFFFF;
-  --bg-card: #FFFFFF;
-  --bg-elevated: #F1F5F9;
+  --bg-surface: rgba(255, 255, 255, 0.88);
+  --bg-card: rgba(255, 255, 255, 0.82);
+  --bg-elevated: rgba(241, 245, 249, 0.85);
   --bg-glass: rgba(255, 255, 255, 0.88);
   --bg-input: #FFFFFF;
   --bg-modal: #FFFFFF;

@@ -50,11 +50,14 @@ export const Card: React.FC<CardProps> = ({
         mass: spring.default.mass,
       }}
       style={{
-        borderRadius: dimensions.cardRadius,
+        borderRadius: 24,
         backgroundColor: 'var(--bg-card)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        transform: 'translateZ(0)',
         border: '1px solid var(--border-card)',
-        boxShadow: '0 2px 12px -2px rgba(0, 0, 0, 0.04)',
-        padding: layout.pagePadding,
+        boxShadow: '0 8px 32px -4px rgba(0, 0, 0, 0.35), 0 0 1px 1px rgba(255, 255, 255, 0.05) inset',
+        padding: '24px',
         opacity: disabled ? 0.4 : 1,
         cursor: isInteractive ? 'pointer' : 'default',
         userSelect: isInteractive ? 'none' : 'auto',

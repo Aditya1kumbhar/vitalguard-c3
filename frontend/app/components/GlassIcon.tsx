@@ -25,7 +25,8 @@ export type GlassIconName =
   | 'check'
   | 'alert'
   | 'refresh'
-  | 'calendar';
+  | 'calendar'
+  | 'cpu';
 
 export type GlassVariant = 'rose' | 'cyan' | 'emerald' | 'amber' | 'blue' | 'slate';
 
@@ -115,6 +116,7 @@ const defaultVariantMap: Record<GlassIconName, GlassVariant> = {
   alert: 'rose',
   refresh: 'slate',
   calendar: 'cyan',
+  cpu: 'cyan',
 };
 
 export function GlassIcon({
@@ -317,6 +319,14 @@ export function GlassIcon({
             <circle cx="8" cy="14" r="1" fill={`url(#${gradId})`} />
             <circle cx="12" cy="14" r="1" fill={`url(#${gradId})`} />
             <circle cx="16" cy="14" r="1" fill={`url(#${gradId})`} />
+          </g>
+        );
+      case 'cpu':
+        return (
+          <g fill="none" stroke={`url(#${gradId})`} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="2" />
+            <rect x="9" y="9" width="6" height="6" />
+            <path d="M15 2v2M9 2v2M20 15h2M20 9h2M15 20v2M9 20v2M2 15h2M2 9h2" />
           </g>
         );
       default:
